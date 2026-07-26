@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="1.1.0">
-<title>Ledger — Continuity v1.4</title>
+<meta name="ledger-version" content="1.5.0">
+<title>Ledger — Atlas v1.5</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -469,6 +469,51 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .guide-rule{padding:12px 0;border-bottom:1px solid var(--border)}.guide-rule:last-child{border-bottom:0}.guide-title{font-size:12px;font-weight:900;color:var(--text)}.guide-copy{font-size:11px;color:var(--text3);line-height:1.5;margin-top:3px}
 @media(min-width:700px){.dashboard-grid{grid-template-columns:repeat(4,1fr)}.today-shell{max-width:760px;margin:0 auto}}
 
+
+
+/* ── ATLAS: MUTED SEASONAL ACCENTS ── */
+:root[data-season="spring"]{
+  --acc:#a9c2ad;--acc2:#c2b5cf;--blue:#acc2cf;--blue-dim:rgba(172,194,207,.13);
+  --green:#a9c9b1;--green-dim:rgba(169,201,177,.13);--yellow:#d0c39b;--yellow-dim:rgba(208,195,155,.13)
+}
+:root[data-season="summer"]{
+  --acc:#a8bdd0;--acc2:#c8b2d8;--blue:#abc0d6;--blue-dim:rgba(171,192,214,.13);
+  --green:#a8cfb5;--green-dim:rgba(168,207,181,.13);--yellow:#d8c790;--yellow-dim:rgba(216,199,144,.13)
+}
+:root[data-season="autumn"]{
+  --acc:#bea27f;--acc2:#b99ca4;--blue:#b5ad9f;--blue-dim:rgba(181,173,159,.13);
+  --green:#aab59a;--green-dim:rgba(170,181,154,.13);--yellow:#c9aa75;--yellow-dim:rgba(201,170,117,.13)
+}
+:root[data-season="winter"]{
+  --acc:#aab9c9;--acc2:#b8b0c4;--blue:#a9bfd1;--blue-dim:rgba(169,191,209,.13);
+  --green:#a9c2b8;--green-dim:rgba(169,194,184,.13);--yellow:#c8c0a5;--yellow-dim:rgba(200,192,165,.13)
+}
+:root[data-season="neutral"]{}
+.atlas-health-hero{padding:16px;background:linear-gradient(135deg,var(--surf2),var(--surf));border:1px solid var(--border);border-radius:18px;margin-bottom:10px}
+.atlas-health-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.atlas-health-title{font-size:16px;font-weight:800;color:var(--text)}
+.atlas-health-copy{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.45}
+.atlas-health-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:var(--green-dim);color:var(--green);font-size:11px;font-weight:800;white-space:nowrap}
+.atlas-health-badge.checking{background:var(--blue-dim);color:var(--blue)}
+.atlas-health-badge.warn{background:var(--yellow-dim);color:var(--yellow)}
+.atlas-health-badge.bad{background:var(--red-dim);color:var(--red)}
+.atlas-health-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+.atlas-health-cell{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:12px;padding:10px}
+.atlas-health-cell-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--text3)}
+.atlas-health-cell-value{font-size:12px;font-weight:800;color:var(--text);margin-top:3px;line-height:1.35}
+.atlas-health-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.atlas-health-time{font-size:10px;color:var(--text3);line-height:1.35}
+.activity-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-mark{width:28px;height:28px;flex:0 0 28px;border-radius:10px;background:var(--blue-dim);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
+.activity-main{min-width:0;flex:1}
+.activity-title{font-size:12px;font-weight:800;color:var(--text);line-height:1.35}
+.activity-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.activity-empty{font-size:12px;color:var(--text3);line-height:1.5;padding:4px 0}
+.tech-details{display:none;margin-top:6px;padding-top:4px;border-top:1px solid var(--border)}
+.tech-details.open{display:block}
+.soft-link{font-size:11px;font-weight:800;color:var(--acc);padding:7px 0}
+
 </style>
 </head>
 <body>
@@ -477,7 +522,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.4</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.5</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn">🌙</button>
@@ -796,15 +841,41 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
       <div class="card-body">
         <div class="set-row">
           <div><div class="set-lbl">Weekly Paycheck Mode</div><div class="set-sub">Shows per-paycheck envelope targets</div></div>
-          <div class="tog" id="weekTog"></div>
+          <div class="tog" id="weekTog" role="switch" aria-label="Weekly paycheck mode"></div>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">Dark Mode</div><div class="set-sub">Toggle light/dark theme</div></div>
-          <div class="tog" id="darkTog" style="background:var(--acc)" ></div>
+          <div><div class="set-lbl">Dark Mode</div><div class="set-sub">Switch between dark and light appearance</div></div>
+          <div class="tog" id="darkTog" role="switch" aria-label="Dark mode"></div>
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">Seasonal Accent</div><div class="set-sub" id="seasonStatus">A quiet accent that changes with the time of year</div></div>
+          <div class="tog" id="seasonTog" role="switch" aria-label="Seasonal accent"></div>
         </div>
       </div>
     </div>
-    <div class="sh" style="margin-top:8px"><div class="sh-title">Sync Foundation</div></div>
+
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Ledger Health</div></div>
+    <div class="atlas-health-hero">
+      <div class="atlas-health-hero-top">
+        <div>
+          <div class="atlas-health-title" id="healthTitle">Checking Ledger…</div>
+          <div class="atlas-health-copy" id="healthCopy">Confirming that your data, recovery points, and change history agree.</div>
+        </div>
+        <div class="atlas-health-badge checking" id="ledgerHealthBadge">Checking</div>
+      </div>
+      <div class="atlas-health-grid">
+        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Data</div><div class="atlas-health-cell-value" id="healthData">Checking…</div></div>
+        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Recovery</div><div class="atlas-health-cell-value" id="healthRecovery">Checking…</div></div>
+        <div class="atlas-health-cell"><div class="atlas-health-cell-label">History</div><div class="atlas-health-cell-value" id="healthHistory">Checking…</div></div>
+        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Future Sync</div><div class="atlas-health-cell-value" id="healthSync">Preparing…</div></div>
+      </div>
+      <div class="atlas-health-actions">
+        <div class="atlas-health-time" id="healthCheckedAt">Ledger checks itself when it opens.</div>
+        <button class="sh-btn" id="healthCheckBtn">Run Check</button>
+      </div>
+    </div>
+
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Protection & Sync</div></div>
     <div class="card">
       <div class="card-body">
         <div class="set-row">
@@ -812,15 +883,26 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
           <span style="font-size:18px">◉</span>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">Change Journal</div><div class="set-sub" id="revisionStatus">Preparing revision history…</div></div>
+          <div><div class="set-lbl">Change History</div><div class="set-sub" id="revisionStatus">Preparing protected history…</div></div>
           <span style="font-size:18px">✓</span>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">Cloud Readiness</div><div class="set-sub" id="syncReadinessStatus">Checking sync foundation…</div></div>
-          <button class="sh-btn" id="syncPackageBtn">Test</button>
+          <div><div class="set-lbl">Cloud Connection</div><div class="set-sub" id="syncReadinessStatus">Not connected. Ledger remains fully usable on this device.</div></div>
+          <span style="font-size:18px;color:var(--text3)">○</span>
+        </div>
+        <button class="soft-link" id="techDetailsBtn" aria-expanded="false">Show technical details</button>
+        <div class="tech-details" id="techDetails">
+          <div class="set-row">
+            <div><div class="set-lbl">Sync Diagnostic</div><div class="set-sub">Creates a private technical file for testing future device sync. It does not change your budget.</div></div>
+            <button class="sh-btn" id="syncPackageBtn">Create</button>
+          </div>
         </div>
       </div>
     </div>
+
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Recent Activity</div></div>
+    <div class="card"><div class="card-body" id="activityList"><div class="activity-empty">Activity will appear here as you use Ledger.</div></div></div>
+
     <div class="sh" style="margin-top:8px"><div class="sh-title">Backup & Restore</div></div>
     <div class="card">
       <div class="card-body">
@@ -833,40 +915,38 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
           <button class="sh-btn" id="snapshotBtn">Save Point</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake without replacing your cloud backup.</div></div>
+          <div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake without replacing your separate backup.</div></div>
           <button class="sh-btn" id="restoreSnapshotBtn">Restore</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">☁️ Save to Google Drive</div><div class="set-sub">Backs up directly to your Google Drive — no manual steps.</div></div>
+          <div><div class="set-lbl">☁️ Save to Google Drive</div><div class="set-sub">Creates a separate backup in your Google Drive.</div></div>
           <button class="sh-btn" id="driveBackupBtn" style="background:var(--green-dim);color:var(--green)">Drive</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Downloads a backup file. Then upload to Google Drive manually.</div></div>
+          <div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Downloads a verified backup file you control.</div></div>
           <button class="sh-btn" id="exportBtn">Save</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Load a previously saved backup file to restore your data.</div></div>
+          <div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Loads a Ledger backup from this or another device.</div></div>
           <button class="sh-btn" id="importBtn">Restore</button>
-          <input type="file" id="importFile" accept=".json" style="display:none">
+          <input type="file" id="importFile" accept=".json,application/json" style="display:none">
         </div>
-        <div class="set-sub">Clear expenses, keep envelopes & assignments</div></div>
+        <div class="set-row">
+          <div><div class="set-lbl">Reset This Month</div><div class="set-sub">Clear this month’s expenses while keeping envelopes and assignments.</div></div>
           <button class="sh-btn" style="background:var(--red-dim);color:var(--red)" id="resetMonthBtn">Reset</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">Clear All Data</div><div class="set-sub">Full factory reset</div></div>
+          <div><div class="set-lbl">Clear All Data</div><div class="set-sub">Full factory reset. Use only when starting over.</div></div>
           <button class="sh-btn" style="background:var(--red-dim);color:var(--red)" id="clearBtn">Clear</button>
         </div>
       </div>
     </div>
+
     <div class="sh" style="margin-top:8px"><div class="sh-title">Month Rollover</div></div>
     <div class="card" style="margin-bottom:12px">
       <div class="card-body">
-        <div class="set-row">
-          <div><div class="set-lbl">Last Rollover</div><div class="set-sub" id="lastRolloverDate">Never — happens automatically at month end</div></div>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Savings Carry-Forward</div><div class="set-sub">Balances that will carry into next month</div></div>
-        </div>
+        <div class="set-row"><div><div class="set-lbl">Last Rollover</div><div class="set-sub" id="lastRolloverDate">Never — happens automatically at month end</div></div></div>
+        <div class="set-row"><div><div class="set-lbl">Savings Carry-Forward</div><div class="set-sub">Balances that will carry into next month</div></div></div>
         <div id="savingsRolloverList" style="margin-top:4px"></div>
         <div class="set-row">
           <div><div class="set-lbl">Simulate Rollover</div><div class="set-sub">Test the rollover now without waiting for month end</div></div>
@@ -874,20 +954,21 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
         </div>
       </div>
     </div>
+
     <div class="sh" style="margin-top:8px"><div class="sh-title">Quick Guide</div></div>
     <div class="card" style="margin-bottom:12px"><div class="card-body">
       <div class="guide-rule"><div class="guide-title">1. Read Budget Health</div><div class="guide-copy">Excellent means no action is waiting. Good means you are safe but still have a task. Caution deserves attention soon. Action required should be handled first.</div></div>
-      <div class="guide-rule"><div class="guide-title">2. Follow Today's Priority</div><div class="guide-copy">Ledger places the highest-impact item first. Resolve red before yellow, then finish ordinary funding work.</div></div>
+      <div class="guide-rule"><div class="guide-title">2. Follow Today’s Priority</div><div class="guide-copy">Ledger places the highest-impact item first. Resolve red before yellow, then finish ordinary funding work.</div></div>
       <div class="guide-rule"><div class="guide-title">3. Bring Ready to Assign to $0</div><div class="guide-copy">A positive amount is not extra spending money until you intentionally assign it. A negative amount means the plan exceeds the money available.</div></div>
       <div class="guide-rule"><div class="guide-title">4. Log spending promptly</div><div class="guide-copy">Ledger can only be trustworthy when purchases, payments, and income are recorded.</div></div>
       <div class="guide-rule"><div class="guide-title">5. Check the envelope before buying</div><div class="guide-copy">Use Can I afford this? for a quick answer. The envelope balance—not the checking balance—controls the decision.</div></div>
     </div></div>
+
     <div class="sh" style="margin-top:8px"><div class="sh-title">About</div></div>
     <div class="card"><div class="card-body">
-      <div class="set-row"><div><div class="set-lbl">Ledger v1.3 — Clear</div><div class="set-sub">Calm enough to use daily, direct enough not to miss what matters.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Four honest health states, one primary money card, conditional status signals, stronger priority rules, and a concise in-app guide.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">v1.1 — Delight</div><div class="set-sub">Added Today guidance, goal progress, friendly empty states, and gentle motion.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">v1.0 — Trusted</div><div class="set-sub">Stabilized Ready to Assign, targets, credit cards, backups, and month rollover.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">Ledger v1.5 — Atlas</div><div class="set-sub">A quieter interface supported by a stronger record of every meaningful change.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Added self-checks, record-level sync operations, verified backups, recent activity, and muted automatic seasonal accents.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately create or upload a backup.</div></div></div>
     </div></div>
   </div>
 
@@ -1054,6 +1135,7 @@ var S = {
   debts: [],
   weeklyMode: false,
   darkMode: true,
+  seasonalAccent: true,
   lastBackupDate: null,
   cashBalance: 0,
   incomeCollapsed: false,
@@ -1078,21 +1160,28 @@ var ufCollapsed = false;
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 
 // ═══════════════════════════════════════════
-// LEDGER STORAGE FOUNDATION
-// IndexedDB is the durable primary store. localStorage remains a temporary
-// compatibility mirror so existing installations can migrate safely.
+// LEDGER ATLAS FOUNDATION
+// IndexedDB is the durable primary store. A compatibility mirror remains so
+// existing installations can migrate safely and older backups stay readable.
 // ═══════════════════════════════════════════
 var LEDGER_DB_NAME = 'ledger_database';
-var LEDGER_DB_VERSION = 2;
-var LEDGER_SCHEMA_VERSION = 2;
-var LEDGER_SYNC_PROTOCOL = 1;
+var LEDGER_DB_VERSION = 3;
+var LEDGER_SCHEMA_VERSION = 3;
+var LEDGER_SYNC_PROTOCOL = 2;
+var LEDGER_APP_VERSION = '1.5.0';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
+var ledgerLastState = null;
+var ledgerLastSyncedRevision = 0;
 var syncStatusTimer = null;
 var ledgerDb = null;
 var saveTimer = null;
 var snapshotTimer = null;
+var healthCheckTimer = null;
+
+var LEDGER_COLLECTIONS = ['income','expenses','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts'];
+var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','viewingNextMonth','rolloverDate'];
 
 function openLedgerDB() {
   return new Promise(function(resolve, reject){
@@ -1111,17 +1200,53 @@ function openLedgerDB() {
         changes.createIndex('revision','revision',{unique:false});
         changes.createIndex('changedAt','changedAt',{unique:false});
       }
+      if (!db.objectStoreNames.contains('operations')) {
+        var ops = db.createObjectStore('operations', {keyPath:'id'});
+        ops.createIndex('revision','revision',{unique:false});
+        ops.createIndex('changedAt','changedAt',{unique:false});
+        ops.createIndex('entity','entity',{unique:false});
+      }
+      if (!db.objectStoreNames.contains('activity')) {
+        var activity = db.createObjectStore('activity', {keyPath:'id'});
+        activity.createIndex('changedAt','changedAt',{unique:false});
+        activity.createIndex('revision','revision',{unique:false});
+      }
     };
-    req.onsuccess = function(){ ledgerDb = req.result; resolve(ledgerDb); };
+    req.onsuccess = function(){
+      ledgerDb = req.result;
+      ledgerDb.onversionchange = function(){ ledgerDb.close(); };
+      resolve(ledgerDb);
+    };
     req.onerror = function(){ reject(req.error || new Error('Could not open Ledger database')); };
   });
 }
 
 function dbGet(store, key) {
   return new Promise(function(resolve, reject){
+    if(!ledgerDb) return resolve(null);
     var tx = ledgerDb.transaction(store,'readonly');
     var req = tx.objectStore(store).get(key);
     req.onsuccess = function(){ resolve(req.result || null); };
+    req.onerror = function(){ reject(req.error); };
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise(function(resolve, reject){
+    if(!ledgerDb) return resolve([]);
+    var tx = ledgerDb.transaction(store,'readonly');
+    var req = tx.objectStore(store).getAll();
+    req.onsuccess = function(){ resolve(req.result || []); };
+    req.onerror = function(){ reject(req.error); };
+  });
+}
+
+function dbCount(store) {
+  return new Promise(function(resolve, reject){
+    if(!ledgerDb) return resolve(0);
+    var tx = ledgerDb.transaction(store,'readonly');
+    var req = tx.objectStore(store).count();
+    req.onsuccess = function(){ resolve(req.result || 0); };
     req.onerror = function(){ reject(req.error); };
   });
 }
@@ -1137,11 +1262,9 @@ function dbPut(store, value) {
 
 function dbDeleteAll() {
   return new Promise(function(resolve, reject){
-    var tx = ledgerDb.transaction(['current','snapshots','metadata','changes'],'readwrite');
-    tx.objectStore('current').clear();
-    tx.objectStore('snapshots').clear();
-    tx.objectStore('metadata').clear();
-    tx.objectStore('changes').clear();
+    var stores=['current','snapshots','metadata','changes','operations','activity'].filter(function(x){return ledgerDb.objectStoreNames.contains(x);});
+    var tx = ledgerDb.transaction(stores,'readwrite');
+    stores.forEach(function(store){tx.objectStore(store).clear();});
     tx.oncomplete = resolve;
     tx.onerror = function(){ reject(tx.error); };
   });
@@ -1152,91 +1275,205 @@ function makeLedgerId(prefix) {
   return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,11);
 }
 
+function cloneLedger(value) { return value===undefined ? null : JSON.parse(JSON.stringify(value)); }
+
+function sortObjectKeys(value) {
+  if (Array.isArray(value)) return value.map(sortObjectKeys);
+  if (value && typeof value === 'object') {
+    var out={};
+    Object.keys(value).sort().forEach(function(key){out[key]=sortObjectKeys(value[key]);});
+    return out;
+  }
+  return value;
+}
+
+function stableLedgerString(value) { return JSON.stringify(sortObjectKeys(value)); }
+
 function hashLedgerString(str) {
   var h = 2166136261;
   for (var i=0;i<str.length;i++) { h ^= str.charCodeAt(i); h = Math.imul(h,16777619); }
   return ('00000000' + (h >>> 0).toString(16)).slice(-8);
 }
 
-function initSyncIdentity() {
-  if(!ledgerDb) return Promise.resolve();
-  return Promise.all([dbGet('metadata','device'), dbGet('metadata','sync')]).then(function(items){
-    var deviceRec=items[0], syncRec=items[1];
-    if(deviceRec && deviceRec.value) ledgerDevice=deviceRec.value;
-    else {
-      ledgerDevice={id:makeLedgerId('device'),name:'This device',createdAt:new Date().toISOString()};
-      dbPut('metadata',{key:'device',value:ledgerDevice});
-    }
-    if(syncRec && syncRec.value){
-      ledgerRevision=Number(syncRec.value.revision||0);
-      ledgerLastHash=syncRec.value.lastHash||'';
-    }
-    updateSyncStatus();
+function ledgerStateHash(value) { return hashLedgerString(stableLedgerString(value)); }
+
+function ensureRecordIds() {
+  LEDGER_COLLECTIONS.forEach(function(collection){
+    if(!Array.isArray(S[collection])) S[collection]=[];
+    S[collection].forEach(function(item){
+      if(item && typeof item==='object' && !item.id) item.id=makeLedgerId(collection.replace(/[A-Z]/g,function(x){return '_'+x.toLowerCase();}).slice(0,12));
+    });
   });
 }
 
-function persistLedgerState() {
-  if(!ledgerDb || !ledgerDevice) return Promise.resolve(false);
-  var now=new Date().toISOString();
-  var clean=JSON.parse(JSON.stringify(S));
-  var json=JSON.stringify(clean);
-  var stateHash=hashLedgerString(json);
-  if(stateHash===ledgerLastHash) return Promise.resolve(false);
-  var nextRevision=ledgerRevision+1;
-  var change={
-    id:'chg_' + ledgerDevice.id + '_' + nextRevision,
-    protocolVersion:LEDGER_SYNC_PROTOCOL,
-    revision:nextRevision,
-    baseRevision:ledgerRevision,
-    deviceId:ledgerDevice.id,
-    changedAt:now,
-    stateHash:stateHash,
-    kind:'state_update',
-    data:clean
-  };
-  return new Promise(function(resolve,reject){
-    var tx=ledgerDb.transaction(['current','changes','metadata'],'readwrite');
-    tx.objectStore('current').put({id:'ledger-state',schemaVersion:LEDGER_SCHEMA_VERSION,updatedAt:now,revision:nextRevision,stateHash:stateHash,data:clean});
-    tx.objectStore('changes').put(change);
-    tx.objectStore('metadata').put({key:'storage',value:{engine:'IndexedDB',schemaVersion:LEDGER_SCHEMA_VERSION,lastSavedAt:now}});
-    tx.objectStore('metadata').put({key:'sync',value:{protocolVersion:LEDGER_SYNC_PROTOCOL,revision:nextRevision,lastHash:stateHash,lastChangedAt:now,lastSyncedRevision:0}});
-    tx.oncomplete=function(){
-      ledgerRevision=nextRevision; ledgerLastHash=stateHash;
-      pruneChanges(500).then(updateSyncStatus);
-      resolve(true);
-    };
-    tx.onerror=function(){reject(tx.error);};
+async function initSyncIdentity() {
+  if(!ledgerDb) return;
+  var items=await Promise.all([dbGet('metadata','device'),dbGet('metadata','sync')]);
+  var deviceRec=items[0], syncRec=items[1];
+  if(deviceRec && deviceRec.value) ledgerDevice=deviceRec.value;
+  else {
+    ledgerDevice={id:makeLedgerId('device'),name:'This device',createdAt:new Date().toISOString()};
+    await dbPut('metadata',{key:'device',value:ledgerDevice});
+  }
+  if(syncRec && syncRec.value){
+    ledgerRevision=Number(syncRec.value.revision||ledgerRevision||0);
+    ledgerLastHash=syncRec.value.lastHash||ledgerLastHash||'';
+    ledgerLastSyncedRevision=Number(syncRec.value.lastSyncedRevision||0);
+  }
+  updateSyncStatus();
+}
+
+function recordsById(items) {
+  var out={};
+  (items||[]).forEach(function(item,index){
+    if(!item || typeof item!=='object') return;
+    var id=item.id || ('legacy_' + index);
+    out[id]=item;
   });
+  return out;
+}
+
+function operationSummary(collection, operation, current, previous, changedSettings) {
+  var item=current||previous||{};
+  var name=item.name||item.desc||item.who||item.note||'item';
+  if(collection==='expenses') return operation==='delete' ? 'Expense removed · ' + name : (operation==='insert' ? 'Expense added · ' + name : 'Expense updated · ' + name);
+  if(collection==='income') return operation==='delete' ? 'Income removed · ' + name : (operation==='insert' ? 'Income added · ' + name : 'Income updated · ' + name);
+  if(collection==='envelopes') {
+    if(operation==='delete') return 'Envelope removed · ' + name;
+    if(operation==='insert') return 'Envelope created · ' + name;
+    if(current && previous && Number(current.assigned||0)!==Number(previous.assigned||0)) {
+      var delta=Number(current.assigned||0)-Number(previous.assigned||0);
+      return delta>=0 ? 'Assigned ' + fmt(delta) + ' to ' + name : 'Reduced ' + name + ' by ' + fmt(Math.abs(delta));
+    }
+    return 'Envelope updated · ' + name;
+  }
+  if(collection==='goals') return operation==='delete' ? 'Goal removed · ' + name : (operation==='insert' ? 'Goal created · ' + name : 'Goal progress updated · ' + name);
+  if(collection==='debts') return operation==='delete' ? 'Debt removed · ' + name : (operation==='insert' ? 'Debt added · ' + name : 'Debt updated · ' + name);
+  if(collection==='creditCards') return operation==='delete' ? 'Card removed · ' + name : (operation==='insert' ? 'Card added · ' + name : 'Card updated · ' + name);
+  if(collection==='scheduled') return operation==='delete' ? 'Scheduled item removed · ' + name : (operation==='insert' ? 'Scheduled item added · ' + name : 'Scheduled item updated · ' + name);
+  if(collection==='groups') return operation==='delete' ? 'Budget group removed · ' + name : (operation==='insert' ? 'Budget group created · ' + name : 'Budget group updated · ' + name);
+  if(collection==='owedToMe' || collection==='iOwe') return operation==='delete' ? 'Balance removed · ' + name : (operation==='insert' ? 'Balance tracked · ' + name : 'Balance updated · ' + name);
+  if(collection==='settings') {
+    changedSettings=changedSettings||[];
+    if(changedSettings.indexOf('lastBackupDate')>=0) return 'Backup completed';
+    if(changedSettings.indexOf('currentMonth')>=0 || changedSettings.indexOf('rolloverDate')>=0) return 'New month started';
+    if(changedSettings.indexOf('darkMode')>=0 || changedSettings.indexOf('seasonalAccent')>=0) return 'Appearance updated';
+    if(changedSettings.indexOf('weeklyMode')>=0) return 'Paycheck view updated';
+    if(changedSettings.indexOf('cashBalance')>=0) return 'Cash balance updated';
+    return 'Ledger settings updated';
+  }
+  return 'Ledger updated';
+}
+
+function computeStateOperations(previousState, nextState, revision, changedAt) {
+  var operations=[];
+  LEDGER_COLLECTIONS.forEach(function(collection){
+    var before=recordsById((previousState&&previousState[collection])||[]);
+    var after=recordsById((nextState&&nextState[collection])||[]);
+    var ids={}; Object.keys(before).forEach(function(id){ids[id]=true;}); Object.keys(after).forEach(function(id){ids[id]=true;});
+    Object.keys(ids).sort().forEach(function(id){
+      var prev=before[id], cur=after[id];
+      var operation=null;
+      if(!prev && cur) operation='insert';
+      else if(prev && !cur) operation='delete';
+      else if(stableLedgerString(prev)!==stableLedgerString(cur)) operation='update';
+      if(!operation) return;
+      var payload=cur ? cloneLedger(cur) : null;
+      var previous=prev ? cloneLedger(prev) : null;
+      operations.push({
+        id:makeLedgerId('op'),protocolVersion:LEDGER_SYNC_PROTOCOL,revision:revision,sequence:operations.length+1,
+        deviceId:ledgerDevice.id,changedAt:changedAt,entity:collection+':'+id,entityType:collection,entityId:id,
+        operation:operation,payload:payload,previous:operation==='delete'?previous:null,
+        baseStateHash:ledgerLastHash,baseRecordHash:previous?ledgerStateHash(previous):'',
+        recordHash:payload?ledgerStateHash(payload):'',summary:operationSummary(collection,operation,cur,prev)
+      });
+    });
+  });
+  var changedSettings=[];
+  LEDGER_SETTING_KEYS.forEach(function(key){
+    var a=previousState?previousState[key]:undefined, b=nextState?nextState[key]:undefined;
+    if(stableLedgerString(a)!==stableLedgerString(b)) changedSettings.push(key);
+  });
+  if(changedSettings.length){
+    var settingPayload={}, previousSettingPayload={};
+    changedSettings.forEach(function(key){settingPayload[key]=cloneLedger(nextState[key]);previousSettingPayload[key]=cloneLedger(previousState?previousState[key]:null);});
+    operations.push({
+      id:makeLedgerId('op'),protocolVersion:LEDGER_SYNC_PROTOCOL,revision:revision,sequence:operations.length+1,
+      deviceId:ledgerDevice.id,changedAt:changedAt,entity:'settings:ledger',entityType:'settings',entityId:'ledger',
+      operation:'update',payload:settingPayload,changedKeys:changedSettings,baseStateHash:ledgerLastHash,
+      baseRecordHash:ledgerStateHash(previousSettingPayload),recordHash:ledgerStateHash(settingPayload),
+      summary:operationSummary('settings','update',null,null,changedSettings)
+    });
+  }
+  if(!operations.length && stableLedgerString(previousState)!==stableLedgerString(nextState)){
+    operations.push({
+      id:makeLedgerId('op'),protocolVersion:LEDGER_SYNC_PROTOCOL,revision:revision,sequence:1,
+      deviceId:ledgerDevice.id,changedAt:changedAt,entity:'state:ledger',entityType:'state',entityId:'ledger',
+      operation:'update',payload:null,baseStateHash:ledgerLastHash,baseRecordHash:ledgerStateHash(previousState||{}),recordHash:ledgerStateHash(nextState),summary:'Ledger updated'
+    });
+  }
+  return operations;
+}
+
+function activityFromOperation(op) {
+  return {id:'activity_'+op.id,revision:op.revision,changedAt:op.changedAt,summary:op.summary||'Ledger updated',entityType:op.entityType,operation:op.operation};
+}
+
+async function persistLedgerState(options) {
+  options=options||{};
+  if(!ledgerDb || !ledgerDevice) return false;
+  var now=new Date().toISOString();
+  var clean=cloneLedger(S);
+  var stateHash=ledgerStateHash(clean);
+  if(stateHash===ledgerLastHash){ ledgerLastState=clean; return false; }
+  var nextRevision=ledgerRevision+1;
+  var operations=computeStateOperations(ledgerLastState||{},clean,nextRevision,now);
+  var change={
+    id:'chg_' + ledgerDevice.id + '_' + nextRevision,protocolVersion:LEDGER_SYNC_PROTOCOL,revision:nextRevision,
+    baseRevision:ledgerRevision,deviceId:ledgerDevice.id,changedAt:now,stateHash:stateHash,kind:'state_update',operationCount:operations.length,data:clean
+  };
+  await new Promise(function(resolve,reject){
+    var tx=ledgerDb.transaction(['current','changes','operations','activity','metadata'],'readwrite');
+    tx.objectStore('current').put({id:'ledger-state',schemaVersion:LEDGER_SCHEMA_VERSION,appVersion:LEDGER_APP_VERSION,updatedAt:now,revision:nextRevision,stateHash:stateHash,data:clean});
+    tx.objectStore('changes').put(change);
+    operations.forEach(function(op){
+      tx.objectStore('operations').put(op);
+      if(!options.quietActivity) tx.objectStore('activity').put(activityFromOperation(op));
+    });
+    tx.objectStore('metadata').put({key:'storage',value:{engine:'IndexedDB',schemaVersion:LEDGER_SCHEMA_VERSION,lastSavedAt:now}});
+    tx.objectStore('metadata').put({key:'sync',value:{protocolVersion:LEDGER_SYNC_PROTOCOL,revision:nextRevision,lastHash:stateHash,lastChangedAt:now,lastSyncedRevision:ledgerLastSyncedRevision}});
+    tx.oncomplete=resolve; tx.onerror=function(){reject(tx.error);};
+  });
+  ledgerRevision=nextRevision; ledgerLastHash=stateHash; ledgerLastState=clean;
+  Promise.all([pruneStore('changes',60,'changedAt'),pruneStore('operations',2000,'changedAt'),pruneStore('activity',500,'changedAt')]).then(function(){
+    updateSyncStatus(); renderRecentActivity(); scheduleLedgerHealthCheck();
+  });
+  return true;
 }
 
 function scheduleDurableSave() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(function(){
-    persistLedgerState().catch(function(e){ console.error('IndexedDB save failed:',e); });
-  }, 150);
+  saveTimer=setTimeout(function(){
+    persistLedgerState().catch(function(e){console.error('IndexedDB save failed:',e); toast('Ledger could not finish saving. Try again.');});
+  },150);
 }
 
-function listChanges() {
-  return new Promise(function(resolve,reject){
-    if(!ledgerDb) return resolve([]);
-    var tx=ledgerDb.transaction('changes','readonly');
-    var req=tx.objectStore('changes').getAll();
-    req.onsuccess=function(){ resolve((req.result||[]).sort(function(a,b){return a.revision-b.revision;})); };
-    req.onerror=function(){reject(req.error);};
+async function pruneStore(store, limit, sortKey) {
+  if(!ledgerDb || !ledgerDb.objectStoreNames.contains(store)) return;
+  var items=await dbGetAll(store);
+  items.sort(function(a,b){return String(a[sortKey]||'').localeCompare(String(b[sortKey]||''));});
+  var excess=items.slice(0,Math.max(0,items.length-limit));
+  if(!excess.length) return;
+  await new Promise(function(resolve,reject){
+    var tx=ledgerDb.transaction(store,'readwrite');
+    excess.forEach(function(item){tx.objectStore(store).delete(item.id);});
+    tx.oncomplete=resolve; tx.onerror=function(){reject(tx.error);};
   });
 }
 
-function pruneChanges(limit) {
-  return listChanges().then(function(items){
-    var excess=items.slice(0,Math.max(0,items.length-limit));
-    if(!excess.length) return;
-    return new Promise(function(resolve,reject){
-      var tx=ledgerDb.transaction('changes','readwrite');
-      excess.forEach(function(x){tx.objectStore('changes').delete(x.id);});
-      tx.oncomplete=resolve; tx.onerror=function(){reject(tx.error);};
-    });
-  });
-}
+function listChanges() { return dbGetAll('changes').then(function(items){return items.sort(function(a,b){return a.revision-b.revision;});}); }
+function listOperations() { return dbGetAll('operations').then(function(items){return items.sort(function(a,b){return String(a.changedAt).localeCompare(String(b.changedAt));});}); }
+function listActivity() { return dbGetAll('activity').then(function(items){return items.sort(function(a,b){return String(b.changedAt).localeCompare(String(a.changedAt));});}); }
 
 function shortDeviceId() {
   return ledgerDevice && ledgerDevice.id ? ledgerDevice.id.replace('device_','').slice(0,8).toUpperCase() : 'Preparing…';
@@ -1248,177 +1485,134 @@ function updateSyncStatus() {
     var deviceEl=document.getElementById('deviceStatus');
     var revisionEl=document.getElementById('revisionStatus');
     var readinessEl=document.getElementById('syncReadinessStatus');
-    if(deviceEl) deviceEl.textContent='Device ' + shortDeviceId() + ' · unique identity protected';
-    if(revisionEl) revisionEl.textContent=ledgerRevision ? 'Revision ' + ledgerRevision + ' · changes recorded automatically' : 'Change journal is ready';
-    if(readinessEl) readinessEl.textContent='Ready for an optional cloud connection';
+    if(deviceEl) deviceEl.textContent='Device ' + shortDeviceId() + ' · kept separate from other devices';
+    if(revisionEl) revisionEl.textContent=ledgerRevision ? 'Revision ' + ledgerRevision + ' · meaningful changes recorded automatically' : 'Protected change history is ready';
+    if(readinessEl) readinessEl.textContent='Not connected yet. Your budget stays on this device.';
   },0);
 }
 
-function exportSyncPackage() {
-  if(!ledgerDb || !ledgerDevice){ toast('Sync foundation is still preparing'); return; }
-  Promise.all([dbGet('current','ledger-state'),listChanges()]).then(function(items){
-    var current=items[0], changes=items[1];
+async function exportSyncPackage() {
+  if(!ledgerDb || !ledgerDevice){toast('Ledger is still preparing');return;}
+  try{
+    await persistLedgerState();
+    var items=await Promise.all([dbGet('current','ledger-state'),listChanges(),listOperations()]);
     var pack={
-      format:'ledger-sync-package',
-      protocolVersion:LEDGER_SYNC_PROTOCOL,
-      exportedAt:new Date().toISOString(),
-      device:ledgerDevice,
-      revision:ledgerRevision,
-      stateHash:ledgerLastHash,
-      currentState:current,
-      changes:changes
+      format:'ledger-sync-diagnostic',protocolVersion:LEDGER_SYNC_PROTOCOL,exportedAt:new Date().toISOString(),
+      appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,device:ledgerDevice,revision:ledgerRevision,
+      stateHash:ledgerLastHash,currentState:items[0],changes:items[1],operations:items[2]
     };
-    var blob=new Blob([JSON.stringify(pack,null,2)],{type:'application/json'});
-    var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-    a.download='ledger-sync-package-' + new Date().toISOString().slice(0,10) + '.json';
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
-    toast('✓ Sync package created');
-  }).catch(function(e){ console.error(e); toast('Could not create sync package'); });
+    downloadJson(pack,'Ledger-sync-diagnostic-' + new Date().toISOString().slice(0,10) + '.json');
+    toast('Sync diagnostic created');
+  }catch(e){console.error(e);toast('Could not create the diagnostic');}
 }
 
 function scheduleAutomaticSnapshot(reason) {
   clearTimeout(snapshotTimer);
-  snapshotTimer = setTimeout(function(){ createSnapshot(reason || 'Automatic checkpoint', true); }, 900);
+  snapshotTimer=setTimeout(function(){createSnapshot(reason||'Automatic checkpoint',true);},900);
 }
 
-function createSnapshot(reason, quiet) {
-  if (!ledgerDb) return Promise.resolve(false);
-  var now = new Date();
-  var lastKey = 'ledger_last_snapshot_at';
-  var last = Number(localStorage.getItem(lastKey) || 0);
-  // Routine saves create no more than one snapshot every 30 minutes.
-  if (quiet && now.getTime() - last < 30*60*1000) return Promise.resolve(false);
-  var record = {
-    id:'snap_' + now.getTime() + '_' + Math.random().toString(36).slice(2,7),
-    createdAt:now.toISOString(),
-    reason:reason || 'Manual checkpoint',
-    schemaVersion:LEDGER_SCHEMA_VERSION,
-    data:JSON.parse(JSON.stringify(S))
+async function createSnapshot(reason, quiet) {
+  if(!ledgerDb) return false;
+  var now=new Date();
+  var lastKey='ledger_last_snapshot_at';
+  var last=Number(localStorage.getItem(lastKey)||0);
+  if(quiet && now.getTime()-last<30*60*1000) return false;
+  var record={
+    id:'snap_'+now.getTime()+'_'+Math.random().toString(36).slice(2,7),createdAt:now.toISOString(),
+    reason:reason||'Manual checkpoint',schemaVersion:LEDGER_SCHEMA_VERSION,revision:ledgerRevision,
+    stateHash:ledgerStateHash(S),data:cloneLedger(S)
   };
-  return dbPut('snapshots',record).then(function(){
-    localStorage.setItem(lastKey,String(now.getTime()));
-    return pruneSnapshots(30).then(function(){ if(!quiet) toast('✓ Recovery point created'); return true; });
-  }).catch(function(e){ console.error('Snapshot failed:',e); return false; });
+  try{
+    await dbPut('snapshots',record); localStorage.setItem(lastKey,String(now.getTime()));
+    await pruneStore('snapshots',30,'createdAt');
+    if(!quiet) toast('Recovery point created');
+    updateStorageStatus(); scheduleLedgerHealthCheck(); return true;
+  }catch(e){console.error('Snapshot failed:',e);if(!quiet)toast('Could not create a recovery point');return false;}
 }
 
-function listSnapshots() {
-  return new Promise(function(resolve,reject){
-    if(!ledgerDb) return resolve([]);
-    var tx=ledgerDb.transaction('snapshots','readonly');
-    var req=tx.objectStore('snapshots').getAll();
-    req.onsuccess=function(){ resolve((req.result||[]).sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);})); };
-    req.onerror=function(){reject(req.error);};
-  });
+function listSnapshots() { return dbGetAll('snapshots').then(function(items){return items.sort(function(a,b){return String(b.createdAt).localeCompare(String(a.createdAt));});}); }
+
+async function restoreLatestSnapshot() {
+  var items=await listSnapshots();
+  if(!items.length){toast('No recovery points yet');return;}
+  var snap=items[0]; var when=new Date(snap.createdAt).toLocaleString();
+  if(!confirm('Restore the latest recovery point from ' + when + '?\n\nLedger will save your current data first.')) return;
+  await createSnapshot('Before recovery restore',true);
+  S=cloneLedger(snap.data); ensureRecordIds(); saveS(); renderAll();
+  toast('Recovery point restored'); updateStorageStatus();
 }
 
-function pruneSnapshots(limit) {
-  return listSnapshots().then(function(items){
-    var excess=items.slice(limit);
-    if(!excess.length) return;
-    return new Promise(function(resolve,reject){
-      var tx=ledgerDb.transaction('snapshots','readwrite');
-      excess.forEach(function(x){tx.objectStore('snapshots').delete(x.id);});
-      tx.oncomplete=resolve; tx.onerror=function(){reject(tx.error);};
-    });
-  });
-}
-
-function restoreLatestSnapshot() {
-  listSnapshots().then(function(items){
-    if(!items.length){ toast('No recovery points yet'); return; }
-    var snap=items[0];
-    var when=new Date(snap.createdAt).toLocaleString();
-    if(!confirm('Restore the latest recovery point from ' + when + '?\n\nLedger will create a safety copy of your current data first.')) return;
-    createSnapshot('Before recovery restore',false).then(function(){
-      S=JSON.parse(JSON.stringify(snap.data));
-      saveS(); renderAll();
-      toast('✓ Recovery point restored');
-      updateStorageStatus();
-    });
-  });
-}
-
-function updateStorageStatus() {
+async function updateStorageStatus() {
   var el=document.getElementById('storageStatus');
   var snapEl=document.getElementById('snapshotStatus');
   if(el) el.textContent=ledgerDb?'Protected by Ledger Database':'Compatibility mode';
-  if(snapEl) listSnapshots().then(function(items){
-    snapEl.textContent=items.length ? items.length + ' recovery point' + (items.length===1?'':'s') + ' saved' : 'A recovery point will be created automatically';
-  });
+  if(snapEl){
+    var items=await listSnapshots();
+    snapEl.textContent=items.length ? items.length+' recovery point'+(items.length===1?'':'s')+' saved' : 'Ledger will create a recovery point automatically';
+  }
 }
 
 function saveS() {
-  try {
-    var json = JSON.stringify(S);
-    // Compatibility mirror. The primary copy is written to IndexedDB below.
-    localStorage.setItem('piggybank_v2', json);
-    scheduleDurableSave();
-    scheduleAutomaticSnapshot('Automatic checkpoint');
-    if (typeof renderToday === 'function') setTimeout(renderToday, 0);
-  } catch(e) {
-    console.error('Failed to save data:', e);
-    toast('⚠️ Could not save data!');
-  }
+  try{
+    var json=JSON.stringify(S);
+    localStorage.setItem('piggybank_v2',json);
+    scheduleDurableSave(); scheduleAutomaticSnapshot('Automatic checkpoint');
+    if(typeof renderToday==='function') setTimeout(renderToday,0);
+  }catch(e){console.error('Failed to save data:',e);toast('Ledger could not save this change');}
 }
+
 async function loadS() {
-  var loadedFromDatabase = false;
-  try {
+  var loadedFromDatabase=false;
+  var quietMigration=false;
+  var current=null;
+  try{
     await openLedgerDB();
-    var current = await dbGet('current','ledger-state');
-    if(current && current.data){ S=current.data; loadedFromDatabase=true; ledgerRevision=Number(current.revision||0); ledgerLastHash=current.stateHash||hashLedgerString(JSON.stringify(current.data)); }
-    await initSyncIdentity();
-  } catch(e) {
-    console.warn('Ledger database unavailable; using compatibility storage.',e);
-  }
-  // Migrate an existing installation from localStorage on first launch.
-  if(!loadedFromDatabase){
-    var d = localStorage.getItem('piggybank_v2') || localStorage.getItem('piggybank_v1');
-    if (d) {
-      try {
-        S = JSON.parse(d);
-        if(ledgerDb){
-          await dbPut('current',{id:'ledger-state',schemaVersion:LEDGER_SCHEMA_VERSION,updatedAt:new Date().toISOString(),revision:0,stateHash:'',data:S});
-          await createSnapshot('Migrated from previous Ledger storage',true);
-        }
-      } catch(e) { console.error('Failed to migrate saved data:', e); }
-    } else {
-      console.log('No saved Ledger data found');
+    current=await dbGet('current','ledger-state');
+    if(current && current.data){
+      S=current.data; loadedFromDatabase=true; quietMigration=Number(current.schemaVersion||1)<LEDGER_SCHEMA_VERSION; ledgerRevision=Number(current.revision||0);
+      ledgerLastHash=current.stateHash||ledgerStateHash(current.data); ledgerLastState=cloneLedger(current.data);
     }
+    await initSyncIdentity();
+  }catch(e){console.warn('Ledger database unavailable; using compatibility storage.',e);}
+  if(!loadedFromDatabase){
+    var d=localStorage.getItem('piggybank_v2')||localStorage.getItem('piggybank_v1');
+    if(d){try{S=JSON.parse(d);}catch(e){console.error('Failed to migrate saved data:',e);}}
   }
-  if (!S.income) S.income = [];
-  if (!S.expenses) S.expenses = [];
-  if (!S.groups) S.groups = [];
-  if (!S.envelopes) S.envelopes = [];
-  if (!S.owedToMe) S.owedToMe = [];
-  if (!S.iOwe) S.iOwe = [];
-  if (!S.goals) S.goals = [];
-  if (!S.debts) S.debts = [];
-  if (S.weeklyMode === undefined) S.weeklyMode = false;
-  if (S.incomeCollapsed === undefined) S.incomeCollapsed = false;
-  if (S.darkMode === undefined) S.darkMode = true;
-  // Migrate old envelopes (no groupId) into a default group
-  if (S.envelopes.length && !S.groups.length) migrateToGroups();
-  if (!S.groups.length) seedGroups();
-  if (!S.creditCards) S.creditCards = [];
-  if (!S.scheduled) S.scheduled = [];
-  S.creditCards.forEach(function(c){ if(c.apr===undefined) c.apr=0; });
-  if (!S.currentMonth) S.currentMonth = currentMonthKey();
-  S.currentMonth = normalizeMonthKey(S.currentMonth);
-  // Ensure order fields exist
-  S.groups.forEach(function(g,i){ if(g.order===undefined) g.order=i; });
+  if(!S.income) S.income=[];
+  if(!S.expenses) S.expenses=[];
+  if(!S.groups) S.groups=[];
+  if(!S.envelopes) S.envelopes=[];
+  if(!S.owedToMe) S.owedToMe=[];
+  if(!S.iOwe) S.iOwe=[];
+  if(!S.goals) S.goals=[];
+  if(!S.debts) S.debts=[];
+  if(!S.creditCards) S.creditCards=[];
+  if(!S.scheduled) S.scheduled=[];
+  if(S.weeklyMode===undefined) S.weeklyMode=false;
+  if(S.incomeCollapsed===undefined) S.incomeCollapsed=false;
+  if(S.darkMode===undefined) S.darkMode=true;
+  if(S.seasonalAccent===undefined) S.seasonalAccent=true;
+  if(S.envelopes.length && !S.groups.length) migrateToGroups();
+  if(!S.groups.length) seedGroups();
+  S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;});
+  if(!S.currentMonth) S.currentMonth=currentMonthKey();
+  S.currentMonth=normalizeMonthKey(S.currentMonth);
+  S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.envelopes.forEach(function(e,i){
-    if(e.order===undefined) e.order=i;
-    if(e.isSavings===undefined) e.isSavings=false;
-    if(e.carryForward===undefined) e.carryForward=0;
-    if(e.assignedNext===undefined) e.assignedNext=0;
-    // Clean up carry-forward on non-savings envelopes (migration fix)
-    if(!e.isSavings) e.carryForward=0;
+    if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;
+    if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;
+    if(!e.isSavings)e.carryForward=0;
   });
-  if(S.viewingNextMonth===undefined) S.viewingNextMonth=false;
-  if(!S.lastBackupDate) S.lastBackupDate=null;
-  if(S.cashBalance===undefined) S.cashBalance=0;
-  // Carry forward savings if new month
+  if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
+  if(!S.lastBackupDate)S.lastBackupDate=null;
+  if(S.cashBalance===undefined)S.cashBalance=0;
+  ensureRecordIds();
   checkMonthRollover();
+  if(ledgerDb){
+    if(!ledgerLastState){ledgerLastState={};ledgerLastHash='';}
+    await persistLedgerState({quietActivity:!loadedFromDatabase||quietMigration});
+    if(!loadedFromDatabase) await createSnapshot('Migrated into Ledger Database',true);
+  }
 }
 
 function currentMonthKey() {
@@ -1497,7 +1691,7 @@ function seedGroups() {
   ];
 }
 
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function uid() { return makeLedgerId('rec'); }
 function fmt(n) { return '$' + Math.abs(n).toFixed(2); }
 function fmtS(n) {
   if (n >= 1000 || n <= -1000) return (n<0?'-':'') + '$' + Math.abs(n/1000).toFixed(1) + 'k';
@@ -2980,11 +3174,24 @@ function saveDebt() {
 // ═══════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════
+function currentSeason() {
+  var month=new Date().getMonth()+1;
+  if(month===12 || month<=2) return 'winter';
+  if(month<=5) return 'spring';
+  if(month<=8) return 'summer';
+  return 'autumn';
+}
+
+function seasonName(season) { return season.charAt(0).toUpperCase()+season.slice(1); }
+
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', S.darkMode ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-season', S.seasonalAccent===false ? 'neutral' : currentSeason());
   document.getElementById('themeBtn').textContent = S.darkMode ? '🌙' : '☀️';
-  var dt = document.getElementById('darkTog');
-  if (dt) dt.className = 'tog' + (S.darkMode?' on':'');
+  var dt=document.getElementById('darkTog'); if(dt) dt.className='tog'+(S.darkMode?' on':'');
+  var st=document.getElementById('seasonTog'); if(st) st.className='tog'+(S.seasonalAccent!==false?' on':'');
+  var ss=document.getElementById('seasonStatus');
+  if(ss) ss.textContent=S.seasonalAccent===false ? 'Uses Ledger’s standard accent all year' : seasonName(currentSeason())+' accent active · muted and automatic';
 }
 
 function toggleWeekMode() {
@@ -2998,6 +3205,59 @@ function toggleWeekMode() {
 function toggleDark() {
   S.darkMode = !S.darkMode;
   saveS(); applyTheme();
+}
+
+function toggleSeasonalAccent() {
+  S.seasonalAccent = S.seasonalAccent===false ? true : false;
+  saveS(); applyTheme();
+  toast(S.seasonalAccent ? seasonName(currentSeason())+' accent on' : 'Seasonal accent off');
+}
+
+
+function buildBackupPackage() {
+  var data=cloneLedger(S);
+  return {
+    format:'ledger-backup',formatVersion:2,appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,
+    exportedAt:new Date().toISOString(),checksum:ledgerStateHash(data),data:data
+  };
+}
+
+function downloadJson(value, filename) {
+  var blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+}
+
+function readBackupPackage(value) {
+  if(value && value.format==='ledger-backup' && value.data){
+    if(value.checksum && ledgerStateHash(value.data)!==value.checksum) throw new Error('Backup verification failed');
+    return value.data;
+  }
+  if(value && Array.isArray(value.envelopes)) return value;
+  throw new Error('Unsupported backup');
+}
+
+function normalizeRestoredState(data) {
+  S=cloneLedger(data);
+  LEDGER_COLLECTIONS.forEach(function(collection){if(!Array.isArray(S[collection]))S[collection]=[];});
+  if(S.weeklyMode===undefined)S.weeklyMode=false;
+  if(S.darkMode===undefined)S.darkMode=true;
+  if(S.seasonalAccent===undefined)S.seasonalAccent=true;
+  if(S.incomeCollapsed===undefined)S.incomeCollapsed=false;
+  if(S.cashBalance===undefined)S.cashBalance=0;
+  if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
+  if(!S.currentMonth)S.currentMonth=currentMonthKey();
+  S.currentMonth=normalizeMonthKey(S.currentMonth);
+  if(S.envelopes.length && !S.groups.length)migrateToGroups();
+  if(!S.groups.length)seedGroups();
+  S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
+  S.envelopes.forEach(function(e,i){
+    if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;
+    if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;
+    if(!e.isSavings)e.carryForward=0;
+  });
+  S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;});
+  ensureRecordIds();
 }
 
 // ── GOOGLE DRIVE BACKUP ──
@@ -3030,7 +3290,7 @@ function uploadToDrive(token) {
   if (btn) btn.textContent = 'Uploading...';
 
   var filename = 'Ledger-backup-' + new Date().toISOString().slice(0,10) + '.json';
-  var content = JSON.stringify(S, null, 2);
+  var content = JSON.stringify(buildBackupPackage(), null, 2);
   var boundary = 'piggybank_boundary';
   var metadata = JSON.stringify({name: filename, mimeType: 'application/json'});
 
@@ -3071,28 +3331,24 @@ function uploadToDrive(token) {
 }
 
 function exportData() {
-  var blob = new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'Ledger-backup-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  S.lastBackupDate = new Date().toISOString().slice(0,10);
-  saveS();
-  toast('📦 Exported!');
-  renderBackupBanner();
+  var pack=buildBackupPackage();
+  downloadJson(pack,'Ledger-backup-' + new Date().toISOString().slice(0,10) + '.json');
+  S.lastBackupDate=new Date().toISOString().slice(0,10); saveS();
+  toast('Verified backup saved'); renderBackupBanner();
 }
 
 function importData(e) {
-  var file = e.target.files[0]; if (!file) return;
-  var r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      var data = JSON.parse(ev.target.result);
-      if(!data || typeof data !== 'object' || !Array.isArray(data.envelopes)) throw new Error('Unsupported backup');
-      createSnapshot('Before file restore',false).then(function(){
-        S = data; saveS(); renderAll(); toast('✓ Data restored safely'); updateStorageStatus();
-      });
-    } catch(err) { toast('Invalid or unsupported backup'); }
+  var file=e.target.files[0]; if(!file)return;
+  var r=new FileReader();
+  r.onload=async function(ev){
+    try{
+      var parsed=JSON.parse(ev.target.result);
+      var data=readBackupPackage(parsed);
+      await createSnapshot('Before file restore',true);
+      normalizeRestoredState(data); saveS(); renderAll();
+      toast('Backup verified and restored'); updateStorageStatus();
+    }catch(err){console.error(err);toast(err.message==='Backup verification failed'?'Backup could not be verified':'Invalid or unsupported backup');}
+    e.target.value='';
   };
   r.readAsText(file);
 }
@@ -3128,6 +3384,92 @@ function toast(msg) {
 function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════
+// ATLAS HEALTH + ACTIVITY
+// ═══════════════════════════════════════════
+function friendlyTime(value) {
+  if(!value) return '';
+  var d=new Date(value), now=new Date(), diff=Math.max(0,now-d);
+  if(diff<60000) return 'Just now';
+  if(diff<3600000) return Math.floor(diff/60000)+' min ago';
+  if(diff<86400000) return Math.floor(diff/3600000)+' hr ago';
+  if(diff<172800000) return 'Yesterday';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function activityIcon(type, operation) {
+  if(type==='expenses') return '−';
+  if(type==='income') return '+';
+  if(type==='envelopes') return '◌';
+  if(type==='goals') return '✓';
+  if(type==='settings') return '•';
+  if(operation==='delete') return '−';
+  return '·';
+}
+
+async function renderRecentActivity() {
+  var el=document.getElementById('activityList'); if(!el || !ledgerDb)return;
+  try{
+    var items=(await listActivity()).slice(0,6);
+    if(!items.length){el.innerHTML='<div class="activity-empty">Activity will appear here as you use Ledger.</div>';return;}
+    el.innerHTML=items.map(function(item){
+      return '<div class="activity-item"><div class="activity-mark">'+activityIcon(item.entityType,item.operation)+'</div><div class="activity-main"><div class="activity-title">'+esc(item.summary)+'</div><div class="activity-sub">'+friendlyTime(item.changedAt)+'</div></div></div>';
+    }).join('');
+  }catch(e){console.error(e);}
+}
+
+function setHealthBadge(state,label) {
+  var badge=document.getElementById('ledgerHealthBadge'); if(!badge)return;
+  badge.className='atlas-health-badge'+(state==='checking'?' checking':state==='warn'?' warn':state==='bad'?' bad':'');
+  badge.textContent=label;
+}
+
+async function runLedgerHealthCheck(showToast) {
+  clearTimeout(healthCheckTimer);
+  var title=document.getElementById('healthTitle'), copy=document.getElementById('healthCopy');
+  if(title)title.textContent='Checking Ledger…'; if(copy)copy.textContent='Confirming that your protected copies agree.';
+  setHealthBadge('checking','Checking');
+  try{
+    await persistLedgerState();
+    var results=await Promise.all([dbGet('current','ledger-state'),dbCount('snapshots'),dbCount('operations'),dbGet('metadata','device')]);
+    var current=results[0], snapshotCount=results[1], operationCount=results[2], device=results[3];
+    var currentHash=current&&current.data?ledgerStateHash(current.data):'';
+    var dataOkay=!!(current && current.data && current.stateHash===currentHash && currentHash===ledgerStateHash(S));
+    var deviceOkay=!!(device && device.value && device.value.id);
+    var dataEl=document.getElementById('healthData'); if(dataEl)dataEl.textContent=dataOkay?'Verified and consistent':'Needs attention';
+    var recoveryEl=document.getElementById('healthRecovery'); if(recoveryEl)recoveryEl.textContent=snapshotCount?snapshotCount+' save point'+(snapshotCount===1?'':'s'):'Ready to create one';
+    var historyEl=document.getElementById('healthHistory'); if(historyEl)historyEl.textContent=ledgerRevision+' revision'+(ledgerRevision===1?'':'s')+' · '+operationCount+' record change'+(operationCount===1?'':'s');
+    var syncEl=document.getElementById('healthSync'); if(syncEl)syncEl.textContent=deviceOkay?'Device identity ready':'Still preparing';
+    var okay=dataOkay&&deviceOkay;
+    if(title)title.textContent=okay?'Ledger is healthy':'Ledger needs a closer look';
+    if(copy)copy.textContent=okay?'Your database, recovery system, and change history are working together.':'Your budget is still available, but one protection check did not pass.';
+    setHealthBadge(okay?'good':'warn',okay?'Healthy':'Review');
+    var checked=new Date().toISOString(); await dbPut('metadata',{key:'health',value:{checkedAt:checked,healthy:okay,revision:ledgerRevision,stateHash:ledgerLastHash}});
+    var checkedEl=document.getElementById('healthCheckedAt'); if(checkedEl)checkedEl.textContent='Last checked '+new Date(checked).toLocaleString();
+    if(showToast)toast(okay?'Ledger health check passed':'Ledger needs review');
+    return okay;
+  }catch(e){
+    console.error('Health check failed:',e);
+    if(title)title.textContent='Ledger could not finish the check';
+    if(copy)copy.textContent='Your budget remains available. Close and reopen Ledger, then run the check again.';
+    setHealthBadge('bad','Check failed');
+    if(showToast)toast('Health check could not finish');
+    return false;
+  }
+}
+
+function scheduleLedgerHealthCheck() {
+  clearTimeout(healthCheckTimer);
+  healthCheckTimer=setTimeout(function(){runLedgerHealthCheck(false);},700);
+}
+
+function toggleTechnicalDetails() {
+  var panel=document.getElementById('techDetails'), btn=document.getElementById('techDetailsBtn');
+  if(!panel||!btn)return;
+  var open=!panel.classList.contains('open'); panel.className='tech-details'+(open?' open':'');
+  btn.textContent=open?'Hide technical details':'Show technical details'; btn.setAttribute('aria-expanded',open?'true':'false');
 }
 
 // ═══════════════════════════════════════════
@@ -3518,9 +3860,10 @@ function renderAll() {
   renderIncome(); renderEnvelopes(); renderExpenses(); renderSummary(); renderToday();
   renderOwed(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
   renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary(); renderBackupBanner();
-  updateRTA(); applyTheme();
+  updateRTA(); applyTheme(); renderRecentActivity(); scheduleLedgerHealthCheck();
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':'');
   document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':'');
+  var st=document.getElementById('seasonTog'); if(st) st.className='tog'+(S.seasonalAccent!==false?' on':'');
 }
 
 // ═══════════════════════════════════════════
@@ -3705,6 +4048,9 @@ window.onload = async function() {
   document.getElementById('manualRolloverBtn').addEventListener('click', manualRollover);
   document.getElementById('weekTog').addEventListener('click', toggleWeekMode);
   document.getElementById('darkTog').addEventListener('click', toggleDark);
+  document.getElementById('seasonTog').addEventListener('click', toggleSeasonalAccent);
+  document.getElementById('healthCheckBtn').addEventListener('click', function(){runLedgerHealthCheck(true);});
+  document.getElementById('techDetailsBtn').addEventListener('click', toggleTechnicalDetails);
   document.getElementById('syncPackageBtn').addEventListener('click', exportSyncPackage);
   document.getElementById('snapshotBtn').addEventListener('click', function(){ createSnapshot('Manual recovery point',false).then(updateStorageStatus); });
   document.getElementById('restoreSnapshotBtn').addEventListener('click', restoreLatestSnapshot);
@@ -3724,6 +4070,8 @@ window.onload = async function() {
   renderAll();
   updateStorageStatus();
   updateSyncStatus();
+  renderRecentActivity();
+  scheduleLedgerHealthCheck();
   go('today');
   initSwipe();
 
