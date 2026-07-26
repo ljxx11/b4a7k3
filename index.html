@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="1.5.0">
-<title>Ledger — Atlas v1.5</title>
+<meta name="ledger-version" content="1.6.0">
+<title>Ledger — Compass v1.6</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -514,6 +514,51 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .tech-details.open{display:block}
 .soft-link{font-size:11px;font-weight:800;color:var(--acc);padding:7px 0}
 
+
+
+/* ── COMPASS: FINANCIAL DIRECTION, NOT MORE NOISE ── */
+.compass-hero{background:linear-gradient(135deg,var(--surf2),var(--surf));border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px}
+.compass-kicker{font-size:9px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.compass-title{font-size:18px;font-weight:900;color:var(--text);margin-top:3px}
+.compass-copy{font-size:12px;color:var(--text3);line-height:1.5;margin-top:4px}
+.compass-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.compass-metric{border:1px solid var(--border);background:rgba(255,255,255,.025);border-radius:13px;padding:11px;min-height:86px}
+.compass-metric-label{font-size:9px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:.75px}
+.compass-metric-value{font-size:18px;font-weight:900;color:var(--text);margin-top:5px;line-height:1.15}
+.compass-metric-value.good{color:var(--green)}
+.compass-metric-value.warn{color:var(--yellow)}
+.compass-metric-value.bad{color:var(--red)}
+.compass-metric-sub{font-size:10px;color:var(--text3);line-height:1.4;margin-top:4px}
+.compass-track{height:5px;border-radius:999px;background:var(--surf3);overflow:hidden;margin-top:8px}
+.compass-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--acc),var(--green));transition:.35s}
+.compass-fill.warn{background:var(--yellow)}
+.compass-fill.bad{background:var(--red)}
+.compass-section{background:var(--surf);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden}
+.compass-section-head{padding:14px 14px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.compass-section-title{font-size:14px;font-weight:900;color:var(--text)}
+.compass-section-sub{font-size:10px;color:var(--text3);line-height:1.4;margin-top:2px}
+.compass-body{padding:0 14px 12px}
+.path-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.path-row:last-child{border-bottom:none}
+.path-mark{width:26px;height:26px;flex:0 0 26px;border-radius:9px;background:var(--surf2);color:var(--text3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
+.path-mark.done{background:var(--green-dim);color:var(--green)}
+.path-mark.next{background:var(--blue-dim);color:var(--blue)}
+.path-copy{min-width:0;flex:1}
+.path-name{font-size:12px;font-weight:900;color:var(--text)}
+.path-note{font-size:10px;color:var(--text3);line-height:1.45;margin-top:2px}
+.lesson-card{background:linear-gradient(135deg,var(--blue-dim),transparent);border:1px solid rgba(171,192,214,.2);border-radius:16px;padding:15px;margin-bottom:10px}
+.lesson-eyebrow{font-size:9px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.85px}
+.lesson-title{font-size:15px;font-weight:900;color:var(--text);margin-top:5px}
+.lesson-copy{font-size:12px;color:var(--text2);line-height:1.55;margin-top:5px}
+.goal-compass-row{padding:10px 0;border-bottom:1px solid var(--border)}
+.goal-compass-row:last-child{border-bottom:none}
+.goal-compass-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.goal-compass-name{font-size:12px;font-weight:900;color:var(--text)}
+.goal-compass-number{font-size:11px;font-weight:800;color:var(--text2)}
+.goal-compass-meta{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.4}
+.compass-empty{font-size:12px;color:var(--text3);line-height:1.5;padding:4px 0 8px}
+@media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
+
 </style>
 </head>
 <body>
@@ -522,7 +567,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.5</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.6</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn">🌙</button>
@@ -536,7 +581,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     </div>
     <div class="rta-meta">
       <span id="rtaBank">Current accounts: $0.00</span>
-      <span id="moneyAge" title="Average age of your money — goal is 30+ days">⏳ 0 days old</span>
+      <span id="moneyAge" title="Average age of dollars currently on hand or used in recent cash spending">⏳ 0 days old</span>
       <span id="rtaAssigned">Assigned: $0.00</span>
     </div>
     <div class="rta-meta" style="margin-top:3px">
@@ -692,15 +737,63 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="card"><div class="card-body" id="expList"><div class="empty"><div class="ei">📝</div><p>No expenses yet.<br>Tap + to log one.</p></div></div></div>
   </div>
 
-  <!-- SUMMARY -->
+  <!-- SUMMARY / FINANCIAL COMPASS -->
   <div class="view" id="view-summary">
+    <div class="compass-hero">
+      <div class="compass-kicker">Financial Compass</div>
+      <div class="compass-title" id="compassHeadline">You are getting oriented</div>
+      <div class="compass-copy" id="compassCopy">Ledger is checking whether your money has jobs, your near-term commitments are covered, and your buffer is growing.</div>
+      <div class="compass-grid">
+        <div class="compass-metric">
+          <div class="compass-metric-label">Every dollar</div>
+          <div class="compass-metric-value" id="compassRta">—</div>
+          <div class="compass-metric-sub" id="compassRtaSub">Checking your plan</div>
+        </div>
+        <div class="compass-metric">
+          <div class="compass-metric-label">Next 7 days</div>
+          <div class="compass-metric-value" id="compassWeek">—</div>
+          <div class="compass-metric-sub" id="compassWeekSub">Scheduled bills funded</div>
+          <div class="compass-track"><div class="compass-fill" id="compassWeekFill" style="width:0%"></div></div>
+        </div>
+        <div class="compass-metric">
+          <div class="compass-metric-label">Next 30 days</div>
+          <div class="compass-metric-value" id="compassMonth">—</div>
+          <div class="compass-metric-sub" id="compassMonthSub">Building your runway</div>
+          <div class="compass-track"><div class="compass-fill" id="compassMonthFill" style="width:0%"></div></div>
+        </div>
+        <div class="compass-metric">
+          <div class="compass-metric-label">Money age</div>
+          <div class="compass-metric-value" id="compassAge">—</div>
+          <div class="compass-metric-sub" id="compassAgeSub">Building history</div>
+          <div class="compass-track"><div class="compass-fill" id="compassAgeFill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-card">
+      <div class="lesson-eyebrow">Learn as you go</div>
+      <div class="lesson-title" id="compassLessonTitle">Give every dollar a job</div>
+      <div class="lesson-copy" id="compassLessonCopy">Money becomes easier to manage when the plan decides what it is for before spending does.</div>
+    </div>
+
+    <div class="compass-section">
+      <div class="compass-section-head"><div><div class="compass-section-title">Path to independence</div><div class="compass-section-sub">Practical stability first. No arbitrary score.</div></div></div>
+      <div class="compass-body" id="independencePath"></div>
+    </div>
+
+    <div class="compass-section">
+      <div class="compass-section-head"><div><div class="compass-section-title">Goals in motion</div><div class="compass-section-sub">Progress toward the goals you are tracking.</div></div><button class="dash-link" onclick="go('goals')">Open goals</button></div>
+      <div class="compass-body" id="compassGoals"></div>
+    </div>
+
+    <div class="sh"><div class="sh-title">Monthly picture</div></div>
     <div class="stat-row">
-      <div class="stat"><div class="stat-val" id="sumInc">$0</div><div class="stat-lbl">Income</div></div>
-      <div class="stat"><div class="stat-val" id="sumSpent">$0</div><div class="stat-lbl">Spent</div></div>
+      <div class="stat"><div class="stat-val" id="sumInc">$0</div><div class="stat-lbl">Money on hand</div></div>
+      <div class="stat"><div class="stat-val" id="sumSpent">$0</div><div class="stat-lbl">Spent this month</div></div>
     </div>
     <div class="stat-row">
       <div class="stat"><div class="stat-val" id="sumAssigned">$0</div><div class="stat-lbl">Assigned</div></div>
-      <div class="stat"><div class="stat-val" id="sumAvail">$0</div><div class="stat-lbl">Available</div></div>
+      <div class="stat"><div class="stat-val" id="sumAvail">$0</div><div class="stat-lbl">Available in envelopes</div></div>
     </div>
     <div class="card"><div class="card-hdr"><span class="card-title">By Envelope</span></div><div class="card-body" id="sumList"></div></div>
   </div>
@@ -966,8 +1059,8 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
     <div class="sh" style="margin-top:8px"><div class="sh-title">About</div></div>
     <div class="card"><div class="card-body">
-      <div class="set-row"><div><div class="set-lbl">Ledger v1.5 — Atlas</div><div class="set-sub">A quieter interface supported by a stronger record of every meaningful change.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Added self-checks, record-level sync operations, verified backups, recent activity, and muted automatic seasonal accents.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">Ledger v1.6 — Compass</div><div class="set-sub">A zero-based budgeting companion that keeps daily decisions connected to long-term independence.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Added a Financial Compass for every-dollar planning, scheduled-bill coverage, money age, goal momentum, and practical financial education.</div></div></div>
       <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately create or upload a backup.</div></div></div>
     </div></div>
   </div>
@@ -1793,18 +1886,61 @@ function readyToAssignNext() {
   return Math.round((budgetBalance() - totalAssigned() - totalAssignedNext()) * 100) / 100;
 }
 
-// ── MONEY AGE: average age of dollars in bank (days) ──
-function moneyAge() {
-  if (!S.income.length) return 0;
-  var today = new Date();
-  var totalAmt = 0, weightedDays = 0;
-  S.income.forEach(function(i) {
-    var days = Math.max(0, Math.round((today - new Date(i.date+'T12:00:00')) / 86400000));
-    totalAmt += i.amount;
-    weightedDays += i.amount * days;
+// ── MONEY AGE ──
+// Ledger uses a transparent FIFO estimate: older income dollars are treated as
+// being used first. When cash spending history exists, the displayed age is
+// based on up to the 10 most recent cash outflows. Until then, it reflects the
+// average age of dollars still on hand. Credit purchases are not counted until
+// cash actually leaves through a card payment.
+function moneyAgeDetails() {
+  var today = new Date(); today.setHours(12,0,0,0);
+  var lots = S.income.filter(function(i){
+    if(i.isReimb || !(Number(i.amount)>0) || !i.date) return false;
+    var d=new Date(i.date+'T12:00:00'); return !isNaN(d) && d<=today;
+  }).map(function(i){return {date:new Date(i.date+'T12:00:00'),remaining:Number(i.amount)||0};})
+    .sort(function(a,b){return a.date-b.date;});
+
+  var outflows = S.expenses.filter(function(e){
+    if(!(Number(e.amount)>0) || !e.date) return false;
+    var d=new Date(e.date+'T12:00:00'); if(isNaN(d) || d>today) return false;
+    var creditPurchase=(e.payMethod==='credit'||e.isCredit) && !e.isCCPayment;
+    return !creditPurchase;
+  }).slice().sort(function(a,b){
+    var ad=new Date((a.datetime||a.date+'T12:00:00')), bd=new Date((b.datetime||b.date+'T12:00:00'));
+    return ad-bd;
   });
-  return totalAmt > 0 ? Math.round(weightedDays / totalAmt) : 0;
+
+  var recent=outflows.slice(-10), recentIds={};
+  recent.forEach(function(e){recentIds[e.id]=true;});
+  var weighted=0, measured=0, sampleCount=0;
+  outflows.forEach(function(e){
+    var need=Number(e.amount)||0, outDate=new Date((e.datetime||e.date+'T12:00:00'));
+    var measuredThis=false;
+    for(var n=0;n<lots.length && need>0.0001;n++){
+      var lot=lots[n]; if(lot.remaining<=0.0001) continue;
+      var take=Math.min(need,lot.remaining);
+      if(recentIds[e.id]){
+        var days=Math.max(0,Math.floor((outDate-lot.date)/86400000));
+        weighted+=take*days; measured+=take; measuredThis=true;
+      }
+      lot.remaining-=take; need-=take;
+    }
+    if(measuredThis) sampleCount++;
+  });
+
+  if(measured>0){
+    return {days:Math.round(weighted/measured),basis:'recent spending',sampleCount:sampleCount,amount:measured};
+  }
+  var currentWeighted=0,currentAmount=0;
+  lots.forEach(function(lot){
+    if(lot.remaining<=0.0001)return;
+    var days=Math.max(0,Math.floor((today-lot.date)/86400000));
+    currentWeighted+=lot.remaining*days; currentAmount+=lot.remaining;
+  });
+  if(currentAmount>0) return {days:Math.round(currentWeighted/currentAmount),basis:'money on hand',sampleCount:0,amount:currentAmount};
+  return {days:0,basis:'building history',sampleCount:0,amount:0};
 }
+function moneyAge(){ return moneyAgeDetails().days; }
 
 // ── TOTAL TARGETS ──
 function monthlyTargetAmount(env) {
@@ -2539,9 +2675,134 @@ function openEditExpModal(id) {
 }
 
 // ═══════════════════════════════════════════
+// FINANCIAL COMPASS
+// The Compass summarizes the budgeting method without inventing a score.
+// ═══════════════════════════════════════════
+function advanceScheduledDate(date,freq){
+  var d=new Date(date);
+  if(freq==='monthly')d.setMonth(d.getMonth()+1);
+  else if(freq==='weekly')d.setDate(d.getDate()+7);
+  else if(freq==='biweekly')d.setDate(d.getDate()+14);
+  else return null;
+  return d;
+}
+function scheduledOccurrencesWithin(horizonDays){
+  var items=[];
+  S.scheduled.forEach(function(s){
+    var d=nextOccurrence(s), guard=0;
+    while(d && daysUntil(d)<=horizonDays && guard<12){
+      if(daysUntil(d)>=0)items.push({s:s,date:new Date(d),days:daysUntil(d)});
+      d=advanceScheduledDate(d,s.freq); guard++;
+    }
+  });
+  return items.sort(function(a,b){return a.date-b.date;});
+}
+function planCoverage(horizonDays){
+  var occ=scheduledOccurrencesWithin(horizonDays), dueByEnv={}, total=0;
+  occ.forEach(function(x){
+    var amt=Number(x.s.amount)||0; total+=amt;
+    dueByEnv[x.s.envId]=(dueByEnv[x.s.envId]||0)+amt;
+  });
+  var covered=0;
+  Object.keys(dueByEnv).forEach(function(id){
+    covered+=Math.min(Math.max(0,envAvailable(id)),dueByEnv[id]);
+  });
+  var pct=total>0?Math.min(100,Math.round(covered/total*100)):0;
+  return {days:horizonDays,total:money(total),covered:money(covered),short:money(Math.max(0,total-covered)),pct:pct,count:occ.length,hasData:occ.length>0};
+}
+function emergencyFundProgress(){
+  var words=/emergency|rainy day|safety net|buffer/i;
+  var g=S.goals.find(function(x){return words.test(String(x.name||''));});
+  if(g){var target=Number(g.target)||0,saved=Number(g.saved)||0;return {found:true,name:g.name,saved:saved,target:target,pct:target>0?Math.min(100,Math.round(saved/target*100)):0,source:'goal'};}
+  var e=S.envelopes.find(function(x){return words.test(String(x.name||''));});
+  if(e){var t=e.target&&e.target.amount?Number(e.target.amount):0,s=Math.max(0,envAvailable(e.id));return {found:true,name:e.name,saved:s,target:t,pct:t>0?Math.min(100,Math.round(s/t*100)):0,source:'envelope'};}
+  return {found:false,name:'Emergency Fund',saved:0,target:0,pct:0};
+}
+function compassGoalItems(){
+  var items=[];
+  S.goals.forEach(function(g){items.push({name:g.name||'Goal',saved:Number(g.saved)||0,target:Number(g.target)||0,source:'goal'});});
+  S.envelopes.forEach(function(e){
+    if(e.isSavings&&e.target&&e.target.type==='save'&&!items.some(function(x){return String(x.name).toLowerCase()===String(e.name).toLowerCase();})){
+      items.push({name:e.name,saved:Math.max(0,envAvailable(e.id)),target:Number(e.target.amount)||0,source:'envelope'});
+    }
+  });
+  return items.sort(function(a,b){
+    var ap=a.target>0?a.saved/a.target:0,bp=b.target>0?b.saved/b.target:0;
+    return bp-ap;
+  });
+}
+function setCompassMetric(id,value,sub,level,pct){
+  var v=document.getElementById(id),s=document.getElementById(id+'Sub'),f=document.getElementById(id+'Fill');
+  if(v){v.textContent=value;v.className='compass-metric-value'+(level?' '+level:'');}
+  if(s)s.textContent=sub;
+  if(f){f.style.width=Math.max(0,Math.min(100,pct||0))+'%';f.className='compass-fill'+(level==='bad'?' bad':level==='warn'?' warn':'');}
+}
+function compassLesson(rta,week,month,age,emergency){
+  var overspent=S.envelopes.find(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
+  if(rta<-.005)return {title:'A plan cannot spend the same dollar twice',copy:'Your assignments exceed the money available by '+fmt(Math.abs(rta))+'. Move money out of a lower-priority envelope before making new spending decisions.'};
+  if(overspent)return {title:'Cover overspending deliberately',copy:overspent.name+' is below zero. Moving money from another envelope is not failure—it is an honest update to the plan.'};
+  if(rta>.005)return {title:'Unassigned money is still a decision',copy:fmt(rta)+' is available but has no job yet. Fund near-term bills first, then choose debt, goals, or next month on purpose.'};
+  if(!week.hasData)return {title:'Planning ahead starts with what repeats',copy:'Add rent, phone, minimum payments, and other recurring bills under Upcoming. Ledger can only measure future coverage from commitments you have recorded.'};
+  if(week.short>.005)return {title:'Near-term certainty creates breathing room',copy:'Scheduled bills in the next seven days are short by '+fmt(week.short)+'. Funding them before optional spending protects the rest of your plan.'};
+  var card=S.creditCards.find(function(c){return (Number(c.balance)||0)>0 && (Number(c.apr)||0)>0;});
+  if(card){var daily=(Number(card.balance)||0)*(Number(card.apr)||0)/100/365;return {title:'High-interest debt charges for time',copy:card.name+' is costing roughly '+fmt(daily)+' per day at the current balance. A funded minimum prevents damage; extra principal reduces tomorrow’s interest.'};}
+  if(month.pct<100)return {title:'Planning ahead turns income into time',copy:'Your next 30 days of scheduled bills are '+month.pct+'% funded. Each future bill you fund now gives your next paycheck more freedom.'};
+  if(age.days<30)return {title:'Age money by spending older dollars',copy:'A 30-day buffer means today’s income is not needed for today’s expenses. Keep current bills funded, then assign extra money toward next month instead of expanding spending.'};
+  if(!emergency.found)return {title:'Independence needs a shock absorber',copy:'Add an emergency-fund goal when you are ready. It keeps an unexpected expense from becoming new high-interest debt.'};
+  if(emergency.pct<100)return {title:'Consistency matters more than dramatic deposits',copy:emergency.name+' is '+emergency.pct+'% complete. A repeatable contribution builds independence more reliably than waiting for a perfect month.'};
+  return {title:'You are buying future choices',copy:'Your plan is current, scheduled commitments are covered, and your buffer is established. Keep logging spending accurately and direct new money toward the life you want.'};
+}
+function renderFinancialCompass(){
+  var rta=readyToAssign(),week=planCoverage(7),month=planCoverage(30),age=moneyAgeDetails(),emergency=emergencyFundProgress();
+  var headline=document.getElementById('compassHeadline'),copy=document.getElementById('compassCopy');
+  var overspent=S.envelopes.some(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
+  if(headline&&copy){
+    if(rta<-.005||overspent){headline.textContent='Start by restoring the plan';copy.textContent='One clear correction now will make the rest of Ledger trustworthy again.';}
+    else if(rta>.005){headline.textContent='Your money is waiting for direction';copy.textContent='You are safe. Finish the plan by assigning every available dollar intentionally.';}
+    else if(!week.hasData){headline.textContent='Complete your planning picture';copy.textContent='Your assignments are visible. Add recurring bills so Ledger can measure how far ahead you are.';}
+    else if(week.short>.005){headline.textContent='Protect the next seven days';copy.textContent='Your plan balances, but a near-term scheduled bill still needs funding.';}
+    else if(month.pct<100){headline.textContent='You are stable and building ahead';copy.textContent='This month is organized. The next step is creating more distance between earning and spending.';}
+    else if(age.days<30){headline.textContent='Your buffer is taking shape';copy.textContent='Scheduled commitments are covered. Keep directing extra money toward future months.';}
+    else {headline.textContent='You are operating from a position of control';copy.textContent='Your plan is current, commitments are covered, and older money is doing today’s work.';}
+  }
+  var rtaLevel=rta<-.005?'bad':rta>.005?'warn':'good';
+  var rtaValue=rta<-.005?fmt(Math.abs(rta))+' over':rta>.005?fmt(rta)+' waiting':'Complete';
+  setCompassMetric('compassRta',rtaValue,rta<-.005?'Reduce assignments':rta>.005?'Give it a job':'Every dollar is assigned',rtaLevel,rta<-.005?0:rta>.005?70:100);
+  var weekValue=week.hasData?week.pct+'%':'Not set';
+  setCompassMetric('compassWeek',weekValue,week.hasData?(week.short>.005?fmt(week.short)+' still needed':fmt(week.total)+' fully funded'):'Add recurring bills to measure',''+(week.hasData?(week.short>.005?'warn':'good'):''),week.hasData?week.pct:0);
+  var monthValue=month.hasData?month.pct+'%':'Not set';
+  setCompassMetric('compassMonth',monthValue,month.hasData?(month.short>.005?fmt(month.short)+' left to fund':fmt(month.total)+' fully funded'):'Add recurring bills to measure',month.hasData?(month.pct<75?'bad':month.pct<100?'warn':'good'):'',month.hasData?month.pct:0);
+  var ageValue=age.amount>0?age.days+' day'+(age.days===1?'':'s'):'Building';
+  var ageSub=age.basis==='recent spending'?'Based on '+age.sampleCount+' recent cash outflow'+(age.sampleCount===1?'':'s'):age.basis==='money on hand'?'Average age of money still on hand':'Add income and spending to begin';
+  setCompassMetric('compassAge',ageValue,ageSub,age.days>=30?'good':age.days>=14?'warn':'',Math.min(100,age.days/30*100));
+
+  var lesson=compassLesson(rta,week,month,age,emergency);
+  var lt=document.getElementById('compassLessonTitle'),lc=document.getElementById('compassLessonCopy');if(lt)lt.textContent=lesson.title;if(lc)lc.textContent=lesson.copy;
+
+  var path=document.getElementById('independencePath');
+  if(path){
+    var steps=[];
+    steps.push({done:Math.abs(rta)<.005&&!overspent,name:'Keep the plan honest',note:Math.abs(rta)<.005&&!overspent?'Every available dollar has one job and no envelope is overspent.':rta>.005?fmt(rta)+' still needs a job.':'Resolve overassignment or overspending first.'});
+    steps.push({done:week.hasData&&week.short<.005,name:'Protect the next seven days',note:week.hasData?(week.short<.005?'Near-term scheduled bills are funded.':fmt(week.short)+' still needs funding.'):'Add recurring bills so Ledger can measure this.'});
+    steps.push({done:month.hasData&&month.pct>=100,name:'Build a 30-day runway',note:month.hasData?(month.pct+'% of scheduled bills in the next 30 days are funded.'):'Add recurring bills so Ledger can measure the runway.'});
+    steps.push({done:age.days>=30,name:'Age your money to 30 days',note:age.days>=30?'Older income is covering current spending.':age.amount>0?'Current estimate: '+age.days+' days. Keep funding future months.':'Ledger needs more transaction history to measure this.'});
+    steps.push({done:emergency.found&&emergency.target>0&&emergency.pct>=100,name:'Build an emergency fund',note:!emergency.found?'Add a clearly named Emergency Fund goal.':emergency.target>0?emergency.pct+'% complete · '+fmt(Math.max(0,emergency.target-emergency.saved))+' remaining.':'Set a target amount for '+emergency.name+'.'});
+    var firstOpen=steps.findIndex(function(x){return !x.done;});
+    path.innerHTML=steps.map(function(x,i){var cls=x.done?'done':i===firstOpen?'next':'';return '<div class="path-row"><div class="path-mark '+cls+'">'+(x.done?'✓':i===firstOpen?'→':'○')+'</div><div class="path-copy"><div class="path-name">'+esc(x.name)+'</div><div class="path-note">'+esc(x.note)+'</div></div></div>';}).join('');
+  }
+
+  var goals=document.getElementById('compassGoals'),items=compassGoalItems();
+  if(goals){
+    if(!items.length)goals.innerHTML='<div class="compass-empty">Create a savings goal for Dental, Emergency Fund, Christmas, or another priority you want your money to support.</div>';
+    else goals.innerHTML=items.slice(0,4).map(function(g){var pct=g.target>0?Math.min(100,Math.round(g.saved/g.target*100)):0,remaining=Math.max(0,g.target-g.saved);return '<div class="goal-compass-row"><div class="goal-compass-top"><div class="goal-compass-name">'+esc(g.name)+'</div><div class="goal-compass-number">'+fmt(g.saved)+' / '+fmt(g.target)+'</div></div><div class="compass-track"><div class="compass-fill" style="width:'+pct+'%"></div></div><div class="goal-compass-meta">'+(g.source==='envelope'?'Savings envelope · ':'Tracked goal · ')+(g.target>0?pct+'% complete · '+fmt(remaining)+' remaining':'Set a target to measure progress')+'</div></div>';}).join('');
+  }
+}
+
+// ═══════════════════════════════════════════
 // SUMMARY
 // ═══════════════════════════════════════════
 function renderSummary() {
+  renderFinancialCompass();
   document.getElementById('sumInc').textContent = fmt(bankBalance());
   document.getElementById('sumSpent').textContent = fmt(totalSpent());
   document.getElementById('sumAssigned').textContent = fmt(totalAssigned());
@@ -2753,7 +3014,7 @@ function renderToday() {
 
   var rta=readyToAssign();
   var rtaEl=document.getElementById('todayRta'); if(rtaEl){rtaEl.textContent=(rta<0?'-':'')+fmt(Math.abs(rta));rtaEl.className='focus-value '+moneyClass(rta);animateMetric(rtaEl);}
-  var rs=document.getElementById('todayRtaSub'); if(rs) rs.textContent=rta<0?'Move money to cover the gap':rta>0.005?'Waiting for a job':'Every dollar has a job';
+  var rs=document.getElementById('todayRtaSub'); if(rs) rs.textContent=rta<0?'Move money to cover the gap':rta>0.005?'Ready to assign':'Every dollar has a job';
 
   var upcoming=S.scheduled.map(function(sch){var d=nextOccurrence(sch);return {s:sch,d:d,days:daysUntil(d)};}).filter(function(x){return x.days<=7;}).sort(function(a,b){return a.days-b.days;});
   var state=renderBudgetHealth(rta,upcoming);
@@ -2765,7 +3026,7 @@ function renderToday() {
     else if(state.shortNear.length){var x=state.shortNear[0];note.textContent=x.s.desc+' is due '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+' and is not fully funded.';}
     else if(state.cardShort) note.textContent='Your credit-card minimum is not fully funded. Handle that before optional spending.';
     else if(rta>0.005 && state.under.length) note.textContent='You are safe, but '+fmt(rta)+' still needs a job. Start with '+state.under[0].env.name+'.';
-    else if(rta>0.005) note.textContent='Your regular targets are covered. Decide whether the remaining '+fmt(rta)+' goes to debt, savings, or next month.';
+    else if(rta>0.005) note.textContent='Your regular targets are covered. Give the remaining '+fmt(rta)+' a deliberate job: debt, a goal, or next month.';
     else if(state.under.length) note.textContent=state.under[0].env.name+' still needs '+fmt(state.under[0].needed)+'. Your plan is stable, but not finished.';
     else note.textContent='Nothing needs your attention right now. Keep logging transactions so Ledger stays accurate.';
   }
@@ -2781,7 +3042,7 @@ function renderTodayPriorities(upcoming){
   var el=document.getElementById('todayPriorities'); if(!el)return;
   var rows=[], rta=readyToAssign();
   if(rta<0) rows.push(priorityHtml('!','Fix overassignment','Move money out of a lower priority envelope.',fmt(Math.abs(rta))));
-  else if(rta>0.005) rows.push(priorityHtml('◎','Assign available money','Start with bills due before your next paycheck.',fmt(rta)));
+  else if(rta>0.005) rows.push(priorityHtml('◎','Assign available money','Start with bills due in the next seven days.',fmt(rta)));
   upcoming.slice(0,2).forEach(function(x){
     var env=S.envelopes.find(function(e){return e.id===x.s.envId;}), av=env?envAvailable(env.id):0;
     var when=x.days<0?Math.abs(x.days)+' days overdue':x.days===0?'Due today':x.days===1?'Due tomorrow':'Due in '+x.days+' days';
@@ -3568,8 +3829,8 @@ function autoAssign() {
 var editingSchedId = null;
 
 function nextOccurrence(sched) {
-  var now = new Date();
-  var next = new Date(sched.nextDate + 'T12:00:00');
+  var now = new Date(); now.setHours(0,0,0,0);
+  var next = new Date(sched.nextDate + 'T12:00:00'); next.setHours(0,0,0,0);
   // If next is in the past, advance it
   while (next < now) {
     if (sched.freq === 'monthly') {

@@ -1,7 +1,7 @@
 {
   "name": "Ledger",
   "short_name": "Ledger",
-  "description": "A calm, private personal finance companion with verified local recovery and sync-ready change history.",
+  "description": "A calm zero-based budgeting companion for assigning every dollar, planning ahead, aging money, and building financial independence.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
