@@ -808,6 +808,18 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="card">
       <div class="card-body">
         <div class="set-row">
+          <div><div class="set-lbl">Ledger Database</div><div class="set-sub" id="storageStatus">Preparing protected storage…</div></div>
+          <span style="font-size:18px">✓</span>
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">Automatic Recovery</div><div class="set-sub" id="snapshotStatus">Checking recovery points…</div></div>
+          <button class="sh-btn" id="snapshotBtn">Save Point</button>
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake without replacing your cloud backup.</div></div>
+          <button class="sh-btn" id="restoreSnapshotBtn">Restore</button>
+        </div>
+        <div class="set-row">
           <div><div class="set-lbl">☁️ Save to Google Drive</div><div class="set-sub">Backs up directly to your Google Drive — no manual steps.</div></div>
           <button class="sh-btn" id="driveBackupBtn" style="background:var(--green-dim);color:var(--green)">Drive</button>
         </div>
@@ -855,7 +867,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     </div></div>
     <div class="sh" style="margin-top:8px"><div class="sh-title">About</div></div>
     <div class="card"><div class="card-body">
-      <div class="set-row"><div><div class="set-lbl">Ledger v1.2 — Clear</div><div class="set-sub">Calm enough to use daily, direct enough not to miss what matters.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">Ledger v1.3 — Clear</div><div class="set-sub">Calm enough to use daily, direct enough not to miss what matters.</div></div></div>
       <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Four honest health states, one primary money card, conditional status signals, stronger priority rules, and a concise in-app guide.</div></div></div>
       <div class="set-row"><div><div class="set-lbl">v1.1 — Delight</div><div class="set-sub">Added Today guidance, goal progress, friendly empty states, and gentle motion.</div></div></div>
       <div class="set-row"><div><div class="set-lbl">v1.0 — Trusted</div><div class="set-sub">Stabilized Ready to Assign, targets, credit cards, backups, and month rollover.</div></div></div>
@@ -1048,28 +1060,185 @@ var dialOpen = false;
 var ufCollapsed = false;
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 
+// ═══════════════════════════════════════════
+// LEDGER STORAGE FOUNDATION
+// IndexedDB is the durable primary store. localStorage remains a temporary
+// compatibility mirror so existing installations can migrate safely.
+// ═══════════════════════════════════════════
+var LEDGER_DB_NAME = 'ledger_database';
+var LEDGER_DB_VERSION = 1;
+var LEDGER_SCHEMA_VERSION = 1;
+var ledgerDb = null;
+var saveTimer = null;
+var snapshotTimer = null;
+
+function openLedgerDB() {
+  return new Promise(function(resolve, reject){
+    if (!('indexedDB' in window)) return reject(new Error('IndexedDB unavailable'));
+    var req = indexedDB.open(LEDGER_DB_NAME, LEDGER_DB_VERSION);
+    req.onupgradeneeded = function(e){
+      var db = e.target.result;
+      if (!db.objectStoreNames.contains('current')) db.createObjectStore('current', {keyPath:'id'});
+      if (!db.objectStoreNames.contains('snapshots')) {
+        var snaps = db.createObjectStore('snapshots', {keyPath:'id'});
+        snaps.createIndex('createdAt','createdAt',{unique:false});
+      }
+      if (!db.objectStoreNames.contains('metadata')) db.createObjectStore('metadata', {keyPath:'key'});
+    };
+    req.onsuccess = function(){ ledgerDb = req.result; resolve(ledgerDb); };
+    req.onerror = function(){ reject(req.error || new Error('Could not open Ledger database')); };
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise(function(resolve, reject){
+    var tx = ledgerDb.transaction(store,'readonly');
+    var req = tx.objectStore(store).get(key);
+    req.onsuccess = function(){ resolve(req.result || null); };
+    req.onerror = function(){ reject(req.error); };
+  });
+}
+
+function dbPut(store, value) {
+  return new Promise(function(resolve, reject){
+    var tx = ledgerDb.transaction(store,'readwrite');
+    tx.objectStore(store).put(value);
+    tx.oncomplete = function(){ resolve(); };
+    tx.onerror = function(){ reject(tx.error); };
+  });
+}
+
+function dbDeleteAll() {
+  return new Promise(function(resolve, reject){
+    var tx = ledgerDb.transaction(['current','snapshots','metadata'],'readwrite');
+    tx.objectStore('current').clear();
+    tx.objectStore('snapshots').clear();
+    tx.objectStore('metadata').clear();
+    tx.oncomplete = resolve;
+    tx.onerror = function(){ reject(tx.error); };
+  });
+}
+
+function scheduleDurableSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    if (!ledgerDb) return;
+    var now = new Date().toISOString();
+    dbPut('current',{id:'ledger-state', schemaVersion:LEDGER_SCHEMA_VERSION, updatedAt:now, data:S})
+      .then(function(){
+        return dbPut('metadata',{key:'storage', value:{engine:'IndexedDB',schemaVersion:LEDGER_SCHEMA_VERSION,lastSavedAt:now}});
+      })
+      .catch(function(e){ console.error('IndexedDB save failed:',e); });
+  }, 150);
+}
+
+function scheduleAutomaticSnapshot(reason) {
+  clearTimeout(snapshotTimer);
+  snapshotTimer = setTimeout(function(){ createSnapshot(reason || 'Automatic checkpoint', true); }, 900);
+}
+
+function createSnapshot(reason, quiet) {
+  if (!ledgerDb) return Promise.resolve(false);
+  var now = new Date();
+  var lastKey = 'ledger_last_snapshot_at';
+  var last = Number(localStorage.getItem(lastKey) || 0);
+  // Routine saves create no more than one snapshot every 30 minutes.
+  if (quiet && now.getTime() - last < 30*60*1000) return Promise.resolve(false);
+  var record = {
+    id:'snap_' + now.getTime() + '_' + Math.random().toString(36).slice(2,7),
+    createdAt:now.toISOString(),
+    reason:reason || 'Manual checkpoint',
+    schemaVersion:LEDGER_SCHEMA_VERSION,
+    data:JSON.parse(JSON.stringify(S))
+  };
+  return dbPut('snapshots',record).then(function(){
+    localStorage.setItem(lastKey,String(now.getTime()));
+    return pruneSnapshots(30).then(function(){ if(!quiet) toast('✓ Recovery point created'); return true; });
+  }).catch(function(e){ console.error('Snapshot failed:',e); return false; });
+}
+
+function listSnapshots() {
+  return new Promise(function(resolve,reject){
+    if(!ledgerDb) return resolve([]);
+    var tx=ledgerDb.transaction('snapshots','readonly');
+    var req=tx.objectStore('snapshots').getAll();
+    req.onsuccess=function(){ resolve((req.result||[]).sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);})); };
+    req.onerror=function(){reject(req.error);};
+  });
+}
+
+function pruneSnapshots(limit) {
+  return listSnapshots().then(function(items){
+    var excess=items.slice(limit);
+    if(!excess.length) return;
+    return new Promise(function(resolve,reject){
+      var tx=ledgerDb.transaction('snapshots','readwrite');
+      excess.forEach(function(x){tx.objectStore('snapshots').delete(x.id);});
+      tx.oncomplete=resolve; tx.onerror=function(){reject(tx.error);};
+    });
+  });
+}
+
+function restoreLatestSnapshot() {
+  listSnapshots().then(function(items){
+    if(!items.length){ toast('No recovery points yet'); return; }
+    var snap=items[0];
+    var when=new Date(snap.createdAt).toLocaleString();
+    if(!confirm('Restore the latest recovery point from ' + when + '?\n\nLedger will create a safety copy of your current data first.')) return;
+    createSnapshot('Before recovery restore',false).then(function(){
+      S=JSON.parse(JSON.stringify(snap.data));
+      saveS(); renderAll();
+      toast('✓ Recovery point restored');
+      updateStorageStatus();
+    });
+  });
+}
+
+function updateStorageStatus() {
+  var el=document.getElementById('storageStatus');
+  var snapEl=document.getElementById('snapshotStatus');
+  if(el) el.textContent=ledgerDb?'Protected by Ledger Database':'Compatibility mode';
+  if(snapEl) listSnapshots().then(function(items){
+    snapEl.textContent=items.length ? items.length + ' recovery point' + (items.length===1?'':'s') + ' saved' : 'A recovery point will be created automatically';
+  });
+}
+
 function saveS() {
   try {
     var json = JSON.stringify(S);
+    // Compatibility mirror. The primary copy is written to IndexedDB below.
     localStorage.setItem('piggybank_v2', json);
+    scheduleDurableSave();
+    scheduleAutomaticSnapshot('Automatic checkpoint');
     if (typeof renderToday === 'function') setTimeout(renderToday, 0);
   } catch(e) {
     console.error('Failed to save data:', e);
     toast('⚠️ Could not save data!');
   }
 }
-function loadS() {
-  // Try new key first, fall back to old key for migration
-  var d = localStorage.getItem('piggybank_v2') || localStorage.getItem('piggybank_v1');
-  if (d) {
-    try {
-      var parsed = JSON.parse(d);
-      S = parsed;
-    } catch(e) {
-      console.error('Failed to parse saved data:', e);
+async function loadS() {
+  var loadedFromDatabase = false;
+  try {
+    await openLedgerDB();
+    var current = await dbGet('current','ledger-state');
+    if(current && current.data){ S=current.data; loadedFromDatabase=true; }
+  } catch(e) {
+    console.warn('Ledger database unavailable; using compatibility storage.',e);
+  }
+  // Migrate an existing installation from localStorage on first launch.
+  if(!loadedFromDatabase){
+    var d = localStorage.getItem('piggybank_v2') || localStorage.getItem('piggybank_v1');
+    if (d) {
+      try {
+        S = JSON.parse(d);
+        if(ledgerDb){
+          await dbPut('current',{id:'ledger-state',schemaVersion:LEDGER_SCHEMA_VERSION,updatedAt:new Date().toISOString(),data:S});
+          await createSnapshot('Migrated from previous Ledger storage',true);
+        }
+      } catch(e) { console.error('Failed to migrate saved data:', e); }
+    } else {
+      console.log('No saved Ledger data found');
     }
-  } else {
-    console.log('No saved data found in localStorage');
   }
   if (!S.income) S.income = [];
   if (!S.expenses) S.expenses = [];
@@ -2774,8 +2943,11 @@ function importData(e) {
   r.onload = function(ev) {
     try {
       var data = JSON.parse(ev.target.result);
-      S = data; saveS(); renderAll(); toast('✓ Data restored!');
-    } catch(err) { toast('Invalid file'); }
+      if(!data || typeof data !== 'object' || !Array.isArray(data.envelopes)) throw new Error('Unsupported backup');
+      createSnapshot('Before file restore',false).then(function(){
+        S = data; saveS(); renderAll(); toast('✓ Data restored safely'); updateStorageStatus();
+      });
+    } catch(err) { toast('Invalid or unsupported backup'); }
   };
   r.readAsText(file);
 }
@@ -2791,7 +2963,9 @@ function clearAll() {
   if (!confirm('Reset EVERYTHING? This cannot be undone.')) return;
   localStorage.removeItem('piggybank_v1');
   localStorage.removeItem('piggybank_v2');
-  location.reload();
+  localStorage.removeItem('ledger_last_snapshot_at');
+  if(ledgerDb){ dbDeleteAll().then(function(){location.reload();}).catch(function(){location.reload();}); }
+  else location.reload();
 }
 
 // ═══════════════════════════════════════════
@@ -3243,8 +3417,8 @@ function initSwipe() {
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 
 
-window.onload = function() {
-  loadS();
+window.onload = async function() {
+  await loadS();
 
   // Month pill
   document.getElementById('monthPill').textContent = new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'});
@@ -3386,6 +3560,8 @@ window.onload = function() {
   document.getElementById('manualRolloverBtn').addEventListener('click', manualRollover);
   document.getElementById('weekTog').addEventListener('click', toggleWeekMode);
   document.getElementById('darkTog').addEventListener('click', toggleDark);
+  document.getElementById('snapshotBtn').addEventListener('click', function(){ createSnapshot('Manual recovery point',false).then(updateStorageStatus); });
+  document.getElementById('restoreSnapshotBtn').addEventListener('click', restoreLatestSnapshot);
   document.getElementById('driveBackupBtn').addEventListener('click', saveToGoogleDrive);
   document.getElementById('backupReminderBtn').addEventListener('click', function(){
     // Go to settings and trigger drive backup
@@ -3400,6 +3576,7 @@ window.onload = function() {
   document.getElementById('clearBtn').addEventListener('click', clearAll);
 
   renderAll();
+  updateStorageStatus();
   go('today');
   initSwipe();
 
