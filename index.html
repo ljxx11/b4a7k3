@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
-<meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet">
-<meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet">
-<meta name="referrer" content="no-referrer">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
-<title>Ledger</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="ledger-version" content="1.0.0">
+<title>Ledger — Trusted v1.0</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -471,7 +469,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger</div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.0</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn">🌙</button>
@@ -484,7 +482,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
       <div class="rta-badge" id="rtaBadge">—</div>
     </div>
     <div class="rta-meta">
-      <span id="rtaBank">Bank: $0.00</span>
+      <span id="rtaBank">Current accounts: $0.00</span>
       <span id="moneyAge" title="Average age of your money — goal is 30+ days">⏳ 0 days old</span>
       <span id="rtaAssigned">Assigned: $0.00</span>
     </div>
@@ -1072,6 +1070,7 @@ function loadS() {
   if (!S.scheduled) S.scheduled = [];
   S.creditCards.forEach(function(c){ if(c.apr===undefined) c.apr=0; });
   if (!S.currentMonth) S.currentMonth = currentMonthKey();
+  S.currentMonth = normalizeMonthKey(S.currentMonth);
   // Ensure order fields exist
   S.groups.forEach(function(g,i){ if(g.order===undefined) g.order=i; });
   S.envelopes.forEach(function(e,i){
@@ -1091,56 +1090,42 @@ function loadS() {
 
 function currentMonthKey() {
   var d = new Date();
-  return d.getFullYear()+'-'+(d.getMonth()+1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function normalizeMonthKey(key) {
+  var m = String(key||'').match(/^(\d{4})-(\d{1,2})$/);
+  return m ? m[1]+'-'+String(Number(m[2])).padStart(2,'0') : currentMonthKey();
+}
+function monthKeyFromDate(dateStr) {
+  return String(dateStr||'').slice(0,7);
 }
 
+function applyMonthRollover(newKey) {
+  var oldKey = normalizeMonthKey(S.currentMonth);
+  S.envelopes.forEach(function(env) {
+    var oldAvailable = money((env.assigned||0) + (env.carryForward||0) - envSpentForMonth(env.id, oldKey));
+    env.carryForward = env.isSavings ? Math.max(0, oldAvailable) : 0;
+    env.assigned = money(env.assignedNext||0);
+    env.assignedNext = 0;
+  });
+  S.currentMonth = normalizeMonthKey(newKey);
+  S.viewingNextMonth = false;
+  S.rolloverDate = new Date().toISOString().slice(0,10);
+}
 function checkMonthRollover() {
   var key = currentMonthKey();
-  if (S.currentMonth && S.currentMonth !== key) {
-    // New month!
-    S.envelopes.forEach(function(env) {
-      // Carry forward savings balances (snapshot, not cumulative)
-      if (env.isSavings) {
-        var avail = envAvailableBase(env.id);
-        env.carryForward = Math.max(0, avail);
-      } else {
-        env.carryForward = 0;
-      }
-      // Promote next-month assignments to this month
-      if ((env.assignedNext||0) > 0) {
-        env.assigned = env.assignedNext;
-        env.assignedNext = 0;
-      }
-    });
-    S.currentMonth = key;
-    S.viewingNextMonth = false;
-    S.rolloverDate = new Date().toISOString().slice(0,10);
+  if (normalizeMonthKey(S.currentMonth) !== key) {
+    applyMonthRollover(key);
     saveS();
-    toast('🎉 New month! Next month assignments are now active.');
-  } else if (!S.currentMonth) {
-    S.currentMonth = key;
+    toast('New month started. Savings carried forward and monthly assignments reset.');
   }
 }
-
 function manualRollover() {
-  if (!confirm('Simulate month rollover? Savings balances will carry forward and next-month assignments will become active.')) return;
-  S.envelopes.forEach(function(env) {
-    if (env.isSavings) {
-      // Replace carryForward with current available — don't stack on top of previous
-      var avail = envAvailableBase(env.id);
-      env.carryForward = Math.max(0, avail); // snapshot, not cumulative
-    } else {
-      env.carryForward = 0; // regular envelopes never carry
-    }
-    if ((env.assignedNext||0) > 0) {
-      env.assigned = env.assignedNext;
-      env.assignedNext = 0;
-    }
-  });
-  S.rolloverDate = new Date().toISOString().slice(0,10);
-  S.viewingNextMonth = false;
+  if (!confirm('Simulate month rollover? Savings will carry forward; regular monthly assignments will reset.')) return;
+  var d=new Date(); d.setMonth(d.getMonth()+1);
+  applyMonthRollover(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
   saveS(); renderAll();
-  toast('✓ Month rolled over!');
+  toast('Month rolled over.');
 }
 
 function migrateToGroups() {
@@ -1189,67 +1174,80 @@ function fmtS(n) {
 // ═══════════════════════════════════════════
 // COMPUTED
 // ═══════════════════════════════════════════
+function money(n) { return Math.round((Number(n)||0) * 100) / 100; }
 function bankBalance() {
   var total = 0;
-  S.income.forEach(function(i) { if (!i.isCash) total += i.amount; });
-  return Math.round(total * 100) / 100;
+  S.income.forEach(function(i) { if (!i.isCash) total += Number(i.amount)||0; });
+  S.expenses.forEach(function(e) { if (!e.isCredit && e.payMethod !== 'cash') total -= Number(e.amount)||0; });
+  return money(total);
 }
 function cashIncomeTotal() {
-  var total=0; S.income.forEach(function(i){ if(i.isCash) total += i.amount; });
-  return Math.round(total*100)/100;
+  var total=0; S.income.forEach(function(i){ if(i.isCash) total += Number(i.amount)||0; });
+  return money(total);
 }
-function budgetBalance() { return Math.round((bankBalance()+cashIncomeTotal())*100)/100; }
 function cashBalance() {
-  // Cash = cash income entries minus cash expenses
-  var total = 0;
-  S.income.forEach(function(i) { if (i.isCash) total += i.amount; });
-  S.expenses.forEach(function(e) { if (e.payMethod === 'cash') total -= e.amount; });
-  return Math.round(total * 100) / 100;
+  var total = cashIncomeTotal();
+  S.expenses.forEach(function(e) { if (e.payMethod === 'cash') total -= Number(e.amount)||0; });
+  return money(total);
 }
+function totalInflows() {
+  var total=0; S.income.forEach(function(i){ if(!i.isReimb) total += Number(i.amount)||0; });
+  return money(total);
+}
+function budgetBalance() { return totalInflows(); }
+function currentOnBudgetCash() { return money(bankBalance()+cashBalance()); }
 function totalAssigned() {
   var total = 0;
-  S.envelopes.forEach(function(e) { total += (e.assigned || 0); });
-  return Math.round(total * 100) / 100;
+  S.envelopes.forEach(function(e) { total += Number(e.assigned)||0; });
+  return money(total);
 }
-function readyToAssign() { return Math.round((budgetBalance() - totalAssigned()) * 100) / 100; }
-function envSpent(envId) {
+function readyToAssign() { return money(budgetBalance() - totalAssigned()); }
+function envSpentForMonth(envId, monthKey) {
   var total = 0;
-  S.expenses.forEach(function(e) { if (e.envId === envId) total += e.amount; });
-  return total;
+  S.expenses.forEach(function(e) {
+    if (e.envId === envId && monthKeyFromDate(e.date) === monthKey) total += Number(e.amount)||0;
+  });
+  return money(total);
 }
-function envAvailable(envId) {
-  var env = S.envelopes.find(function(e){return e.id===envId;});
-  if (!env) return 0;
-  return (env.assigned || 0) - envSpent(envId);
+function envSpent(envId) { return envSpentForMonth(envId, currentMonthKey()); }
+function fundedCreditActivity(paymentEnvId) {
+  var card = S.creditCards.find(function(c){return c.paymentEnvId===paymentEnvId;});
+  if (!card) return 0;
+  var total=0;
+  S.expenses.forEach(function(e){
+    if (e.isCredit && e.ccId===card.id && monthKeyFromDate(e.date)===currentMonthKey()) total += Number(e.fundedAmount)||0;
+  });
+  return money(total);
 }
 function totalSpent() {
   var total = 0;
-  S.expenses.forEach(function(e){ total += e.amount; });
-  return total;
+  S.expenses.forEach(function(e){ if(monthKeyFromDate(e.date)===currentMonthKey()) total += Number(e.amount)||0; });
+  return money(total);
 }
 function totalAvailable() {
   var total = 0;
-  S.envelopes.forEach(function(e){ total += Math.max(0, envAvailable(e.id)); });
-  return total;
+  S.envelopes.forEach(function(e){ total += envAvailable(e.id); });
+  return money(total);
 }
 function owedToMeTotal() {
-  var t = 0; S.owedToMe.forEach(function(i){ t += i.amount; }); return t;
+  var t = 0; S.owedToMe.forEach(function(i){ t += Number(i.amount)||0; }); return money(t);
 }
 function iOweTotal() {
-  var t = 0; S.iOwe.forEach(function(i){ t += i.amount; }); return t;
+  var t = 0; S.iOwe.forEach(function(i){ t += Number(i.amount)||0; }); return money(t);
 }
 
-// ── SAVINGS: base available (no carry forward) ──
-function envAvailableBase(envId) {
+// ── ENVELOPE AVAILABILITY ──
+function envAvailableBase(envId, monthKey) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return 0;
-  return (env.assigned||0) - envSpent(envId);
+  var key = monthKey || currentMonthKey();
+  var fundedCredit = env.isCCPayment && key===currentMonthKey() ? fundedCreditActivity(env.id) : 0;
+  return money((env.assigned||0) + fundedCredit - envSpentForMonth(envId,key));
 }
-// ── SAVINGS: true available includes carry-forward balance ──
 function envAvailable(envId) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return 0;
-  return (env.assigned||0) + (env.carryForward||0) - envSpent(envId);
+  return money((env.assigned||0) + (env.carryForward||0) + (env.isCCPayment?fundedCreditActivity(env.id):0) - envSpent(envId));
 }
 
 // ── CREDIT CARD: find payment envelope for a card ──
@@ -1282,21 +1280,25 @@ function moneyAge() {
 }
 
 // ── TOTAL TARGETS ──
+function monthlyTargetAmount(env) {
+  if (!env.target || !env.target.amount) return 0;
+  // Savings targets are lifetime goals, not a bill due in full this month.
+  if (env.target.type === 'save') return 0;
+  return money(env.target.amount);
+}
 function totalTargets() {
   var t = 0;
-  S.envelopes.forEach(function(env) {
-    if (env.target && env.target.amount) t += env.target.amount;
-  });
-  return Math.round(t * 100) / 100;
+  S.envelopes.forEach(function(env) { t += monthlyTargetAmount(env); });
+  return money(t);
 }
 function monthlyIncome() {
-  // Average weekly income × 4
-  if (!S.income.length) return 0;
+  // Opening balances are assets, not monthly income. Use paychecks/income added in the current month.
   var total = 0;
-  S.income.forEach(function(i){ if(!i.isReimb) total += i.amount; });
-  // Simple: just use bank balance as monthly income proxy
-  // Better: sum all non-reimb income
-  return Math.round(total * 100) / 100;
+  S.income.forEach(function(i){
+    var opening = /^opening|cash on hand/i.test(String(i.name||''));
+    if(!i.isReimb && !opening && monthKeyFromDate(i.date)===currentMonthKey()) total += Number(i.amount)||0;
+  });
+  return money(total);
 }
 
 // ── TOTAL CC DEBT ──
@@ -1336,9 +1338,10 @@ function targetProgress(env) {
   }
   if (t.type === 'save') {
     // Target: save X by date
-    var pct = t.amount > 0 ? Math.min(assigned / t.amount * 100, 100) : 0;
-    var needed = Math.max(0, t.amount - assigned);
-    return {pct:pct, label: needed > 0 ? fmt(needed)+' to goal' : '🎉 Goal reached!', color:'var(--green)', icon:'🎯'};
+    var saved = Math.max(0, avail);
+    var pct = t.amount > 0 ? Math.min(saved / t.amount * 100, 100) : 0;
+    var needed = Math.max(0, t.amount - saved);
+    return {pct:pct, label: needed > 0 ? fmt(needed)+' to goal' : 'Goal reached', color:'var(--green)', icon:'🎯'};
   }
   return null;
 }
@@ -1361,6 +1364,7 @@ function toggleNextMonth() {
 
 function updateRTA() {
   var bank = budgetBalance();
+  var currentCash = currentOnBudgetCash();
   var assigned = S.viewingNextMonth ? totalAssigned() + totalAssignedNext() : totalAssigned();
   var assignedNext = totalAssignedNext();
   var rta = S.viewingNextMonth ? readyToAssignNext() : readyToAssign();
@@ -1552,7 +1556,7 @@ function renderEnvelopes() {
 function renderEnvCard(env) {
   var assigned = env.assigned || 0;
   var spent = envSpent(env.id);
-  var avail = assigned - spent;
+  var avail = envAvailable(env.id);
   var pct = assigned > 0 ? Math.min(spent / assigned * 100, 100) : 0;
   var wk = S.weeklyMode ? ' <span style="color:var(--text3);font-size:10px">('+fmt(assigned/4)+'/wk)</span>' : '';
   var availClass = avail < 0 ? ' over' : (avail === 0 && assigned > 0 ? ' empty' : '');
@@ -1842,7 +1846,7 @@ function recordCCPayment(cardId) {
   // Reduce card balance
   card.balance = Math.max(0, (card.balance||0)-amt);
   // Log as expense from payment envelope
-  S.expenses.push({id:uid(), desc:'CC Payment — '+card.name, amount:amt, envId:card.paymentEnvId, date:new Date().toISOString().slice(0,10), isCredit:false, isCCPayment:true});
+  S.expenses.push({id:uid(), desc:'CC Payment — '+card.name, amount:amt, envId:card.paymentEnvId, date:new Date().toISOString().slice(0,10), payMethod:'debit', isCredit:false, isCCPayment:true});
   saveS(); renderEnvelopes(); renderCCTab(); renderExpenses(); toast('💳 Payment recorded!');
 }
 function renderCCTab() {
@@ -1969,8 +1973,16 @@ function renderExpenses() {
   });
 }
 function delExp(id) {
+  var exp=S.expenses.find(function(e){return e.id===id;});
+  if (exp && exp.isCredit && exp.ccId) {
+    var card=S.creditCards.find(function(c){return c.id===exp.ccId;});
+    if(card) card.balance=money(Math.max(0,(card.balance||0)-(exp.amount||0)));
+  } else if (exp && exp.isCCPayment) {
+    var card2=S.creditCards.find(function(c){return c.paymentEnvId===exp.envId;});
+    if(card2) card2.balance=money((card2.balance||0)+(exp.amount||0));
+  }
   S.expenses = S.expenses.filter(function(e){return e.id!==id;});
-  saveS(); renderExpenses(); renderEnvelopes(); renderSummary(); toast('Expense removed');
+  saveS(); renderExpenses(); renderEnvelopes(); renderSummary(); renderCCTab(); updateRTA(); toast('Expense removed');
 }
 
 function openEditExpModal(id) {
@@ -2014,7 +2026,7 @@ function renderSummary() {
     groupEnvelopes(g.id).forEach(function(env) {
       var assigned = env.assigned || 0;
       var spent = envSpent(env.id);
-      var avail = assigned - spent;
+      var avail = envAvailable(env.id);
       var pct = assigned > 0 ? Math.min(spent/assigned*100, 120) : 0;
       var over = avail < 0;
       html += '<div class="sum-row">' +
@@ -2497,7 +2509,13 @@ function saveExp() {
   if (editingExpId) {
     // Edit existing expense
     var exp = S.expenses.find(function(e){return e.id===editingExpId;});
-    if (exp) { exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.time=time; exp.datetime=datetime; exp.isCredit=isCredit; exp.ccId=ccId||null; }
+    if (exp) {
+      if(exp.isCredit && exp.ccId){var oldCard=S.creditCards.find(function(c){return c.id===exp.ccId;});if(oldCard)oldCard.balance=money(Math.max(0,(oldCard.balance||0)-(exp.amount||0)));}
+      var beforeAvail = envAvailable(envId) + (exp.envId===envId ? (exp.amount||0) : 0);
+      exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.time=time; exp.datetime=datetime; exp.payMethod=payMethod; exp.isCredit=isCredit; exp.ccId=ccId||null;
+      exp.fundedAmount=isCredit?money(Math.min(amt,Math.max(0,beforeAvail))):0;
+      if(isCredit && ccId){var newCard=S.creditCards.find(function(c){return c.id===ccId;});if(newCard)newCard.balance=money((newCard.balance||0)+amt);}
+    }
     editingExpId = null;
     saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
     toast('✓ Expense updated!');
@@ -2516,19 +2534,12 @@ function saveExp() {
   }
   // Log the expense
   S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, time:time, datetime:datetime, payMethod:payMethod, isCredit:isCredit, ccId:ccId||null});
-  // YNAB magic: credit purchase moves money from spending envelope → CC payment envelope
+  // A funded credit purchase reduces the spending envelope and makes the same amount available for card payment.
   if (isCredit && ccId) {
     var card = S.creditCards.find(function(c){return c.id===ccId;});
-    if (card) {
-      card.balance = (card.balance||0) + amt;
-      var spendEnv = S.envelopes.find(function(e){return e.id===envId;});
-      var payEnv = S.envelopes.find(function(e){return e.id===card.paymentEnvId;});
-      if (spendEnv && payEnv) {
-        var move = Math.min(amt, spendEnv.assigned||0);
-        spendEnv.assigned = (spendEnv.assigned||0) - move;
-        payEnv.assigned = (payEnv.assigned||0) + move;
-      }
-    }
+    if (card) card.balance = money((card.balance||0) + amt);
+    var justAdded=S.expenses[S.expenses.length-1];
+    justAdded.fundedAmount=money(Math.min(amt,Math.max(0,avail)));
   }
   saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
   toast('✓ Expense logged!');
@@ -2752,14 +2763,11 @@ function esc(str) {
 function getUnderfunded() {
   var items = [];
   S.envelopes.forEach(function(env) {
-    if (!env.target) return;
-    var t = env.target;
+    var monthlyTarget = monthlyTargetAmount(env);
+    if (!monthlyTarget) return;
     var assigned = env.assigned || 0;
-    var needed = 0;
-    if (t.type === 'refill') needed = Math.max(0, t.amount - assigned);
-    if (t.type === 'spend') needed = Math.max(0, t.amount - assigned);
-    if (t.type === 'save') needed = Math.max(0, t.amount - assigned);
-    if (needed > 0.005) items.push({env:env, needed:needed});
+    var needed = Math.max(0, monthlyTarget - assigned);
+    if (needed > 0.005) items.push({env:env, needed:money(needed)});
   });
   return items;
 }
@@ -3338,9 +3346,9 @@ window.onload = function() {
   go('today');
   initSwipe();
 
-  // Register the offline app shell when hosted over HTTPS.
+  // Keep the installed app available offline and update it when GitHub Pages changes.
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').catch(function(err) {
+    navigator.serviceWorker.register('./service-worker.js').catch(function(err){
       console.warn('Service worker registration failed:', err);
     });
   }
