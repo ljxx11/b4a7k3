@@ -1,7 +1,7 @@
 {
   "name": "Ledger",
   "short_name": "Ledger",
-  "description": "A calm, private zero-based budget.",
+  "description": "A clear, calm, private zero-based budget.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

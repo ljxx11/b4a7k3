@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="1.0.0">
-<title>Ledger — Trusted v1.0</title>
+<meta name="ledger-version" content="1.1.0">
+<title>Ledger — Clear v1.2</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -423,12 +423,14 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .today-greeting{font-family:'Playfair Display',serif;font-size:27px;line-height:1.08;color:var(--text)}
 .today-date{font-size:12px;color:var(--text3);margin-top:5px;font-weight:700}
 .today-status-dot{width:40px;height:40px;border-radius:999px;border:1px solid rgba(168,189,208,.22);background:linear-gradient(145deg,var(--surf2),var(--surf3));display:flex;align-items:center;justify-content:center;color:var(--acc);font-size:19px;box-shadow:var(--shadow)}
+.health-badge{min-width:92px;border-radius:16px;border:1px solid var(--border);background:var(--surf);padding:9px 11px;text-align:right;box-shadow:0 8px 18px rgba(0,0,0,.08)}.health-row{display:flex;align-items:center;justify-content:flex-end;gap:6px}.health-dot{width:8px;height:8px;border-radius:99px;background:var(--acc);box-shadow:0 0 0 4px var(--blue-dim)}.health-dot.good{background:var(--green);box-shadow:0 0 0 4px var(--green-dim)}.health-dot.warn{background:var(--yellow);box-shadow:0 0 0 4px var(--yellow-dim)}.health-dot.bad{background:var(--red);box-shadow:0 0 0 4px var(--red-dim)}.health-label{font-size:11px;font-weight:900;color:var(--text)}.health-sub{font-size:9px;color:var(--text3);font-weight:800;margin-top:2px}
 .dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
 .metric-card{background:var(--surf);border:1px solid var(--border);border-radius:17px;padding:13px;min-width:0;box-shadow:0 9px 20px rgba(0,0,0,.08)}
 .metric-label{font-size:9px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.75px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .metric-value{font-family:'Playfair Display',serif;font-size:21px;color:var(--text);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .metric-sub{font-size:10px;color:var(--text3);font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .metric-value.good{color:var(--green)}.metric-value.warnc{color:var(--yellow)}.metric-value.bad{color:var(--red)}
+.metric-value,.today-note,.goal-mini-fill{transition:all .35s ease}.metric-pop{animation:metricPop .38s ease}.today-note{animation:softIn .4s ease}@keyframes metricPop{0%{transform:translateY(3px);opacity:.55}100%{transform:translateY(0);opacity:1}}@keyframes softIn{0%{opacity:.65}100%{opacity:1}}@media(prefers-reduced-motion:reduce){.metric-value,.today-note,.goal-mini-fill{transition:none}.metric-pop,.today-note{animation:none}}
 .dash-card{background:var(--surf);border:1px solid var(--border);border-radius:18px;margin-bottom:12px;overflow:hidden;box-shadow:0 10px 22px rgba(0,0,0,.09)}
 .dash-card-head{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--border)}
 .dash-title{font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.9px}
@@ -455,10 +457,16 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .afford-result.bad{display:block;background:var(--red-dim);color:var(--red);border:1px solid rgba(220,160,166,.2)}
 .goal-mini{padding:12px 15px;border-bottom:1px solid var(--border)}.goal-mini:last-child{border-bottom:none}
 .goal-mini-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.goal-mini-name{font-size:12px;font-weight:800;color:var(--text)}
-.goal-mini-amount{font-size:11px;color:var(--text3);font-weight:800}.goal-mini-track{height:6px;background:var(--surf2);border-radius:3px;overflow:hidden;margin-top:7px}
+.goal-mini-amount{font-size:11px;color:var(--text3);font-weight:800}.goal-mini-meta{font-size:10px;color:var(--text3);font-weight:700;margin-top:5px}.goal-mini-track{height:6px;background:var(--surf2);border-radius:3px;overflow:hidden;margin-top:7px}
 .goal-mini-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),var(--green))}
 .today-note{background:linear-gradient(135deg,var(--blue-dim),rgba(200,178,216,.08));border:1px solid rgba(168,189,208,.18);border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.5;font-weight:700}
 [data-theme=light] .afford-btn{color:#fff}
+
+.focus-card{background:linear-gradient(145deg,var(--surf),var(--surf2));border:1px solid var(--border);border-radius:20px;padding:17px;margin-bottom:12px;box-shadow:0 12px 26px rgba(0,0,0,.10)}
+.focus-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.focus-link{border:0;background:transparent;color:var(--acc);font:800 11px Nunito,sans-serif;cursor:pointer;padding:0}.focus-value{font-family:'Playfair Display',serif;font-size:38px;line-height:1;color:var(--text);margin:7px 0 5px}.focus-value.good{color:var(--green)}.focus-value.warnc{color:var(--yellow)}.focus-value.bad{color:var(--red)}
+.signal-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}.signal-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--bg);border-radius:999px;padding:6px 9px;font-size:10px;font-weight:800;color:var(--text2)}.signal-chip.good{color:var(--green);background:var(--green-dim)}.signal-chip.warn{color:var(--yellow);background:var(--yellow-dim)}.signal-chip.bad{color:var(--red);background:var(--red-dim)}
+.health-badge.good{border-color:rgba(74,222,128,.25);background:var(--green-dim)}.health-badge.warn{border-color:rgba(251,191,36,.25);background:var(--yellow-dim)}.health-badge.bad{border-color:rgba(248,113,113,.25);background:var(--red-dim)}
+.guide-rule{padding:12px 0;border-bottom:1px solid var(--border)}.guide-rule:last-child{border-bottom:0}.guide-title{font-size:12px;font-weight:900;color:var(--text)}.guide-copy{font-size:11px;color:var(--text3);line-height:1.5;margin-top:3px}
 @media(min-width:700px){.dashboard-grid{grid-template-columns:repeat(4,1fr)}.today-shell{max-width:760px;margin:0 auto}}
 
 </style>
@@ -469,7 +477,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.0</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.2</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn">🌙</button>
@@ -522,20 +530,20 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="today-shell">
       <div class="today-head">
         <div>
-          <div class="today-kicker">Your money today</div>
-          <div class="today-greeting" id="todayGreeting">Good evening.</div>
+          <div class="today-kicker">Ledger</div>
+          <div class="today-greeting">Today</div>
           <div class="today-date" id="todayDate"></div>
         </div>
-        <div class="today-status-dot">◯</div>
+        <div class="health-badge" id="healthBadge"><div class="health-row"><span class="health-dot" id="healthDot"></span><span class="health-label" id="healthLabel">Checking</span></div><div class="health-sub" id="healthSub">Budget health</div></div>
       </div>
 
-      <div class="today-note" id="todayNote">Start with what your money needs to do before your next paycheck. You do not need a perfect month to make a good decision today.</div>
+      <div class="today-note" id="todayNote">Checking what deserves your attention.</div>
 
-      <div class="dashboard-grid">
-        <div class="metric-card"><div class="metric-label">Ready to assign</div><div class="metric-value" id="todayRta">$0.00</div><div class="metric-sub" id="todayRtaSub">Give this money a job</div></div>
-        <div class="metric-card"><div class="metric-label">Budget pool</div><div class="metric-value" id="todayOnHand">$0.00</div><div class="metric-sub">Including cash</div></div>
-        <div class="metric-card"><div class="metric-label">Card debt</div><div class="metric-value" id="todayCardDebt">$0.00</div><div class="metric-sub" id="todayInterest">Tracked cards</div></div>
-        <div class="metric-card"><div class="metric-label">Due soon</div><div class="metric-value" id="todayDueCount">0</div><div class="metric-sub">Next 7 days</div></div>
+      <div class="focus-card">
+        <div class="focus-top"><div class="metric-label">Ready to assign</div><button class="focus-link" onclick="go('budget')">Open budget</button></div>
+        <div class="focus-value" id="todayRta">$0.00</div>
+        <div class="metric-sub" id="todayRtaSub">Every dollar has a job</div>
+        <div class="signal-row" id="todaySignals"></div>
       </div>
 
       <div class="quick-actions">
@@ -545,7 +553,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-head"><div class="dash-title">What needs attention</div><button class="dash-link" onclick="go('budget')">Open budget</button></div>
+        <div class="dash-card-head"><div class="dash-title">Today's priority</div><div class="dash-link">Highest impact first</div></div>
         <div id="todayPriorities"></div>
       </div>
 
@@ -837,9 +845,20 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
         </div>
       </div>
     </div>
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Quick Guide</div></div>
+    <div class="card" style="margin-bottom:12px"><div class="card-body">
+      <div class="guide-rule"><div class="guide-title">1. Read Budget Health</div><div class="guide-copy">Excellent means no action is waiting. Good means you are safe but still have a task. Caution deserves attention soon. Action required should be handled first.</div></div>
+      <div class="guide-rule"><div class="guide-title">2. Follow Today's Priority</div><div class="guide-copy">Ledger places the highest-impact item first. Resolve red before yellow, then finish ordinary funding work.</div></div>
+      <div class="guide-rule"><div class="guide-title">3. Bring Ready to Assign to $0</div><div class="guide-copy">A positive amount is not extra spending money until you intentionally assign it. A negative amount means the plan exceeds the money available.</div></div>
+      <div class="guide-rule"><div class="guide-title">4. Log spending promptly</div><div class="guide-copy">Ledger can only be trustworthy when purchases, payments, and income are recorded.</div></div>
+      <div class="guide-rule"><div class="guide-title">5. Check the envelope before buying</div><div class="guide-copy">Use Can I afford this? for a quick answer. The envelope balance—not the checking balance—controls the decision.</div></div>
+    </div></div>
     <div class="sh" style="margin-top:8px"><div class="sh-title">About</div></div>
     <div class="card"><div class="card-body">
-      <div class="set-row"><div><div class="set-lbl">Ledger</div><div class="set-sub">A calm, Today-first zero-based budgeting app</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">Ledger v1.2 — Clear</div><div class="set-sub">Calm enough to use daily, direct enough not to miss what matters.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Four honest health states, one primary money card, conditional status signals, stronger priority rules, and a concise in-app guide.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">v1.1 — Delight</div><div class="set-sub">Added Today guidance, goal progress, friendly empty states, and gentle motion.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">v1.0 — Trusted</div><div class="set-sub">Stabilized Ready to Assign, targets, credit cards, backups, and month rollover.</div></div></div>
     </div></div>
   </div>
 
@@ -2179,30 +2198,68 @@ function findEnvByWords(words) {
   }
   return null;
 }
+function animateMetric(el){
+  if(!el)return;
+  el.classList.remove('metric-pop');
+  void el.offsetWidth;
+  el.classList.add('metric-pop');
+}
+function regularUnderfunded(){
+  return getUnderfunded().filter(function(x){return !x.env.isCCPayment && (!x.env.target || x.env.target.type!=='save');}).sort(function(a,b){return b.needed-a.needed;});
+}
+function todayRiskState(rta,upcoming){
+  var overspent=S.envelopes.filter(function(e){return !e.isCCPayment && envAvailable(e.id)<-0.005;});
+  var overdue=upcoming.filter(function(x){return x.days<0;});
+  var shortNear=upcoming.filter(function(x){var e=S.envelopes.find(function(v){return v.id===x.s.envId;});return x.days<=3 && (!e || envAvailable(e.id)+0.005<x.s.amount);});
+  var shortWeek=upcoming.filter(function(x){var e=S.envelopes.find(function(v){return v.id===x.s.envId;});return x.days<=7 && (!e || envAvailable(e.id)+0.005<x.s.amount);});
+  var under=regularUnderfunded();
+  var cardShort=false;
+  S.creditCards.forEach(function(c){if((c.balance||0)<=0)return;var pe=ccPaymentEnv(c.id),ready=pe?envAvailable(pe.id):0,minimum=Math.min(c.balance||0,c.minimum||40);if(ready+0.005<minimum)cardShort=true;});
+  if(rta<-.005||overdue.length||overspent.length) return {level:'bad',label:'Action required',sub:rta<0?'Plan exceeds available money':overdue.length?'A bill is overdue':'An envelope is overspent',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
+  if(shortNear.length||cardShort) return {level:'warn',label:'Caution',sub:shortNear.length?'A near-term bill is short':'Card minimum is not fully funded',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
+  if(rta>.005||under.length||shortWeek.length) return {level:'good',label:'Good',sub:rta>0.005?'A planning task remains':shortWeek.length?'A bill needs funding':'Monthly targets remain',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
+  return {level:'excellent',label:'Excellent',sub:'Nothing needs attention',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
+}
+function renderBudgetHealth(rta,upcoming){
+  var dot=document.getElementById('healthDot'), label=document.getElementById('healthLabel'), sub=document.getElementById('healthSub'), badge=document.getElementById('healthBadge');
+  if(!dot||!label||!sub)return todayRiskState(rta,upcoming);
+  var state=todayRiskState(rta,upcoming);
+  dot.className='health-dot '+(state.level==='excellent'?'good':state.level==='good'?'good':state.level);
+  if(badge) badge.className='health-badge '+(state.level==='excellent'?'good':state.level);
+  label.textContent=state.label;sub.textContent=state.sub;
+  return state;
+}
+function renderTodaySignals(rta,upcoming,state){
+  var el=document.getElementById('todaySignals');if(!el)return;
+  var chips=[];
+  if(upcoming.length){var urgent=upcoming.some(function(x){return x.days<=1;});chips.push('<span class="signal-chip '+(urgent?'warn':'')+'">'+upcoming.length+' due this week</span>');}
+  else chips.push('<span class="signal-chip good">Nothing due this week</span>');
+  var debt=totalCCDebt();if(debt>0)chips.push('<span class="signal-chip '+(state.cardShort?'warn':'')+'">Card debt '+fmt(debt)+'</span>');
+  if(state.overspent.length)chips.push('<span class="signal-chip bad">'+state.overspent.length+' overspent</span>');
+  el.innerHTML=chips.slice(0,3).join('');
+}
 function renderToday() {
   var root=document.getElementById('view-today'); if(!root) return;
-  var now=new Date(), hour=now.getHours();
-  var greeting=hour<12?'Good morning.':hour<18?'Good afternoon.':'Good evening.';
-  var ge=document.getElementById('todayGreeting'); if(ge) ge.textContent=greeting;
+  var now=new Date();
   var de=document.getElementById('todayDate'); if(de) de.textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
-  var rta=readyToAssign(), onHand=budgetBalance(), debt=totalCCDebt();
-  var rtaEl=document.getElementById('todayRta'); if(rtaEl){rtaEl.textContent=(rta<0?'-':'')+fmt(Math.abs(rta));rtaEl.className='metric-value '+moneyClass(rta);}
-  var rs=document.getElementById('todayRtaSub'); if(rs) rs.textContent=rta<0?'Move money to cover the gap':rta>0.005?'Give this money a job':'Every dollar has a job';
-  var oh=document.getElementById('todayOnHand'); if(oh) oh.textContent=fmt(onHand);
-  var cd=document.getElementById('todayCardDebt'); if(cd){cd.textContent=fmt(debt);cd.className='metric-value '+(debt>0?'warnc':'good');}
-  var interest=0; S.creditCards.forEach(function(c){ if(c.apr) interest+=(c.balance||0)*(c.apr/100)/365; });
-  var ti=document.getElementById('todayInterest'); if(ti) ti.textContent=interest>0?'About '+fmt(interest)+' interest/day':'Tracked cards';
+  var rta=readyToAssign();
+  var rtaEl=document.getElementById('todayRta'); if(rtaEl){rtaEl.textContent=(rta<0?'-':'')+fmt(Math.abs(rta));rtaEl.className='focus-value '+moneyClass(rta);animateMetric(rtaEl);}
+  var rs=document.getElementById('todayRtaSub'); if(rs) rs.textContent=rta<0?'Move money to cover the gap':rta>0.005?'Waiting for a job':'Every dollar has a job';
 
   var upcoming=S.scheduled.map(function(sch){var d=nextOccurrence(sch);return {s:sch,d:d,days:daysUntil(d)};}).filter(function(x){return x.days<=7;}).sort(function(a,b){return a.days-b.days;});
-  var dc=document.getElementById('todayDueCount'); if(dc){dc.textContent=String(upcoming.length);dc.className='metric-value '+(upcoming.some(function(x){return x.days<=1;})?'warnc':'good');}
-
+  var state=renderBudgetHealth(rta,upcoming);
+  renderTodaySignals(rta,upcoming,state);
   var note=document.getElementById('todayNote');
   if(note){
-    if(rta<0) note.textContent='Your budget is overassigned. Nothing is wrong with you; the plan just needs one adjustment before you spend.';
-    else if(rta>0.005) note.textContent='You have '+fmt(rta)+' waiting for a job. Fund what must happen before your next paycheck first.';
-    else if(upcoming.some(function(x){return x.days<=2;})) note.textContent='Your money has jobs. Check the upcoming section before making an unplanned purchase.';
-    else note.textContent='Your plan is current. Log spending as it happens so this screen stays trustworthy.';
+    if(rta<0) note.textContent='Your plan is overassigned by '+fmt(Math.abs(rta))+'. Fix this before assigning or spending more.';
+    else if(state.overspent.length) note.textContent=state.overspent[0].name+' is overspent by '+fmt(Math.abs(envAvailable(state.overspent[0].id)))+'. Cover it from a lower-priority envelope.';
+    else if(state.shortNear.length){var x=state.shortNear[0];note.textContent=x.s.desc+' is due '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+' and is not fully funded.';}
+    else if(state.cardShort) note.textContent='Your credit-card minimum is not fully funded. Handle that before optional spending.';
+    else if(rta>0.005 && state.under.length) note.textContent='You are safe, but '+fmt(rta)+' still needs a job. Start with '+state.under[0].env.name+'.';
+    else if(rta>0.005) note.textContent='Your regular targets are covered. Decide whether the remaining '+fmt(rta)+' goes to debt, savings, or next month.';
+    else if(state.under.length) note.textContent=state.under[0].env.name+' still needs '+fmt(state.under[0].needed)+'. Your plan is stable, but not finished.';
+    else note.textContent='Nothing needs your attention right now. Keep logging transactions so Ledger stays accurate.';
   }
 
   renderTodayPriorities(upcoming);
@@ -2224,10 +2281,10 @@ function renderTodayPriorities(upcoming){
   });
   var card=S.creditCards.find(function(c){return (c.balance||0)>0;});
   if(card){var pe=ccPaymentEnv(card.id), ready=pe?envAvailable(pe.id):0, daily=card.apr?(card.balance||0)*(card.apr/100)/365:0;if(ready+0.005<Math.min(card.balance,40)) rows.push(priorityHtml('◇','Fund your card payment','High-interest debt should not be invisible.',fmt(ready)+' ready'));else rows.push(priorityHtml('◇','Card payment is ready',(daily>0?'Interest is about '+fmt(daily)+' per day. ':'')+'Current balance: '+fmt(card.balance||0)+'.',fmt(ready)+' ready'));}
-  var under=getUnderfunded().filter(function(x){return !x.env.isCCPayment && (!x.env.target || x.env.target.type!=='save');}).sort(function(a,b){return b.needed-a.needed;});
+  var under=regularUnderfunded();
   under.slice(0,Math.max(0,4-rows.length)).forEach(function(x){rows.push(priorityHtml(x.env.emoji||'○',x.env.name,'Target still needs funding.',fmt(x.needed)));});
-  if(!rows.length) rows.push(priorityHtml('✓','Nothing urgent','Your plan is current. Log purchases as they happen.',''));
-  el.innerHTML=rows.slice(0,4).join('');
+  if(!rows.length) rows.push(priorityHtml('✓','Nothing needs attention','Your plan is current. Log purchases as they happen.',''));
+  el.innerHTML=rows.slice(0,3).join('');
 }
 function renderTodaySpending(){
   var el=document.getElementById('todaySpending'); if(!el)return;
@@ -2243,11 +2300,11 @@ function renderTodayGoals(){
   S.envelopes.forEach(function(e){if(e.isSavings&&e.target&&e.target.type==='save'&&!items.some(function(x){return x.name===e.name;}))items.push({name:e.name,saved:Math.max(0,envAvailable(e.id)),target:e.target.amount||0});});
   if(!items.length){el.innerHTML='<div class="priority-empty">Add Dental, Emergency Fund, or Christmas goals to track progress here.</div>';return;}
   items.sort(function(a,b){return (b.target?b.saved/b.target:0)-(a.target?a.saved/a.target:0);});
-  el.innerHTML=items.slice(0,3).map(function(g){var pct=g.target?Math.min(g.saved/g.target*100,100):0;return '<div class="goal-mini"><div class="goal-mini-top"><div class="goal-mini-name">'+esc(g.name)+'</div><div class="goal-mini-amount">'+fmt(g.saved)+' / '+fmt(g.target)+'</div></div><div class="goal-mini-track"><div class="goal-mini-fill" style="width:'+pct+'%"></div></div></div>';}).join('');
+  el.innerHTML=items.slice(0,3).map(function(g){var pct=g.target?Math.min(g.saved/g.target*100,100):0,remaining=Math.max(0,g.target-g.saved),meta=g.target?(Math.round(pct)+'% complete · '+fmt(remaining)+' remaining'):'No target set';return '<div class="goal-mini"><div class="goal-mini-top"><div class="goal-mini-name">'+esc(g.name)+'</div><div class="goal-mini-amount">'+fmt(g.saved)+' / '+fmt(g.target)+'</div></div><div class="goal-mini-track"><div class="goal-mini-fill" style="width:'+pct+'%"></div></div><div class="goal-mini-meta">'+meta+'</div></div>';}).join('');
 }
 function renderTodayUpcoming(upcoming){
   var el=document.getElementById('todayUpcoming'); if(!el)return;
-  if(!upcoming.length){el.innerHTML='<div class="priority-empty">Nothing scheduled in the next seven days.</div>';return;}
+  if(!upcoming.length){el.innerHTML='<div class="priority-empty">✓ You are caught up for the next seven days.</div>';return;}
   el.innerHTML=upcoming.slice(0,4).map(function(x){var env=S.envelopes.find(function(e){return e.id===x.s.envId;});var when=x.days<0?Math.abs(x.days)+'d overdue':x.days===0?'Today':x.days===1?'Tomorrow':'In '+x.days+' days';return priorityHtml(env?env.emoji:'↗',x.s.desc,when,fmt(x.s.amount));}).join('');
 }
 function populateAffordEnvelopes(){
