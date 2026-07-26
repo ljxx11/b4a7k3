@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="1.6.0">
-<title>Ledger — Compass v1.6</title>
+<meta name="ledger-version" content="2.0.0">
+<title>Ledger — North Star v2.0</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -559,18 +559,37 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .compass-empty{font-size:12px;color:var(--text3);line-height:1.5;padding:4px 0 8px}
 @media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
 
+
+/* ── NORTH STAR v2.0 ── */
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+button,input,select,summary{font:inherit}
+button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
+.sh-sub{font-size:10px;color:var(--text3);margin-top:3px}.field-help{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.45}
+.today-focus-card{background:linear-gradient(135deg,var(--surf2),var(--surf));border:1px solid var(--border);border-radius:18px;padding:15px 16px;margin-bottom:12px;box-shadow:0 10px 22px rgba(0,0,0,.08)}
+.today-focus-eyebrow{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}.today-focus-title{font-size:18px;font-weight:800;color:var(--text);line-height:1.25}.today-focus-copy{font-size:13px;color:var(--text2);line-height:1.55;margin-top:5px}
+.daily-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}.daily-plan-card{min-height:104px;background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:12px;text-align:left;color:var(--text);display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 18px rgba(0,0,0,.07)}.daily-plan-card:active{transform:translateY(1px)}.daily-plan-label{font-size:9px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}.daily-plan-value{font-family:'Playfair Display',serif;font-size:19px;line-height:1.1;color:var(--acc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.daily-plan-sub{font-size:10px;color:var(--text3);line-height:1.25}
+.review-question-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:12px;min-width:0}.review-question{width:100%;min-width:0;overflow:hidden;background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:14px;color:var(--text);display:flex;align-items:flex-start;gap:10px;text-align:left;min-height:108px}.review-q-icon{width:30px;height:30px;border-radius:10px;background:var(--blue-dim);color:var(--acc);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800}.review-q-copy{display:flex;flex-direction:column;min-width:0}.review-q-title{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.7px}.review-q-value{font-size:14px;font-weight:800;color:var(--text);margin-top:6px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}.review-q-sub{font-size:10px;color:var(--text3);line-height:1.35;margin-top:3px}
+.review-details{background:var(--surf);border:1px solid var(--border);border-radius:18px;margin-bottom:12px;overflow:hidden}.review-details summary{list-style:none;cursor:pointer;padding:15px 16px;font-size:13px;font-weight:800;color:var(--text);display:flex;justify-content:space-between;align-items:center}.review-details summary::-webkit-details-marker{display:none}.review-details summary span{font-size:10px;color:var(--acc);font-weight:800}.review-details[open] summary{border-bottom:1px solid var(--border)}.review-details-body{padding:14px 16px}
+.guided-empty{background:linear-gradient(135deg,var(--surf2),var(--surf));border:1px solid var(--border);border-radius:18px;padding:20px;text-align:center}.guided-empty-icon{font-size:40px;margin-bottom:10px}.guided-empty-title{font-size:16px;font-weight:800;color:var(--text)}.guided-empty-copy{font-size:12px;color:var(--text3);line-height:1.55;margin:6px auto 14px;max-width:330px}.guided-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}.guided-action{min-height:40px;padding:8px 12px;border-radius:999px;background:var(--blue-dim);color:var(--acc);font-size:11px;font-weight:800;border:1px solid rgba(168,189,208,.16)}
+.goal-source{font-size:10px;color:var(--text3);margin-top:3px}.goal-open-btn{background:var(--blue-dim);color:var(--acc);border-radius:999px;padding:6px 10px;font-size:10px;font-weight:800}.set-status-icon{font-size:18px;color:var(--text3)}
+.restore-preview-hero{display:flex;align-items:center;gap:12px;background:var(--green-dim);border:1px solid rgba(168,207,181,.18);border-radius:14px;padding:13px;margin-bottom:12px}.restore-preview-check{width:36px;height:36px;border-radius:50%;background:var(--green);color:#142019;display:flex;align-items:center;justify-content:center;font-weight:900}.restore-preview-title{font-size:14px;font-weight:800}.restore-preview-sub{font-size:11px;color:var(--text3);margin-top:2px}.restore-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.restore-preview-cell{background:var(--surf2);border:1px solid var(--border);border-radius:12px;padding:11px}.restore-preview-cell-label{font-size:9px;color:var(--text3);font-weight:800;text-transform:uppercase;letter-spacing:.7px}.restore-preview-cell-value{font-size:14px;color:var(--text);font-weight:800;margin-top:4px}.restore-preview-note,.cloud-choice-copy{font-size:12px;line-height:1.55;color:var(--text3);margin-bottom:14px}.cloud-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}.cloud-choice-card{background:var(--surf2);border:1px solid var(--border);border-radius:16px;padding:14px;text-align:left;color:var(--text);display:flex;flex-direction:column;gap:5px;min-height:122px}.cloud-choice-label{font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:800;letter-spacing:.7px}.cloud-choice-value{font-size:15px;font-weight:800}.cloud-choice-sub{font-size:11px;color:var(--text3);line-height:1.4}
+.tog{min-width:48px;min-height:28px}.sh-btn,.btn-p,.btn-s,.btn-d,.quick-action,.afford-btn{min-height:44px}.soft-link{min-height:40px}
+.overlay[aria-hidden="true"]{display:none}.overlay.open[aria-hidden="false"]{display:flex}
+@media(max-width:370px){.daily-plan-grid{grid-template-columns:1fr}.daily-plan-card{min-height:78px}.review-question-grid{grid-template-columns:1fr}}
+@media(prefers-contrast:more){:root{--border:rgba(255,255,255,.2)}[data-theme=light]{--border:rgba(31,36,43,.22)}}
+@media(prefers-reduced-motion:reduce){.daily-plan-card:active{transform:none}*{scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<button id="expFab" onclick="openExpModal()" style="position:fixed;bottom:24px;right:16px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#8fa5ba,#c8b2d8);color:white;font-size:22px;border:none;cursor:pointer;z-index:9999;box-shadow:0 8px 22px rgba(0,0,0,0.24);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif">📝</button>
+<button id="expFab" aria-label="Log an expense" onclick="openExpModal()" style="position:fixed;bottom:24px;right:16px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#8fa5ba,#c8b2d8);color:white;font-size:22px;border:none;cursor:pointer;z-index:9999;box-shadow:0 8px 22px rgba(0,0,0,0.24);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif">📝</button>
 <div class="app">
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v1.6</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
-      <button class="theme-btn" id="themeBtn">🌙</button>
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
     </div>
   </div>
   <div class="rta" style="margin-bottom:10px">
@@ -624,16 +643,26 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
           <div class="today-greeting">Today</div>
           <div class="today-date" id="todayDate"></div>
         </div>
-        <div class="health-badge" id="healthBadge"><div class="health-row"><span class="health-dot" id="healthDot"></span><span class="health-label" id="healthLabel">Checking</span></div><div class="health-sub" id="healthSub">Budget health</div></div>
+        <div class="health-badge" id="healthBadge" role="status" aria-live="polite"><div class="health-row"><span class="health-dot" id="healthDot"></span><span class="health-label" id="healthLabel">Checking</span></div><div class="health-sub" id="healthSub">Budget health</div></div>
       </div>
 
-      <div class="today-note" id="todayNote">Checking what deserves your attention.</div>
-
-      <div class="focus-card">
-        <div class="focus-top"><div class="metric-label">Ready to assign</div><button class="focus-link" onclick="go('budget')">Open budget</button></div>
-        <div class="focus-value" id="todayRta">$0.00</div>
-        <div class="metric-sub" id="todayRtaSub">Every dollar has a job</div>
+      <div class="today-focus-card" aria-live="polite" aria-atomic="true">
+        <div class="today-focus-eyebrow">Today’s focus</div>
+        <div class="today-focus-title" id="todayFocusTitle">Getting your plan ready</div>
+        <div class="today-focus-copy" id="todayNote">Checking what deserves your attention.</div>
         <div class="signal-row" id="todaySignals"></div>
+      </div>
+
+      <div class="daily-plan-grid" aria-label="Today’s plan">
+        <button class="daily-plan-card" type="button" onclick="go('budget')">
+          <span class="daily-plan-label">Assign</span><span class="daily-plan-value" id="planAssignValue">—</span><span class="daily-plan-sub" id="planAssignSub">Checking</span>
+        </button>
+        <button class="daily-plan-card" type="button" onclick="go('scheduled')">
+          <span class="daily-plan-label">Upcoming</span><span class="daily-plan-value" id="planUpcomingValue">—</span><span class="daily-plan-sub" id="planUpcomingSub">Checking</span>
+        </button>
+        <button class="daily-plan-card" type="button" onclick="go('goals')">
+          <span class="daily-plan-label">Progress</span><span class="daily-plan-value" id="planProgressValue">—</span><span class="daily-plan-sub" id="planProgressSub">Checking</span>
+        </button>
       </div>
 
       <div class="quick-actions">
@@ -655,7 +684,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
             <select class="afford-select" id="affordEnvelope"></select>
           </div>
           <button class="afford-btn" onclick="checkAffordability()">Check purchase</button>
-          <div class="afford-result" id="affordResult"></div>
+          <div class="afford-result" id="affordResult" aria-live="polite"></div>
         </div>
       </div>
 
@@ -737,37 +766,25 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="card"><div class="card-body" id="expList"><div class="empty"><div class="ei">📝</div><p>No expenses yet.<br>Tap + to log one.</p></div></div></div>
   </div>
 
-  <!-- SUMMARY / FINANCIAL COMPASS -->
+  <!-- REVIEW / NORTH STAR -->
   <div class="view" id="view-summary">
     <div class="compass-hero">
       <div class="compass-kicker">Financial Compass</div>
       <div class="compass-title" id="compassHeadline">You are getting oriented</div>
       <div class="compass-copy" id="compassCopy">Ledger is checking whether your money has jobs, your near-term commitments are covered, and your buffer is growing.</div>
       <div class="compass-grid">
-        <div class="compass-metric">
-          <div class="compass-metric-label">Every dollar</div>
-          <div class="compass-metric-value" id="compassRta">—</div>
-          <div class="compass-metric-sub" id="compassRtaSub">Checking your plan</div>
-        </div>
-        <div class="compass-metric">
-          <div class="compass-metric-label">Next 7 days</div>
-          <div class="compass-metric-value" id="compassWeek">—</div>
-          <div class="compass-metric-sub" id="compassWeekSub">Scheduled bills funded</div>
-          <div class="compass-track"><div class="compass-fill" id="compassWeekFill" style="width:0%"></div></div>
-        </div>
-        <div class="compass-metric">
-          <div class="compass-metric-label">Next 30 days</div>
-          <div class="compass-metric-value" id="compassMonth">—</div>
-          <div class="compass-metric-sub" id="compassMonthSub">Building your runway</div>
-          <div class="compass-track"><div class="compass-fill" id="compassMonthFill" style="width:0%"></div></div>
-        </div>
-        <div class="compass-metric">
-          <div class="compass-metric-label">Money age</div>
-          <div class="compass-metric-value" id="compassAge">—</div>
-          <div class="compass-metric-sub" id="compassAgeSub">Building history</div>
-          <div class="compass-track"><div class="compass-fill" id="compassAgeFill" style="width:0%"></div></div>
-        </div>
+        <div class="compass-metric"><div class="compass-metric-label">Every dollar</div><div class="compass-metric-value" id="compassRta">—</div><div class="compass-metric-sub" id="compassRtaSub">Checking your plan</div></div>
+        <div class="compass-metric"><div class="compass-metric-label">Next 7 days</div><div class="compass-metric-value" id="compassWeek">—</div><div class="compass-metric-sub" id="compassWeekSub">Scheduled bills funded</div><div class="compass-track"><div class="compass-fill" id="compassWeekFill" style="width:0%"></div></div></div>
+        <div class="compass-metric"><div class="compass-metric-label">Next 30 days</div><div class="compass-metric-value" id="compassMonth">—</div><div class="compass-metric-sub" id="compassMonthSub">Building your runway</div><div class="compass-track"><div class="compass-fill" id="compassMonthFill" style="width:0%"></div></div></div>
+        <div class="compass-metric"><div class="compass-metric-label">Money age</div><div class="compass-metric-value" id="compassAge">—</div><div class="compass-metric-sub" id="compassAgeSub">Building history</div><div class="compass-track"><div class="compass-fill" id="compassAgeFill" style="width:0%"></div></div></div>
       </div>
+    </div>
+
+    <div class="review-question-grid" aria-label="Review your finances">
+      <button class="review-question" type="button" onclick="go('goals')"><span class="review-q-icon">↗</span><span class="review-q-copy"><span class="review-q-title">My progress</span><span class="review-q-value" id="reviewProgressValue">Building</span><span class="review-q-sub" id="reviewProgressSub">Goals and money age</span></span></button>
+      <button class="review-question" type="button" onclick="go('reports')"><span class="review-q-icon">◫</span><span class="review-q-copy"><span class="review-q-title">My spending</span><span class="review-q-value" id="reviewSpendingValue">$0</span><span class="review-q-sub" id="reviewSpendingSub">This month</span></span></button>
+      <button class="review-question" type="button" onclick="go('scheduled')"><span class="review-q-icon">→</span><span class="review-q-copy"><span class="review-q-title">My future</span><span class="review-q-value" id="reviewFutureValue">Not measured</span><span class="review-q-sub" id="reviewFutureSub">Upcoming commitments</span></span></button>
+      <button class="review-question" type="button" onclick="go('settings')"><span class="review-q-icon">✓</span><span class="review-q-copy"><span class="review-q-title">My Ledger</span><span class="review-q-value" id="reviewLedgerValue">Protected</span><span class="review-q-sub" id="reviewLedgerSub">Recovery and sync</span></span></button>
     </div>
 
     <div class="lesson-card">
@@ -781,21 +798,25 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
       <div class="compass-body" id="independencePath"></div>
     </div>
 
-    <div class="compass-section">
-      <div class="compass-section-head"><div><div class="compass-section-title">Goals in motion</div><div class="compass-section-sub">Progress toward the goals you are tracking.</div></div><button class="dash-link" onclick="go('goals')">Open goals</button></div>
-      <div class="compass-body" id="compassGoals"></div>
-    </div>
+    <details class="review-details">
+      <summary>Goals in motion <span>See progress</span></summary>
+      <div class="review-details-body" id="compassGoals"></div>
+    </details>
 
-    <div class="sh"><div class="sh-title">Monthly picture</div></div>
-    <div class="stat-row">
-      <div class="stat"><div class="stat-val" id="sumInc">$0</div><div class="stat-lbl">Money on hand</div></div>
-      <div class="stat"><div class="stat-val" id="sumSpent">$0</div><div class="stat-lbl">Spent this month</div></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat"><div class="stat-val" id="sumAssigned">$0</div><div class="stat-lbl">Assigned</div></div>
-      <div class="stat"><div class="stat-val" id="sumAvail">$0</div><div class="stat-lbl">Available in envelopes</div></div>
-    </div>
-    <div class="card"><div class="card-hdr"><span class="card-title">By Envelope</span></div><div class="card-body" id="sumList"></div></div>
+    <details class="review-details">
+      <summary>Detailed monthly picture <span>See the numbers</span></summary>
+      <div class="review-details-body">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-val" id="sumInc">$0</div><div class="stat-lbl">Money on hand</div></div>
+          <div class="stat"><div class="stat-val" id="sumSpent">$0</div><div class="stat-lbl">Spent this month</div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><div class="stat-val" id="sumAssigned">$0</div><div class="stat-lbl">Assigned</div></div>
+          <div class="stat"><div class="stat-val" id="sumAvail">$0</div><div class="stat-lbl">Available in envelopes</div></div>
+        </div>
+        <div class="card" style="margin-bottom:0"><div class="card-hdr"><span class="card-title">By Envelope</span></div><div class="card-body" id="sumList"></div></div>
+      </div>
+    </details>
   </div>
 
   <!-- OWED -->
@@ -828,7 +849,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
   <!-- GOALS -->
   <div class="view" id="view-goals">
-    <div class="sh"><div class="sh-title">Savings Goals</div><button class="sh-btn" id="addGoalBtn">+ Goal</button></div>
+    <div class="sh"><div><div class="sh-title">Savings Goals</div><div class="sh-sub">Goals backed by real money in your budget</div></div><button class="sh-btn" id="addGoalBtn">+ Goal</button></div>
     <div id="goalList"><div class="empty"><div class="ei">🎯</div><p>Set a goal to start saving with purpose.</p></div></div>
   </div>
 
@@ -901,32 +922,6 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div id="histList"><div class="empty"><div class="ei">📅</div><p>No history yet.</p></div></div>
   </div>
 
-    <div class="learn-card">
-      <div class="learn-title">Ledger System</div>
-      <div class="learn-body">Zero-based budgeting means every dollar you have gets a job. Start with the money you actually control, protect money that belongs to other people, and give every remaining dollar a job before the next paycheck arrives.</div>
-    </div>
-    <div class="learn-card">
-      <div class="learn-title">✉️ Envelopes, Not Categories</div>
-      <div class="learn-body">Each envelope holds real money. When you spend from Groceries, that envelope shrinks. When it hits zero, you're done — unless you move money from another envelope. This is the discipline that makes ZBB work.</div>
-    </div>
-    <div class="learn-card">
-      <div class="learn-title">💳 Credit Cards Are Not Cash</div>
-      <div class="learn-body">When you charge something to a credit card, mark it as "credit." The expense still drains your envelope — because you WILL pay that bill — but it's tracked separately. The goal is to always have the money sitting in your account before the bill comes.</div>
-    </div>
-    <div class="learn-card">
-      <div class="learn-title">🔁 Reimbursements Don't Count as Income</div>
-      <div class="learn-body">If you paid for something and someone pays you back, that money isn't new income — it goes straight back to the envelope it came from. Toggle "Reimbursement" when logging it so your budget stays honest.</div>
-    </div>
-    <div class="learn-card">
-      <div class="learn-title">📅 Weekly Thinkers</div>
-      <div class="learn-body">If you get paid weekly, enable Weekly Mode in Settings. The budget view will show per-paycheck target amounts for each envelope (monthly amount ÷ 4), so your mental model matches your actual cash flow.</div>
-    </div>
-    <div class="learn-card">
-      <div class="learn-title">🏦 Aging Your Money</div>
-      <div class="learn-body">The ultimate ZBB goal: next month's expenses are funded by this month's income. When you reach this, you're budgeting 30 days ahead and financial stress drops dramatically. Work toward it by letting your "Ready to Assign" sit unspent at month end.</div>
-    </div>
-  </div>
-
   <!-- SETTINGS -->
   <div class="view" id="view-settings">
     <div class="sh"><div class="sh-title">Settings</div></div>
@@ -960,7 +955,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
         <div class="atlas-health-cell"><div class="atlas-health-cell-label">Data</div><div class="atlas-health-cell-value" id="healthData">Checking…</div></div>
         <div class="atlas-health-cell"><div class="atlas-health-cell-label">Recovery</div><div class="atlas-health-cell-value" id="healthRecovery">Checking…</div></div>
         <div class="atlas-health-cell"><div class="atlas-health-cell-label">History</div><div class="atlas-health-cell-value" id="healthHistory">Checking…</div></div>
-        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Future Sync</div><div class="atlas-health-cell-value" id="healthSync">Preparing…</div></div>
+        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Cloud Safety</div><div class="atlas-health-cell-value" id="healthSync">Preparing…</div></div>
       </div>
       <div class="atlas-health-actions">
         <div class="atlas-health-time" id="healthCheckedAt">Ledger checks itself when it opens.</div>
@@ -972,23 +967,27 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="card">
       <div class="card-body">
         <div class="set-row">
-          <div><div class="set-lbl">This Device</div><div class="set-sub" id="deviceStatus">Creating a private device identity…</div></div>
-          <span style="font-size:18px">◉</span>
+          <div><div class="set-lbl">This Device</div><div class="set-sub" id="deviceStatus">Creating a private device identity…</div></div><span class="set-status-icon">◉</span>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">Change History</div><div class="set-sub" id="revisionStatus">Preparing protected history…</div></div>
-          <span style="font-size:18px">✓</span>
+          <div><div class="set-lbl">Google Drive Protection</div><div class="set-sub" id="cloudStatus">Not connected. Tap Sync to add a protected Drive copy.</div></div>
+          <button class="sh-btn" id="cloudSyncBtn">Sync</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">Cloud Connection</div><div class="set-sub" id="syncReadinessStatus">Not connected. Ledger remains fully usable on this device.</div></div>
-          <span style="font-size:18px;color:var(--text3)">○</span>
+          <div><div class="set-lbl">Move Ledger to a New Device</div><div class="set-sub">Creates one verified transfer file containing your full Ledger.</div></div>
+          <button class="sh-btn" id="transferExportBtn">Create</button>
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">Restore on This Device</div><div class="set-sub">Preview a transfer or backup before anything is replaced.</div></div>
+          <button class="sh-btn" id="transferImportBtn">Restore</button><input type="file" id="transferImportFile" accept=".json,application/json" style="display:none">
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">Change History</div><div class="set-sub" id="revisionStatus">Preparing protected history…</div></div><span class="set-status-icon">✓</span>
         </div>
         <button class="soft-link" id="techDetailsBtn" aria-expanded="false">Show technical details</button>
         <div class="tech-details" id="techDetails">
-          <div class="set-row">
-            <div><div class="set-lbl">Sync Diagnostic</div><div class="set-sub">Creates a private technical file for testing future device sync. It does not change your budget.</div></div>
-            <button class="sh-btn" id="syncPackageBtn">Create</button>
-          </div>
+          <div class="set-row"><div><div class="set-lbl">Cloud Connection</div><div class="set-sub" id="syncReadinessStatus">Not connected yet. Your budget stays on this device.</div></div><span class="set-status-icon">○</span></div>
+          <div class="set-row"><div><div class="set-lbl">Sync Diagnostic</div><div class="set-sub">Creates a private technical file for troubleshooting. It does not change your budget.</div></div><button class="sh-btn" id="syncPackageBtn">Create</button></div>
         </div>
       </div>
     </div>
@@ -1012,15 +1011,11 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
           <button class="sh-btn" id="restoreSnapshotBtn">Restore</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">☁️ Save to Google Drive</div><div class="set-sub">Creates a separate backup in your Google Drive.</div></div>
-          <button class="sh-btn" id="driveBackupBtn" style="background:var(--green-dim);color:var(--green)">Drive</button>
-        </div>
-        <div class="set-row">
           <div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Downloads a verified backup file you control.</div></div>
           <button class="sh-btn" id="exportBtn">Save</button>
         </div>
         <div class="set-row">
-          <div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Loads a Ledger backup from this or another device.</div></div>
+          <div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Previews and verifies a Ledger backup before restoring it.</div></div>
           <button class="sh-btn" id="importBtn">Restore</button>
           <input type="file" id="importFile" accept=".json,application/json" style="display:none">
         </div>
@@ -1059,32 +1054,16 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
     <div class="sh" style="margin-top:8px"><div class="sh-title">About</div></div>
     <div class="card"><div class="card-body">
-      <div class="set-row"><div><div class="set-lbl">Ledger v1.6 — Compass</div><div class="set-sub">A zero-based budgeting companion that keeps daily decisions connected to long-term independence.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Added a Financial Compass for every-dollar planning, scheduled-bill coverage, money age, goal momentum, and practical financial education.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately create or upload a backup.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">Ledger v2.0 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Unified the daily briefing, focused review paths, verified device transfer, protected Google Drive sync with safe merging, accessibility, and long-term planning guidance.</div></div></div>
+      <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
     </div></div>
   </div>
 
 </div><!-- /views -->
 
-<button class="fab-sheet-btn" id="dialIncBtn">
-    <div class="fab-sheet-ico" style="background:var(--green-dim)">💰</div>
-    <div class="fab-sheet-label">
-      <div class="fab-sheet-label-title">Add Income</div>
-      <div class="fab-sheet-label-sub">Log a paycheck or reimbursement</div>
-    </div>
-  </button>
-  <button class="fab-sheet-btn" id="dialExpBtn">
-    <div class="fab-sheet-ico" style="background:var(--red-dim)">📝</div>
-    <div class="fab-sheet-label">
-      <div class="fab-sheet-label-title">Log Expense</div>
-      <div class="fab-sheet-label-sub">Record a purchase or payment</div>
-    </div>
-  </button>
-</div>
-
 <!-- TOAST -->
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 </div><!-- /app -->
 
@@ -1190,7 +1169,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
     <div class="sheet-title">Savings Goal</div>
     <div class="field"><label>Goal Name</label><input id="goalName" placeholder="e.g. Vacation Fund"></div>
     <div class="field"><label>Target Amount ($)</label><input id="goalTarget" type="number" inputmode="decimal" placeholder="0.00"></div>
-    <div class="field"><label>Amount Saved So Far ($)</label><input id="goalSaved" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Assign Now from Ready to Assign ($)</label><input id="goalSaved" type="number" inputmode="decimal" placeholder="0.00"><div class="field-help" id="goalAvailableHint"></div></div>
     <button class="btn-p" id="saveGoalBtn">Save Goal</button>
     <button class="btn-s" id="cancelGoalBtn">Cancel</button>
   </div>
@@ -1261,7 +1240,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 3;
 var LEDGER_SCHEMA_VERSION = 3;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '1.5.0';
+var LEDGER_APP_VERSION = '2.0.0';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1272,6 +1251,12 @@ var ledgerDb = null;
 var saveTimer = null;
 var snapshotTimer = null;
 var healthCheckTimer = null;
+var ledgerCloud = {fileId:null,lastSyncedHash:'',lastSyncedAt:null,lastSyncedState:null,connected:false,enabled:false};
+var cloudSyncTimer = null;
+var cloudSyncBusy = false;
+var pendingRestore = null;
+var pendingCloudPackage = null;
+var previousModalFocus = null;
 
 var LEDGER_COLLECTIONS = ['income','expenses','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts'];
 var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','viewingNextMonth','rolloverDate'];
@@ -1580,7 +1565,7 @@ function updateSyncStatus() {
     var readinessEl=document.getElementById('syncReadinessStatus');
     if(deviceEl) deviceEl.textContent='Device ' + shortDeviceId() + ' · kept separate from other devices';
     if(revisionEl) revisionEl.textContent=ledgerRevision ? 'Revision ' + ledgerRevision + ' · meaningful changes recorded automatically' : 'Protected change history is ready';
-    if(readinessEl) readinessEl.textContent='Not connected yet. Your budget stays on this device.';
+    if(readinessEl) readinessEl.textContent=ledgerCloud.enabled?(ledgerCloud.lastSyncedAt?'Drive protection available · last synced '+friendlyTime(ledgerCloud.lastSyncedAt):'Tap Sync to create your protected Drive copy'):'Not connected yet. Ledger remains fully usable on this device.';
   },0);
 }
 
@@ -1650,6 +1635,7 @@ function saveS() {
     var json=JSON.stringify(S);
     localStorage.setItem('piggybank_v2',json);
     scheduleDurableSave(); scheduleAutomaticSnapshot('Automatic checkpoint');
+    scheduleSessionCloudSync();
     if(typeof renderToday==='function') setTimeout(renderToday,0);
   }catch(e){console.error('Failed to save data:',e);toast('Ledger could not save this change');}
 }
@@ -1666,6 +1652,7 @@ async function loadS() {
       ledgerLastHash=current.stateHash||ledgerStateHash(current.data); ledgerLastState=cloneLedger(current.data);
     }
     await initSyncIdentity();
+    await loadCloudMetadata();
   }catch(e){console.warn('Ledger database unavailable; using compatibility storage.',e);}
   if(!loadedFromDatabase){
     var d=localStorage.getItem('piggybank_v2')||localStorage.getItem('piggybank_v1');
@@ -2720,10 +2707,10 @@ function emergencyFundProgress(){
 }
 function compassGoalItems(){
   var items=[];
-  S.goals.forEach(function(g){items.push({name:g.name||'Goal',saved:Number(g.saved)||0,target:Number(g.target)||0,source:'goal'});});
+  S.goals.forEach(function(g){items.push({id:g.id,name:g.name||'Goal',saved:Number(g.saved)||0,target:Number(g.target)||0,source:'legacy',emoji:'🎯'});});
   S.envelopes.forEach(function(e){
     if(e.isSavings&&e.target&&e.target.type==='save'&&!items.some(function(x){return String(x.name).toLowerCase()===String(e.name).toLowerCase();})){
-      items.push({name:e.name,saved:Math.max(0,envAvailable(e.id)),target:Number(e.target.amount)||0,source:'envelope'});
+      items.push({id:e.id,name:e.name,saved:Math.max(0,envAvailable(e.id)),target:Number(e.target.amount)||0,source:'envelope',emoji:e.emoji||'🎯'});
     }
   });
   return items.sort(function(a,b){
@@ -2731,6 +2718,7 @@ function compassGoalItems(){
     return bp-ap;
   });
 }
+
 function setCompassMetric(id,value,sub,level,pct){
   var v=document.getElementById(id),s=document.getElementById(id+'Sub'),f=document.getElementById(id+'Fill');
   if(v){v.textContent=value;v.className='compass-metric-value'+(level?' '+level:'');}
@@ -2798,11 +2786,29 @@ function renderFinancialCompass(){
   }
 }
 
+function renderReviewLanes(){
+  var age=moneyAgeDetails(), goals=compassGoalItems(), week=planCoverage(7), month=planCoverage(30);
+  var progress=document.getElementById('reviewProgressValue'),progressSub=document.getElementById('reviewProgressSub');
+  var emergency=goals.find(function(g){return /emergency|dental/i.test(g.name);})||goals[0];
+  if(progress) progress.textContent=emergency&&emergency.target>0?Math.min(100,Math.round(emergency.saved/emergency.target*100))+'% toward '+emergency.name:age.days+' day'+(age.days===1?'':'s')+' money age';
+  if(progressSub) progressSub.textContent=emergency?fmt(emergency.saved)+' of '+fmt(emergency.target):'Build goals and a 30-day buffer';
+  var spending=document.getElementById('reviewSpendingValue'),spendingSub=document.getElementById('reviewSpendingSub');
+  if(spending)spending.textContent=fmt(totalSpent());
+  if(spendingSub)spendingSub.textContent='Spent this month · '+fmt(totalAvailable())+' available';
+  var future=document.getElementById('reviewFutureValue'),futureSub=document.getElementById('reviewFutureSub');
+  if(future)future.textContent=week.hasData?week.pct+'% funded':'Add recurring bills';
+  if(futureSub)futureSub.textContent=week.hasData?(month.pct+'% of the next 30 days funded'):'Ledger needs your repeating commitments';
+  var ledger=document.getElementById('reviewLedgerValue'),ledgerSub=document.getElementById('reviewLedgerSub');
+  if(ledger)ledger.textContent=ledgerDb?'Protected':'Compatibility mode';
+  if(ledgerSub)ledgerSub.textContent=ledgerCloud.lastSyncedAt?'Drive synced '+friendlyTime(ledgerCloud.lastSyncedAt):'Recovery points available on this device';
+}
+
 // ═══════════════════════════════════════════
 // SUMMARY
 // ═══════════════════════════════════════════
 function renderSummary() {
   renderFinancialCompass();
+  renderReviewLanes();
   document.getElementById('sumInc').textContent = fmt(bankBalance());
   document.getElementById('sumSpent').textContent = fmt(totalSpent());
   document.getElementById('sumAssigned').textContent = fmt(totalAssigned());
@@ -2876,18 +2882,18 @@ function delOwed(type, id) {
 // GOALS
 // ═══════════════════════════════════════════
 function renderGoals() {
-  var el = document.getElementById('goalList');
-  if (!S.goals.length) { el.innerHTML = '<div class="empty"><div class="ei">🎯</div><p>Set a goal to start saving with purpose.</p></div>'; return; }
-  el.innerHTML = S.goals.map(function(g) {
-    var pct = g.target > 0 ? Math.min(g.saved/g.target*100,100) : 0;
-    return '<div class="goal-card">' +
-      '<div class="goal-top"><div><div class="goal-name">'+esc(g.name)+'</div><div class="goal-pct">'+pct.toFixed(0)+'% complete</div></div>' +
-      '<button class="del-btn" onclick="delGoal(\''+g.id+'\')">×</button></div>' +
-      '<div class="goal-track"><div class="goal-fill" style="width:'+pct+'%"></div></div>' +
-      '<div class="goal-amounts"><span class="goal-saved">'+fmt(g.saved)+' saved</span><span>'+fmt(g.target)+' goal</span></div>' +
-      '</div>';
+  var el=document.getElementById('goalList'), items=compassGoalItems();
+  if(!items.length){
+    el.innerHTML='<div class="guided-empty"><div class="guided-empty-icon">🎯</div><div class="guided-empty-title">Save with a clear purpose</div><div class="guided-empty-copy">A Ledger goal is a savings envelope, so the progress shown here is backed by real money in your plan.</div><div class="guided-actions"><button class="guided-action" onclick="quickGoal(\'Emergency Fund\',7000)">Emergency Fund</button><button class="guided-action" onclick="quickGoal(\'Dental Work\',5000)">Dental Work</button><button class="guided-action" onclick="quickGoal(\'Christmas\',300)">Christmas</button></div></div>';
+    return;
+  }
+  el.innerHTML=items.map(function(g){
+    var pct=g.target>0?Math.min(g.saved/g.target*100,100):0;
+    var source=g.source==='envelope'?'Backed by a savings envelope':'Tracking only · consider moving this into a savings envelope';
+    return '<div class="goal-card"><div class="goal-top"><div><div class="goal-name">'+esc(g.name)+'</div><div class="goal-pct">'+pct.toFixed(0)+'% complete</div><div class="goal-source">'+esc(source)+'</div></div>'+(g.source==='envelope'?'<button class="goal-open-btn" onclick="go(\'budget\')">Open budget</button>':'<button class="del-btn" onclick="delGoal(\''+g.id+'\')">×</button>')+'</div><div class="goal-track"><div class="goal-fill" style="width:'+pct+'%"></div></div><div class="goal-amounts"><span class="goal-saved">'+fmt(g.saved)+' saved</span><span>'+fmt(g.target)+' goal</span></div></div>';
   }).join('');
 }
+
 function delGoal(id) { S.goals = S.goals.filter(function(g){return g.id!==id;}); saveS(); renderGoals(); toast('Goal removed'); }
 
 // ═══════════════════════════════════════════
@@ -2918,7 +2924,7 @@ function delDebt(id) { S.debts = S.debts.filter(function(d){return d.id!==id;});
 function renderHistory() {
   var el = document.getElementById('histList');
   var all = S.expenses.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-  if (!all.length) { el.innerHTML = '<div class="empty"><div class="ei">📅</div><p>No history yet.</p></div>'; return; }
+  if (!all.length) { el.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">📅</div><div class="guided-empty-title">Your history begins with the next transaction</div><div class="guided-empty-copy">Consistent records turn today’s decisions into a useful financial story over time.</div><div class="guided-actions"><button class="guided-action" onclick="openExpModal()">Log an expense</button></div></div>'; return; }
   var groups = {};
   all.forEach(function(e) {
     var key = e.date.slice(0,7);
@@ -3013,36 +3019,49 @@ function renderToday() {
   var de=document.getElementById('todayDate'); if(de) de.textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
   var rta=readyToAssign();
-  var rtaEl=document.getElementById('todayRta'); if(rtaEl){rtaEl.textContent=(rta<0?'-':'')+fmt(Math.abs(rta));rtaEl.className='focus-value '+moneyClass(rta);animateMetric(rtaEl);}
-  var rs=document.getElementById('todayRtaSub'); if(rs) rs.textContent=rta<0?'Move money to cover the gap':rta>0.005?'Ready to assign':'Every dollar has a job';
 
   var upcoming=S.scheduled.map(function(sch){var d=nextOccurrence(sch);return {s:sch,d:d,days:daysUntil(d)};}).filter(function(x){return x.days<=7;}).sort(function(a,b){return a.days-b.days;});
   var state=renderBudgetHealth(rta,upcoming);
   renderTodaySignals(rta,upcoming,state);
-  var note=document.getElementById('todayNote');
-  if(note){
-    if(rta<0) note.textContent='Your plan is overassigned by '+fmt(Math.abs(rta))+'. Fix this before assigning or spending more.';
-    else if(state.overspent.length) note.textContent=state.overspent[0].name+' is overspent by '+fmt(Math.abs(envAvailable(state.overspent[0].id)))+'. Cover it from a lower-priority envelope.';
-    else if(state.shortNear.length){var x=state.shortNear[0];note.textContent=x.s.desc+' is due '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+' and is not fully funded.';}
-    else if(state.cardShort) note.textContent='Your credit-card minimum is not fully funded. Handle that before optional spending.';
-    else if(rta>0.005 && state.under.length) note.textContent='You are safe, but '+fmt(rta)+' still needs a job. Start with '+state.under[0].env.name+'.';
-    else if(rta>0.005) note.textContent='Your regular targets are covered. Give the remaining '+fmt(rta)+' a deliberate job: debt, a goal, or next month.';
-    else if(state.under.length) note.textContent=state.under[0].env.name+' still needs '+fmt(state.under[0].needed)+'. Your plan is stable, but not finished.';
-    else note.textContent='Nothing needs your attention right now. Keep logging transactions so Ledger stays accurate.';
-  }
+  var title=document.getElementById('todayFocusTitle'), note=document.getElementById('todayNote');
+  var focusTitle='Your plan is steady', focusCopy='Nothing needs your attention right now. Keep logging transactions so Ledger stays accurate.';
+  if(rta<0){focusTitle='Restore the plan first';focusCopy='Your plan is overassigned by '+fmt(Math.abs(rta))+'. Move money out of a lower-priority envelope before spending or assigning more.';}
+  else if(state.overspent.length){focusTitle='Cover one overspent envelope';focusCopy=state.overspent[0].name+' is overspent by '+fmt(Math.abs(envAvailable(state.overspent[0].id)))+'. Move money from a lower-priority envelope so the plan becomes trustworthy again.';}
+  else if(state.shortNear.length){var x=state.shortNear[0];focusTitle='Protect the next bill';focusCopy=x.s.desc+' is due '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+' and is not fully funded.';}
+  else if(state.cardShort){focusTitle='Fund the card minimum';focusCopy='Your credit-card minimum is not fully funded. Handle that before optional spending.';}
+  else if(rta>0.005 && state.under.length){focusTitle='Finish giving your money jobs';focusCopy=fmt(rta)+' is waiting for direction. Start with '+state.under[0].env.name+', then choose debt, a goal, or next month.';}
+  else if(rta>0.005){focusTitle='Your essentials are covered';focusCopy='The remaining '+fmt(rta)+' is waiting for a deliberate purpose: debt, a goal, or next month.';}
+  else if(state.under.length){focusTitle='Complete one monthly target';focusCopy=state.under[0].env.name+' still needs '+fmt(state.under[0].needed)+'. Your plan is stable, but not finished.';}
+  if(title) title.textContent=focusTitle;
+  if(note) note.textContent=focusCopy;
 
+  renderDailyPlan(rta,upcoming);
   renderTodayPriorities(upcoming);
   renderTodaySpending();
   renderTodayGoals();
   renderTodayUpcoming(upcoming);
   populateAffordEnvelopes();
 }
+
+function renderDailyPlan(rta,upcoming){
+  var av=document.getElementById('planAssignValue'),as=document.getElementById('planAssignSub');
+  if(av)av.textContent=rta<-.005?fmt(Math.abs(rta))+' over':rta>.005?fmt(rta):'Complete';
+  if(as)as.textContent=rta<-.005?'Reduce assignments':rta>.005?'Waiting for a job':'Every dollar assigned';
+  var uv=document.getElementById('planUpcomingValue'),us=document.getElementById('planUpcomingSub');
+  if(upcoming.length){var first=upcoming[0];if(uv)uv.textContent=first.days<=0?'Today':first.days===1?'Tomorrow':'In '+first.days+' days';if(us)us.textContent=first.s.desc+' · '+fmt(first.s.amount);}
+  else {if(uv)uv.textContent='Clear';if(us)us.textContent='Nothing due this week';}
+  var goals=compassGoalItems(), goal=goals.find(function(g){return /emergency|dental/i.test(g.name);})||goals[0];
+  var pv=document.getElementById('planProgressValue'),ps=document.getElementById('planProgressSub');
+  if(goal){var pct=goal.target>0?Math.min(100,Math.round(goal.saved/goal.target*100)):0;if(pv)pv.textContent=pct+'%';if(ps)ps.textContent=goal.name+' · '+fmt(goal.saved);}
+  else {if(pv)pv.textContent='Start';if(ps)ps.textContent='Create a savings goal';}
+}
+
 function priorityHtml(icon,name,note,amount){return '<div class="priority-row"><div class="priority-icon">'+icon+'</div><div class="priority-copy"><div class="priority-name">'+esc(name)+'</div><div class="priority-note">'+esc(note)+'</div></div>'+(amount?'<div class="priority-amt">'+esc(amount)+'</div>':'')+'</div>';}
 function renderTodayPriorities(upcoming){
   var el=document.getElementById('todayPriorities'); if(!el)return;
   var rows=[], rta=readyToAssign();
   if(rta<0) rows.push(priorityHtml('!','Fix overassignment','Move money out of a lower priority envelope.',fmt(Math.abs(rta))));
-  else if(rta>0.005) rows.push(priorityHtml('◎','Assign available money','Start with bills due in the next seven days.',fmt(rta)));
+  else if(rta>0.005) rows.push(priorityHtml('◎','Assign available money','Giving every dollar a job makes the plan easier to protect.',fmt(rta)));
   upcoming.slice(0,2).forEach(function(x){
     var env=S.envelopes.find(function(e){return e.id===x.s.envId;}), av=env?envAvailable(env.id):0;
     var when=x.days<0?Math.abs(x.days)+' days overdue':x.days===0?'Due today':x.days===1?'Due tomorrow':'Due in '+x.days+' days';
@@ -3073,7 +3092,7 @@ function renderTodayGoals(){
 }
 function renderTodayUpcoming(upcoming){
   var el=document.getElementById('todayUpcoming'); if(!el)return;
-  if(!upcoming.length){el.innerHTML='<div class="priority-empty">✓ You are caught up for the next seven days.</div>';return;}
+  if(!upcoming.length){el.innerHTML='<div class="priority-empty">✓ Nothing needs your attention for the next seven days.</div>';return;}
   el.innerHTML=upcoming.slice(0,4).map(function(x){var env=S.envelopes.find(function(e){return e.id===x.s.envId;});var when=x.days<0?Math.abs(x.days)+'d overdue':x.days===0?'Today':x.days===1?'Tomorrow':'In '+x.days+' days';return priorityHtml(env?env.emoji:'↗',x.s.desc,when,fmt(x.s.amount));}).join('');
 }
 function populateAffordEnvelopes(){
@@ -3129,8 +3148,6 @@ function go(v) {
   if (v==='settings') renderRolloverSummary();
   if (v==='scheduled') renderScheduled();
   if (v==='reports') renderReports();
-  var fab = document.getElementById('fab');
-  if (fab) fab.style.display = ['budget','expenses','owed','goals','debt','cards','scheduled','today'].indexOf(v) >= 0 ? 'flex' : 'none';
   var expFab=document.getElementById('expFab'); if(expFab) expFab.style.display=['expenses','budget'].indexOf(v)>=0?'flex':'none';
 }
 function toggleMoreMenu() {
@@ -3146,9 +3163,54 @@ function closeMoreMenu() {
 // FAB
 // ═══════════════════════════════════════════
 
-function openModal(id) { document.getElementById(id).className='overlay open'; }
-function closeModal(id) { document.getElementById(id).className='overlay'; }
-function modalBg(e, id) { if(e.target===document.getElementById(id)) closeModal(id); }
+function openModal(id) {
+  var modal=document.getElementById(id);if(!modal)return;
+  previousModalFocus=document.activeElement;
+  modal.className='overlay open';modal.setAttribute('aria-hidden','false');
+  var focusable=modal.querySelector('input:not([type="hidden"]),select,button,summary,[tabindex]:not([tabindex="-1"])');
+  if(focusable)setTimeout(function(){focusable.focus();},80);
+}
+function closeModal(id) {
+  var modal=document.getElementById(id);if(!modal)return;
+  modal.className='overlay';modal.setAttribute('aria-hidden','true');
+  if(previousModalFocus&&document.contains(previousModalFocus))previousModalFocus.focus();
+}
+function modalBg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+function initAccessibility(){
+  document.querySelectorAll('.overlay').forEach(function(modal){
+    modal.setAttribute('aria-hidden',modal.classList.contains('open')?'false':'true');
+    modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
+    var title=modal.querySelector('.sheet-title');
+    if(title){if(!title.id)title.id='title_'+modal.id;modal.setAttribute('aria-labelledby',title.id);}
+  });
+  document.querySelectorAll('.tog').forEach(function(tog){
+    if(!tog.hasAttribute('tabindex'))tog.setAttribute('tabindex','0');
+    tog.setAttribute('role','switch');
+    tog.setAttribute('aria-checked',tog.classList.contains('on')?'true':'false');
+    tog.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tog.click();}});
+  });
+  document.querySelectorAll('.tab,.tab-more,.more-item').forEach(function(item){
+    if(!item.hasAttribute('tabindex'))item.setAttribute('tabindex','0');
+    if(!item.hasAttribute('role'))item.setAttribute('role','button');
+    item.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();item.click();}});
+  });
+  var incomeHeader=document.getElementById('incomeHeader');if(incomeHeader){incomeHeader.setAttribute('role','button');incomeHeader.setAttribute('tabindex','0');incomeHeader.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleIncomeSection();}});}
+  document.addEventListener('keydown',function(e){
+    var open=document.querySelector('.overlay.open');
+    if(e.key==='Escape'){
+      if(open)closeModal(open.id);
+      var menu=document.getElementById('moreDropdown');if(menu&&menu.classList.contains('open'))toggleMoreMenu();
+      return;
+    }
+    if(e.key==='Tab'&&open){
+      var nodes=Array.prototype.slice.call(open.querySelectorAll('button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])')).filter(function(x){return x.offsetParent!==null;});
+      if(!nodes.length)return;var first=nodes[0],last=nodes[nodes.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+    }
+  });
+}
 
 function openIncomeModal() {
   editingIncomeId = null;
@@ -3263,11 +3325,21 @@ function openOwedModal(type) {
   openModal('owedModal');
 }
 
-function openGoalModal() {
-  document.getElementById('goalName').value = '';
-  document.getElementById('goalTarget').value = '';
-  document.getElementById('goalSaved').value = '';
+function openGoalModal(name,target) {
+  document.getElementById('goalName').value=name||'';
+  document.getElementById('goalTarget').value=target||'';
+  document.getElementById('goalSaved').value='';
+  var hint=document.getElementById('goalAvailableHint');if(hint)hint.textContent='Available to assign now: '+fmt(Math.max(0,readyToAssign()))+'. You can leave this blank and fund the goal later.';
   openModal('goalModal');
+  setTimeout(function(){document.getElementById(name?'goalSaved':'goalName').focus();},200);
+}
+
+function quickGoal(name,target){openGoalModal(name,target);}
+function goalGroup(){
+  var group=S.groups.find(function(g){return /future goal|savings goal|goals/i.test(g.name||'');});
+  if(group)return group;
+  var max=S.groups.reduce(function(m,g){return Math.max(m,Number(g.order)||0);},0);
+  group={id:uid(),name:'Future Goals',collapsed:false,order:max+1};S.groups.push(group);return group;
 }
 
 function openDebtModal() {
@@ -3412,12 +3484,19 @@ function saveOwed() {
 }
 
 function saveGoal() {
-  var name = document.getElementById('goalName').value.trim();
-  var target = parseFloat(document.getElementById('goalTarget').value)||0;
-  var saved = parseFloat(document.getElementById('goalSaved').value)||0;
-  if (!name) { toast('Enter a name'); return; }
-  S.goals.push({id:uid(), name:name, target:target, saved:saved});
-  saveS(); closeModal('goalModal'); renderGoals(); toast('Goal added! 🎯');
+  var name=document.getElementById('goalName').value.trim();
+  var target=parseFloat(document.getElementById('goalTarget').value)||0;
+  var assignNow=parseFloat(document.getElementById('goalSaved').value)||0;
+  if(!name){toast('Enter a goal name');return;}
+  if(target<=0){toast('Enter a target amount');return;}
+  if(assignNow<0){toast('Enter a valid amount');return;}
+  var available=Math.max(0,readyToAssign());
+  if(assignNow>available+0.005){toast('Only '+fmt(available)+' is ready to assign');return;}
+  var existing=S.envelopes.find(function(e){return String(e.name||'').toLowerCase()===name.toLowerCase();});
+  if(existing){toast('A budget envelope already uses that name');return;}
+  var group=goalGroup(),maxOrder=S.envelopes.filter(function(e){return e.groupId===group.id;}).reduce(function(m,e){return Math.max(m,Number(e.order)||0);},0);
+  S.envelopes.push({id:uid(),groupId:group.id,name:name,emoji:'🎯',color:COLORS[3],assigned:money(assignNow),assignedNext:0,order:maxOrder+1,target:{type:'save',amount:money(target)},isSavings:true,carryForward:0});
+  saveS();closeModal('goalModal');renderEnvelopes();renderGoals();renderSummary();updateRTA();toast(assignNow>0?'Goal created and '+fmt(assignNow)+' assigned':'Goal created. Fund it from Budget.');
 }
 
 function saveDebt() {
@@ -3449,8 +3528,8 @@ function applyTheme() {
   document.documentElement.setAttribute('data-theme', S.darkMode ? 'dark' : 'light');
   document.documentElement.setAttribute('data-season', S.seasonalAccent===false ? 'neutral' : currentSeason());
   document.getElementById('themeBtn').textContent = S.darkMode ? '🌙' : '☀️';
-  var dt=document.getElementById('darkTog'); if(dt) dt.className='tog'+(S.darkMode?' on':'');
-  var st=document.getElementById('seasonTog'); if(st) st.className='tog'+(S.seasonalAccent!==false?' on':'');
+  var dt=document.getElementById('darkTog'); if(dt){dt.className='tog'+(S.darkMode?' on':'');dt.setAttribute('aria-checked',S.darkMode?'true':'false');}
+  var st=document.getElementById('seasonTog'); if(st){st.className='tog'+(S.seasonalAccent!==false?' on':'');st.setAttribute('aria-checked',S.seasonalAccent!==false?'true':'false');}
   var ss=document.getElementById('seasonStatus');
   if(ss) ss.textContent=S.seasonalAccent===false ? 'Uses Ledger’s standard accent all year' : seasonName(currentSeason())+' accent active · muted and automatic';
 }
@@ -3458,7 +3537,7 @@ function applyTheme() {
 function toggleWeekMode() {
   S.weeklyMode = !S.weeklyMode;
   saveS();
-  document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':'');
+  document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':''); document.getElementById('weekTog').setAttribute('aria-checked',S.weeklyMode?'true':'false');
   renderEnvelopes();
   toast(S.weeklyMode ? '📅 Weekly mode on' : 'Monthly mode');
 }
@@ -3477,141 +3556,235 @@ function toggleSeasonalAccent() {
 
 function buildBackupPackage() {
   var data=cloneLedger(S);
-  return {
-    format:'ledger-backup',formatVersion:2,appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,
-    exportedAt:new Date().toISOString(),checksum:ledgerStateHash(data),data:data
-  };
+  return {format:'ledger-backup',formatVersion:3,appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,exportedAt:new Date().toISOString(),checksum:ledgerStateHash(data),data:data};
 }
 
-function downloadJson(value, filename) {
-  var blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+function downloadJson(value,filename){
+  var blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1200);
 }
 
-function readBackupPackage(value) {
-  if(value && value.format==='ledger-backup' && value.data){
-    if(value.checksum && ledgerStateHash(value.data)!==value.checksum) throw new Error('Backup verification failed');
+function readBackupPackage(value){
+  if(value&&['ledger-backup','ledger-transfer','ledger-cloud'].indexOf(value.format)>=0&&value.data){
+    if(Number(value.schemaVersion||1)>LEDGER_SCHEMA_VERSION)throw new Error('Backup requires newer Ledger');
+    var actual=ledgerStateHash(value.data),expected=value.checksum||value.stateHash;
+    if(expected&&actual!==expected)throw new Error('Backup verification failed');
     return value.data;
   }
-  if(value && Array.isArray(value.envelopes)) return value;
+  if(value&&Array.isArray(value.envelopes))return value;
   throw new Error('Unsupported backup');
 }
 
 function normalizeRestoredState(data) {
   S=cloneLedger(data);
   LEDGER_COLLECTIONS.forEach(function(collection){if(!Array.isArray(S[collection]))S[collection]=[];});
-  if(S.weeklyMode===undefined)S.weeklyMode=false;
-  if(S.darkMode===undefined)S.darkMode=true;
-  if(S.seasonalAccent===undefined)S.seasonalAccent=true;
-  if(S.incomeCollapsed===undefined)S.incomeCollapsed=false;
-  if(S.cashBalance===undefined)S.cashBalance=0;
-  if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
-  if(!S.currentMonth)S.currentMonth=currentMonthKey();
-  S.currentMonth=normalizeMonthKey(S.currentMonth);
-  if(S.envelopes.length && !S.groups.length)migrateToGroups();
-  if(!S.groups.length)seedGroups();
+  if(S.weeklyMode===undefined)S.weeklyMode=false;if(S.darkMode===undefined)S.darkMode=true;if(S.seasonalAccent===undefined)S.seasonalAccent=true;
+  if(S.incomeCollapsed===undefined)S.incomeCollapsed=false;if(S.cashBalance===undefined)S.cashBalance=0;if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
+  if(!S.currentMonth)S.currentMonth=currentMonthKey();S.currentMonth=normalizeMonthKey(S.currentMonth);
+  if(S.envelopes.length&&!S.groups.length)migrateToGroups();if(!S.groups.length)seedGroups();
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
-  S.envelopes.forEach(function(e,i){
-    if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;
-    if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;
-    if(!e.isSavings)e.carryForward=0;
+  S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;if(!e.isSavings)e.carryForward=0;});
+  S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;});ensureRecordIds();
+}
+
+function portableSummary(data){
+  data=data||{};
+  var savings=(data.envelopes||[]).filter(function(e){return e.isSavings&&e.target&&e.target.type==='save';}).length+(data.goals||[]).length;
+  var updated=(data.expenses||[]).concat(data.income||[]).map(function(x){return x.datetime||x.date||'';}).sort().pop();
+  return {transactions:(data.expenses||[]).length,income:(data.income||[]).length,envelopes:(data.envelopes||[]).length,goals:savings,updated:updated||null};
+}
+
+async function buildTransferPackage(){
+  await persistLedgerState({quietActivity:true});
+  var data=cloneLedger(S),summary=portableSummary(data),changes=await listChanges(),operations=await listOperations();
+  return {format:'ledger-transfer',formatVersion:1,appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,exportedAt:new Date().toISOString(),sourceDevice:cloneLedger(ledgerDevice),revision:ledgerRevision,stateHash:ledgerStateHash(data),checksum:ledgerStateHash(data),cloudBaseHash:ledgerCloud.lastSyncedHash||'',cloudBaseState:ledgerCloud.lastSyncedState?cloneLedger(ledgerCloud.lastSyncedState):null,summary:summary,data:data,history:{changes:changes.slice(-60),operations:operations.slice(-500)}};
+}
+
+async function exportTransferPackage(){
+  try{var pack=await buildTransferPackage();downloadJson(pack,'Ledger-Device-Transfer-'+new Date().toISOString().slice(0,10)+'.json');toast('Verified transfer file created');}
+  catch(e){console.error(e);toast('Could not create the transfer file');}
+}
+
+function previewRestorePackage(parsed,source){
+  try{
+    var data=readBackupPackage(parsed),summary=portableSummary(data),date=parsed.exportedAt||parsed.updatedAt||summary.updated;
+    pendingRestore={parsed:parsed,data:cloneLedger(data),source:source||'backup',expectedHash:ledgerStateHash(data)};
+    var heading=document.getElementById('restorePreviewHeading'),sub=document.getElementById('restorePreviewSub'),grid=document.getElementById('restorePreviewGrid'),note=document.getElementById('restorePreviewNote');
+    if(heading)heading.textContent=parsed.format==='ledger-transfer'?'Verified device transfer found':'Verified Ledger backup found';
+    if(sub)sub.textContent=(date?'Created '+new Date(date).toLocaleString():'Date unavailable')+(parsed.appVersion?' · Ledger v'+String(parsed.appVersion).replace(/\.0$/,''):'');
+    if(grid)grid.innerHTML=[['Transactions',summary.transactions],['Budget envelopes',summary.envelopes],['Savings goals',summary.goals],['Income records',summary.income]].map(function(x){return '<div class="restore-preview-cell"><div class="restore-preview-cell-label">'+x[0]+'</div><div class="restore-preview-cell-value">'+x[1]+'</div></div>';}).join('');
+    if(note)note.textContent='Ledger will save the current device as a recovery point first. Nothing changes until you confirm.';
+    openModal('restorePreviewModal');
+  }catch(e){console.error(e);toast(e.message==='Backup verification failed'?'This file could not be verified':'This is not a supported Ledger file');}
+}
+
+async function confirmRestorePackage(){
+  if(!pendingRestore)return;
+  var before=cloneLedger(S),cloudBefore=cloneLedger(ledgerCloud),restore=pendingRestore;pendingRestore=null;
+  try{
+    await createSnapshot('Before verified restore',true);
+    normalizeRestoredState(restore.data);
+    var normalizedHash=ledgerStateHash(S);
+    localStorage.setItem('piggybank_v2',JSON.stringify(S));
+    ledgerLastHash='';ledgerLastState=null;
+    await persistLedgerState({quietActivity:true});
+    var current=await dbGet('current','ledger-state');
+    if(ledgerDb){if(!current||ledgerStateHash(current.data)!==normalizedHash)throw new Error('Restore verification failed');}
+    else {var mirrored=JSON.parse(localStorage.getItem('piggybank_v2')||'null');if(!mirrored||ledgerStateHash(mirrored)!==normalizedHash)throw new Error('Restore verification failed');}
+    if(restore.parsed.cloudBaseHash){ledgerCloud.lastSyncedHash=restore.parsed.cloudBaseHash;ledgerCloud.lastSyncedState=restore.parsed.cloudBaseState?cloneLedger(restore.parsed.cloudBaseState):null;ledgerCloud.enabled=true;await saveCloudMetadata();}
+    closeModal('restorePreviewModal');renderAll();updateCloudStatus();toast('Everything was restored successfully');
+  }catch(e){
+    console.error(e);S=before;ledgerCloud=cloudBefore;localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;await persistLedgerState({quietActivity:true}).catch(function(){});renderAll();closeModal('restorePreviewModal');toast('Restore stopped. Your previous Ledger was kept.');
+  }
+}
+
+function importTransferFile(e){var file=e.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(ev){try{previewRestorePackage(JSON.parse(ev.target.result),'device transfer');}catch(err){toast('This file could not be read');}e.target.value='';};r.readAsText(file);}
+
+// ── GOOGLE DRIVE SAFE COPY + SESSION SYNC ──
+var GDRIVE_CLIENT_ID='906813663899-4869fffcqp64lc25ij3lgorn38dsdebn.apps.googleusercontent.com';
+var GDRIVE_SCOPE='https://www.googleapis.com/auth/drive.file';
+var gdriveToken=null;
+
+async function loadCloudMetadata(){
+  if(!ledgerDb)return;var rec=await dbGet('metadata','cloud');if(rec&&rec.value)ledgerCloud=Object.assign(ledgerCloud,rec.value);ledgerCloud.connected=false;updateCloudStatus();
+}
+function saveCloudMetadata(){if(!ledgerDb)return Promise.resolve();return dbPut('metadata',{key:'cloud',value:{fileId:ledgerCloud.fileId||null,lastSyncedHash:ledgerCloud.lastSyncedHash||'',lastSyncedAt:ledgerCloud.lastSyncedAt||null,lastSyncedState:ledgerCloud.lastSyncedState?cloneLedger(ledgerCloud.lastSyncedState):null,enabled:!!ledgerCloud.enabled}});}
+function updateCloudStatus(){
+  var status=document.getElementById('cloudStatus'),ready=document.getElementById('syncReadinessStatus'),btn=document.getElementById('cloudSyncBtn');
+  var text=!ledgerCloud.enabled?'Not connected. Tap Sync to add a protected Drive copy.':gdriveToken&&ledgerCloud.connected?(ledgerCloud.lastSyncedAt?'Protected · automatic while Ledger is open · current '+new Date(ledgerCloud.lastSyncedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'Connected · automatic while Ledger is open'):ledgerCloud.lastSyncedAt?'Drive copy protected · tap Sync after reopening':'Tap Sync to create your protected Drive copy';
+  if(status)status.textContent=text;if(ready)ready.textContent=text;if(btn&&!cloudSyncBusy){btn.disabled=false;btn.textContent='Sync';}
+  if(typeof renderReviewLanes==='function')renderReviewLanes();
+}
+function requestDriveToken(){
+  return new Promise(function(resolve,reject){
+    if(gdriveToken)return resolve(gdriveToken);
+    if(!window.google||!google.accounts||!google.accounts.oauth2)return reject(new Error('Google sign-in is still loading. Try again in a moment.'));
+    var client=google.accounts.oauth2.initTokenClient({client_id:GDRIVE_CLIENT_ID,scope:GDRIVE_SCOPE,callback:function(response){if(response.error)return reject(new Error(response.error));gdriveToken=response.access_token;ledgerCloud.connected=true;ledgerCloud.enabled=true;resolve(gdriveToken);}});
+    client.requestAccessToken({prompt:ledgerCloud.enabled?'':'consent'});
   });
-  S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;});
-  ensureRecordIds();
+}
+async function driveFetch(url,options){
+  options=options||{};options.headers=Object.assign({},options.headers||{},{Authorization:'Bearer '+gdriveToken});
+  var response=await fetch(url,options);if(response.status===401){gdriveToken=null;ledgerCloud.connected=false;updateCloudStatus();throw new Error('Google Drive needs to reconnect');}
+  if(!response.ok){var text=await response.text();throw new Error('Google Drive error '+response.status+(text?' · '+text.slice(0,120):''));}return response;
+}
+async function findDriveCloudFile(){
+  var q="appProperties has { key='ledgerApp' and value='northstar-v2' } and trashed=false";
+  var url='https://www.googleapis.com/drive/v3/files?spaces=drive&pageSize=10&orderBy=modifiedTime%20desc&fields=files(id,name,modifiedTime,size,appProperties)&q='+encodeURIComponent(q);
+  var response=await driveFetch(url),json=await response.json();return json.files&&json.files.length?json.files[0]:null;
+}
+async function downloadDrivePackage(fileId){var response=await driveFetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(fileId)+'?alt=media');return response.json();}
+function multipartBody(metadata,content,boundary){return '--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(content,null,2)+'\r\n--'+boundary+'--';}
+async function uploadDrivePackage(fileId,pack){
+  var boundary='ledger_'+Date.now().toString(36),metadata={name:'Ledger Safe Copy.json',mimeType:'application/json',appProperties:{ledgerApp:'northstar-v2',formatVersion:'1'}};
+  var url=fileId?'https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(fileId)+'?uploadType=multipart':'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+  var response=await driveFetch(url,{method:fileId?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary},body:multipartBody(metadata,pack,boundary)});return response.json();
+}
+async function buildCloudPackage(){
+  S.lastBackupDate=new Date().toISOString().slice(0,10);localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';await persistLedgerState({quietActivity:true});
+  var data=cloneLedger(S);return {format:'ledger-cloud',formatVersion:1,appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,updatedAt:new Date().toISOString(),sourceDevice:cloneLedger(ledgerDevice),revision:ledgerRevision,stateHash:ledgerStateHash(data),checksum:ledgerStateHash(data),data:data};
+}
+async function markCloudSynced(fileId,hash,state){ledgerCloud.fileId=fileId;ledgerCloud.lastSyncedHash=hash;ledgerCloud.lastSyncedState=cloneLedger(state||S);ledgerCloud.lastSyncedAt=new Date().toISOString();ledgerCloud.enabled=true;ledgerCloud.connected=!!gdriveToken;ledgerLastSyncedRevision=ledgerRevision;await saveCloudMetadata();updateCloudStatus();renderBackupBanner();}
+async function uploadLocalToCloud(existingId,quiet){
+  var pack=await buildCloudPackage(),meta=await uploadDrivePackage(existingId,pack),fileId=meta.id||existingId,verified=await downloadDrivePackage(fileId);readBackupPackage(verified);
+  if(verified.checksum!==pack.checksum)throw new Error('Cloud verification failed');await markCloudSynced(fileId,pack.checksum,pack.data);if(!quiet)toast('Google Drive copy verified and current');
+}
+async function applyCloudPackage(pack,quiet){
+  var data=readBackupPackage(pack),before=cloneLedger(S);await createSnapshot('Before Google Drive restore',true);
+  try{normalizeRestoredState(data);localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;await persistLedgerState({quietActivity:true});await markCloudSynced(ledgerCloud.fileId||null,ledgerStateHash(S),S);renderAll();if(!quiet)toast('This device is current with Google Drive');}
+  catch(e){S=before;localStorage.setItem('piggybank_v2',JSON.stringify(S));throw e;}
 }
 
-// ── GOOGLE DRIVE BACKUP ──
-var GDRIVE_CLIENT_ID = '906813663899-4869fffcqp64lc25ij3lgorn38dsdebn.apps.googleusercontent.com';
-var GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-var gdriveToken = null;
-
-function saveToGoogleDrive() {
-  var btn = document.getElementById('driveBackupBtn');
-  if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
-
-  var client = google.accounts.oauth2.initTokenClient({
-    client_id: GDRIVE_CLIENT_ID,
-    scope: GDRIVE_SCOPE,
-    callback: function(response) {
-      if (response.error) {
-        toast('❌ Sign-in failed: ' + response.error);
-        if (btn) { btn.textContent = 'Drive'; btn.disabled = false; }
-        return;
-      }
-      gdriveToken = response.access_token;
-      uploadToDrive(gdriveToken);
-    }
+function sameLedgerValue(a,b){return stableLedgerString(a)===stableLedgerString(b);}
+function mergeOneValue(base,local,remote,label,conflicts){
+  if(sameLedgerValue(local,remote))return cloneLedger(local);
+  if(sameLedgerValue(local,base))return cloneLedger(remote);
+  if(sameLedgerValue(remote,base))return cloneLedger(local);
+  conflicts.push(label);return cloneLedger(local);
+}
+function mergeLedgerCollection(name,baseList,localList,remoteList,conflicts){
+  baseList=Array.isArray(baseList)?baseList:[];localList=Array.isArray(localList)?localList:[];remoteList=Array.isArray(remoteList)?remoteList:[];
+  var bm={},lm={},rm={},order=[];
+  baseList.forEach(function(x){if(x&&x.id)bm[x.id]=x;});
+  localList.forEach(function(x){if(x&&x.id){lm[x.id]=x;if(order.indexOf(x.id)<0)order.push(x.id);}});
+  remoteList.forEach(function(x){if(x&&x.id){rm[x.id]=x;if(order.indexOf(x.id)<0)order.push(x.id);}});
+  Object.keys(bm).forEach(function(id){if(order.indexOf(id)<0)order.push(id);});
+  var out=[];
+  order.forEach(function(id){
+    var b=bm[id],l=lm[id],r=rm[id],chosen;
+    if(l===undefined&&r===undefined)return;
+    if(b===undefined){
+      if(l===undefined)chosen=r;else if(r===undefined)chosen=l;else if(sameLedgerValue(l,r))chosen=l;else {conflicts.push(name+':'+id);chosen=l;}
+    }else if(l===undefined){
+      if(sameLedgerValue(r,b))return;conflicts.push(name+':'+id);chosen=r;
+    }else if(r===undefined){
+      if(sameLedgerValue(l,b))return;conflicts.push(name+':'+id);chosen=l;
+    }else chosen=mergeOneValue(b,l,r,name+':'+id,conflicts);
+    if(chosen!==undefined)out.push(cloneLedger(chosen));
   });
-  client.requestAccessToken();
+  return out;
+}
+function mergeLedgerStates(base,local,remote){
+  base=base||{};local=local||{};remote=remote||{};var conflicts=[],merged={};
+  LEDGER_COLLECTIONS.forEach(function(name){merged[name]=mergeLedgerCollection(name,base[name],local[name],remote[name],conflicts);});
+  LEDGER_SETTING_KEYS.forEach(function(key){merged[key]=mergeOneValue(base[key],local[key],remote[key],'setting:'+key,conflicts);});
+  Object.keys(local).forEach(function(key){if(!(key in merged)&&LEDGER_COLLECTIONS.indexOf(key)<0&&LEDGER_SETTING_KEYS.indexOf(key)<0)merged[key]=cloneLedger(local[key]);});
+  Object.keys(remote).forEach(function(key){if(!(key in merged)&&LEDGER_COLLECTIONS.indexOf(key)<0&&LEDGER_SETTING_KEYS.indexOf(key)<0)merged[key]=cloneLedger(remote[key]);});
+  return {data:merged,conflicts:conflicts};
+}
+async function applyAutomaticCloudMerge(merged,fileId,quiet){
+  await createSnapshot('Before automatic cloud merge',true);
+  normalizeRestoredState(merged);localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;
+  await persistLedgerState({quietActivity:true});await uploadLocalToCloud(fileId,true);renderAll();
+  if(!quiet)toast('Changes from both devices were combined safely');
 }
 
-function uploadToDrive(token) {
-  var btn = document.getElementById('driveBackupBtn');
-  if (btn) btn.textContent = 'Uploading...';
-
-  var filename = 'Ledger-backup-' + new Date().toISOString().slice(0,10) + '.json';
-  var content = JSON.stringify(buildBackupPackage(), null, 2);
-  var boundary = 'piggybank_boundary';
-  var metadata = JSON.stringify({name: filename, mimeType: 'application/json'});
-
-  var body = '--' + boundary + '\r\n' +
-    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-    metadata + '\r\n' +
-    '--' + boundary + '\r\n' +
-    'Content-Type: application/json\r\n\r\n' +
-    content + '\r\n' +
-    '--' + boundary + '--';
-
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
-  xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-  xhr.setRequestHeader('Content-Type', 'multipart/related; boundary=' + boundary);
-  xhr.onload = function() {
-    if (btn) { btn.textContent = 'Drive'; btn.disabled = false; }
-    if (xhr.status === 200) {
-      S.lastBackupDate = new Date().toISOString().slice(0,10);
-      saveS();
-      toast('✅ Saved to Google Drive!');
-      renderBackupBanner();
-    } else {
-      var errMsg = '❌ Error ' + xhr.status;
-      try {
-        var errData = JSON.parse(xhr.responseText);
-        if (errData.error && errData.error.message) errMsg += ': ' + errData.error.message;
-      } catch(e) {}
-      toast(errMsg);
-      alert('Drive upload failed:\nStatus: ' + xhr.status + '\n' + xhr.responseText.slice(0,200));
+function showCloudChoice(pack,file,reason){
+  pendingCloudPackage={pack:pack,file:file};
+  var local=portableSummary(S),cloud=portableSummary(pack.data),copy=document.getElementById('cloudChoiceCopy');if(copy)copy.textContent=reason||'Both copies have changed. Choose the one that should become current. Ledger will keep a recovery point first.';
+  var lv=document.getElementById('localChoiceValue'),ls=document.getElementById('localChoiceSub'),cv=document.getElementById('cloudChoiceValue'),cs=document.getElementById('cloudChoiceSub');
+  if(lv)lv.textContent=local.transactions+' transactions';if(ls)ls.textContent='Current device · '+local.envelopes+' envelopes';if(cv)cv.textContent=cloud.transactions+' transactions';if(cs)cs.textContent='Drive copy · '+cloud.envelopes+' envelopes';openModal('cloudChoiceModal');
+}
+async function performDriveSync(token,quiet){
+  if(cloudSyncBusy)return;cloudSyncBusy=true;var btn=document.getElementById('cloudSyncBtn');if(btn){btn.disabled=true;btn.textContent='Checking…';}
+  try{
+    await persistLedgerState({quietActivity:true});var localHash=ledgerStateHash(S),file=await findDriveCloudFile();
+    if(!file){await uploadLocalToCloud(null,quiet);return;}
+    ledgerCloud.fileId=file.id;var cloud=await downloadDrivePackage(file.id),cloudData=readBackupPackage(cloud),cloudHash=ledgerStateHash(cloudData),base=ledgerCloud.lastSyncedHash||'';
+    if(cloudHash===localHash){await markCloudSynced(file.id,localHash,S);if(!quiet)toast('Google Drive is already current');return;}
+    if(base&&cloudHash===base&&localHash!==base){await uploadLocalToCloud(file.id,quiet);return;}
+    if(base&&localHash===base&&cloudHash!==base){await applyCloudPackage(cloud,quiet);return;}
+    if(base&&ledgerCloud.lastSyncedState){
+      var merged=mergeLedgerStates(ledgerCloud.lastSyncedState,S,cloudData);
+      if(!merged.conflicts.length){await applyAutomaticCloudMerge(merged.data,file.id,quiet);return;}
+      showCloudChoice(cloud,file,merged.conflicts.length+' item'+(merged.conflicts.length===1?'':'s')+' changed differently on both devices. Choose the copy you trust; Ledger saved recovery points before any replacement.');return;
     }
-  };
-  xhr.onerror = function() {
-    if (btn) { btn.textContent = 'Drive'; btn.disabled = false; }
-    toast('❌ Network error. Try again.');
-  };
-  xhr.send(body);
+    showCloudChoice(cloud,file,base?'This device and Google Drive both changed since the last sync. Choose which copy to keep.':'A Ledger copy already exists in Google Drive. Choose the copy you trust before the first sync.');
+  }catch(e){console.error(e);if(!quiet)toast(e.message||'Google Drive sync could not finish');}
+  finally{cloudSyncBusy=false;updateCloudStatus();}
 }
+async function syncWithGoogleDrive(){
+  try{cloudSyncBusy=true;var btn=document.getElementById('cloudSyncBtn');if(btn){btn.disabled=true;btn.textContent='Connecting…';}var token=await requestDriveToken();cloudSyncBusy=false;await performDriveSync(token,false);}
+  catch(e){cloudSyncBusy=false;updateCloudStatus();toast(e.message||'Google Drive could not connect');}
+}
+function scheduleSessionCloudSync(){if(!gdriveToken||!ledgerCloud.enabled||cloudSyncBusy)return;clearTimeout(cloudSyncTimer);cloudSyncTimer=setTimeout(function(){performDriveSync(gdriveToken,true);},3500);}
+async function chooseCloudVersion(choice){
+  if(!pendingCloudPackage)return;var pending=pendingCloudPackage;pendingCloudPackage=null;closeModal('cloudChoiceModal');
+  try{cloudSyncBusy=true;if(choice==='local')await uploadLocalToCloud(pending.file.id,false);else {ledgerCloud.fileId=pending.file.id;await applyCloudPackage(pending.pack,false);}}
+  catch(e){console.error(e);toast('The sync choice could not be completed');}finally{cloudSyncBusy=false;updateCloudStatus();}
+}
+function saveToGoogleDrive(){syncWithGoogleDrive();}
 
 function exportData() {
   var pack=buildBackupPackage();
   downloadJson(pack,'Ledger-backup-' + new Date().toISOString().slice(0,10) + '.json');
   S.lastBackupDate=new Date().toISOString().slice(0,10); saveS();
-  toast('Verified backup saved'); renderBackupBanner();
+  toast('Verified backup saved to this device'); renderBackupBanner();
 }
 
 function importData(e) {
-  var file=e.target.files[0]; if(!file)return;
-  var r=new FileReader();
-  r.onload=async function(ev){
-    try{
-      var parsed=JSON.parse(ev.target.result);
-      var data=readBackupPackage(parsed);
-      await createSnapshot('Before file restore',true);
-      normalizeRestoredState(data); saveS(); renderAll();
-      toast('Backup verified and restored'); updateStorageStatus();
-    }catch(err){console.error(err);toast(err.message==='Backup verification failed'?'Backup could not be verified':'Invalid or unsupported backup');}
-    e.target.value='';
-  };
-  r.readAsText(file);
+  var file=e.target.files[0];if(!file)return;var r=new FileReader();
+  r.onload=function(ev){try{previewRestorePackage(JSON.parse(ev.target.result),'backup');}catch(err){toast('This file could not be read');}e.target.value='';};r.readAsText(file);
 }
 
 function resetMonth() {
@@ -3626,6 +3799,7 @@ function clearAll() {
   localStorage.removeItem('piggybank_v1');
   localStorage.removeItem('piggybank_v2');
   localStorage.removeItem('ledger_last_snapshot_at');
+  localStorage.removeItem('ledger_welcome_seen');
   if(ledgerDb){ dbDeleteAll().then(function(){location.reload();}).catch(function(){location.reload();}); }
   else location.reload();
 }
@@ -3692,6 +3866,17 @@ async function runLedgerHealthCheck(showToast) {
   var title=document.getElementById('healthTitle'), copy=document.getElementById('healthCopy');
   if(title)title.textContent='Checking Ledger…'; if(copy)copy.textContent='Confirming that your protected copies agree.';
   setHealthBadge('checking','Checking');
+  if(!ledgerDb){
+    var dataEl=document.getElementById('healthData');if(dataEl)dataEl.textContent='Available in browser storage';
+    var recoveryEl=document.getElementById('healthRecovery');if(recoveryEl)recoveryEl.textContent='Use a manual backup';
+    var historyEl=document.getElementById('healthHistory');if(historyEl)historyEl.textContent='Limited in this browser';
+    var syncEl=document.getElementById('healthSync');if(syncEl)syncEl.textContent='Device transfer remains available';
+    if(title)title.textContent='Ledger is available with limited protection';
+    if(copy)copy.textContent='Your budget is usable, but this browser did not provide Ledger’s protected database. Save a device backup before making major changes.';
+    setHealthBadge('warn','Limited');
+    var checkedEl=document.getElementById('healthCheckedAt');if(checkedEl)checkedEl.textContent='Checked '+new Date().toLocaleString();
+    if(showToast)toast('Ledger is usable, but protection is limited in this browser');return false;
+  }
   try{
     await persistLedgerState();
     var results=await Promise.all([dbGet('current','ledger-state'),dbCount('snapshots'),dbCount('operations'),dbGet('metadata','device')]);
@@ -3702,7 +3887,7 @@ async function runLedgerHealthCheck(showToast) {
     var dataEl=document.getElementById('healthData'); if(dataEl)dataEl.textContent=dataOkay?'Verified and consistent':'Needs attention';
     var recoveryEl=document.getElementById('healthRecovery'); if(recoveryEl)recoveryEl.textContent=snapshotCount?snapshotCount+' save point'+(snapshotCount===1?'':'s'):'Ready to create one';
     var historyEl=document.getElementById('healthHistory'); if(historyEl)historyEl.textContent=ledgerRevision+' revision'+(ledgerRevision===1?'':'s')+' · '+operationCount+' record change'+(operationCount===1?'':'s');
-    var syncEl=document.getElementById('healthSync'); if(syncEl)syncEl.textContent=deviceOkay?'Device identity ready':'Still preparing';
+    var syncEl=document.getElementById('healthSync'); if(syncEl)syncEl.textContent=ledgerCloud.enabled?(ledgerCloud.lastSyncedAt?'Drive protection verified':'Drive connection ready'):(deviceOkay?'Device identity ready':'Still preparing');
     var okay=dataOkay&&deviceOkay;
     if(title)title.textContent=okay?'Ledger is healthy':'Ledger needs a closer look';
     if(copy)copy.textContent=okay?'Your database, recovery system, and change history are working together.':'Your budget is still available, but one protection check did not pass.';
@@ -3876,7 +4061,7 @@ function renderScheduled() {
 
   var listEl = document.getElementById('scheduledList');
   if (!all.length) {
-    listEl.innerHTML = '<div class="empty"><div class="ei">🔁</div><p>No scheduled transactions.<br>Tap + to add a recurring bill.</p></div>';
+    listEl.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">🔁</div><div class="guided-empty-title">Teach Ledger what repeats</div><div class="guided-empty-copy">Add recurring commitments so Today and Review can protect the next seven and thirty days.</div><div class="guided-actions"><button class="guided-action" onclick="quickSchedule(\'Rent\',[\'rent\'])">Rent</button><button class="guided-action" onclick="quickSchedule(\'Phone\',[\'phone\'])">Phone</button><button class="guided-action" onclick="quickSchedule(\'Credit Card Payment\',[\'credit card\',\'payment\'])">Card payment</button></div></div>';
   } else {
     listEl.innerHTML = '';
     all.forEach(function(item){ listEl.appendChild(makeSchedEl(item, false)); });
@@ -3934,21 +4119,20 @@ function deleteScheduled(id) {
   saveS(); renderScheduled(); toast('Removed');
 }
 
-function openSchedModal() {
-  document.getElementById('schedDesc').value = '';
-  document.getElementById('schedAmt').value = '';
-  document.getElementById('schedFreq').value = 'monthly';
-  document.getElementById('schedNextDate').value = new Date().toISOString().slice(0,10);
-  var sel = document.getElementById('schedEnv');
-  var opts = '';
-  sortedGroups().forEach(function(g){
-    opts += '<optgroup label="'+esc(g.name)+'">';
-    groupEnvelopes(g.id).forEach(function(e){ opts += '<option value="'+e.id+'">'+e.emoji+' '+e.name+'</option>'; });
-    opts += '</optgroup>';
-  });
-  sel.innerHTML = opts;
+function openSchedModal(preset) {
+  preset=preset||{};
+  document.getElementById('schedDesc').value=preset.desc||'';
+  document.getElementById('schedAmt').value=preset.amount||'';
+  document.getElementById('schedFreq').value=preset.freq||'monthly';
+  document.getElementById('schedNextDate').value=preset.nextDate||new Date().toISOString().slice(0,10);
+  var sel=document.getElementById('schedEnv'),opts='';
+  sortedGroups().forEach(function(g){opts+='<optgroup label="'+esc(g.name)+'">';groupEnvelopes(g.id).forEach(function(e){opts+='<option value="'+e.id+'">'+e.emoji+' '+e.name+'</option>';});opts+='</optgroup>';});
+  sel.innerHTML=opts;
+  if(preset.words){var env=findEnvByWords(preset.words);if(env)sel.value=env.id;}
   openModal('schedModal');
+  setTimeout(function(){document.getElementById(preset.desc?'schedAmt':'schedDesc').focus();},200);
 }
+function quickSchedule(desc,words){openSchedModal({desc:desc,words:words,freq:'monthly'});}
 
 function saveSched() {
   var desc = document.getElementById('schedDesc').value.trim();
@@ -3994,7 +4178,7 @@ function renderReports() {
 
   var listEl = document.getElementById('reportsList');
   if (!sorted.length) {
-    listEl.innerHTML = '<div class="empty"><p>No expenses in this period.</p></div>';
+    listEl.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">📝</div><div class="guided-empty-title">No spending recorded in this range</div><div class="guided-empty-copy">Log purchases as they happen so reports can teach you where your plan and your habits differ.</div><div class="guided-actions"><button class="guided-action" onclick="openExpModal()">Log an expense</button></div></div>';
   } else {
     listEl.innerHTML = '';
     sorted.forEach(function(envId) {
@@ -4122,8 +4306,8 @@ function renderAll() {
   renderOwed(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
   renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary(); renderBackupBanner();
   updateRTA(); applyTheme(); renderRecentActivity(); scheduleLedgerHealthCheck();
-  document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':'');
-  document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':'');
+  document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':''); document.getElementById('weekTog').setAttribute('aria-checked',S.weeklyMode?'true':'false');
+  document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':''); document.getElementById('darkTog').setAttribute('aria-checked',S.darkMode?'true':'false');
   var st=document.getElementById('seasonTog'); if(st) st.className='tog'+(S.seasonalAccent!==false?' on':'');
 }
 
@@ -4280,7 +4464,7 @@ window.onload = async function() {
   document.getElementById('owedModal').addEventListener('click', function(e){modalBg(e,'owedModal');});
 
   // Goal modal
-  document.getElementById('addGoalBtn').addEventListener('click', openGoalModal);
+  document.getElementById('addGoalBtn').addEventListener('click', function(){openGoalModal();});
   document.getElementById('saveGoalBtn').addEventListener('click', saveGoal);
   document.getElementById('cancelGoalBtn').addEventListener('click', function(){closeModal('goalModal');});
   document.getElementById('goalModal').addEventListener('click', function(e){modalBg(e,'goalModal');});
@@ -4313,9 +4497,21 @@ window.onload = async function() {
   document.getElementById('healthCheckBtn').addEventListener('click', function(){runLedgerHealthCheck(true);});
   document.getElementById('techDetailsBtn').addEventListener('click', toggleTechnicalDetails);
   document.getElementById('syncPackageBtn').addEventListener('click', exportSyncPackage);
+  document.getElementById('cloudSyncBtn').addEventListener('click', syncWithGoogleDrive);
+  document.getElementById('transferExportBtn').addEventListener('click', exportTransferPackage);
+  document.getElementById('transferImportBtn').addEventListener('click', function(){document.getElementById('transferImportFile').click();});
+  document.getElementById('transferImportFile').addEventListener('change', importTransferFile);
+  document.getElementById('welcomeRestoreBtn').addEventListener('click', function(){localStorage.setItem('ledger_welcome_seen','1');closeModal('welcomeModal');document.getElementById('transferImportFile').click();});
+  document.getElementById('welcomeStartBtn').addEventListener('click', function(){localStorage.setItem('ledger_welcome_seen','1');closeModal('welcomeModal');go('budget');});
+  document.getElementById('confirmRestoreBtn').addEventListener('click', confirmRestorePackage);
+  document.getElementById('cancelRestorePreviewBtn').addEventListener('click', function(){pendingRestore=null;closeModal('restorePreviewModal');});
+  document.getElementById('restorePreviewModal').addEventListener('click', function(e){modalBg(e,'restorePreviewModal');});
+  document.getElementById('keepLocalBtn').addEventListener('click', function(){chooseCloudVersion('local');});
+  document.getElementById('useCloudBtn').addEventListener('click', function(){chooseCloudVersion('cloud');});
+  document.getElementById('cancelCloudChoiceBtn').addEventListener('click', function(){pendingCloudPackage=null;closeModal('cloudChoiceModal');});
+  document.getElementById('cloudChoiceModal').addEventListener('click', function(e){modalBg(e,'cloudChoiceModal');});
   document.getElementById('snapshotBtn').addEventListener('click', function(){ createSnapshot('Manual recovery point',false).then(updateStorageStatus); });
   document.getElementById('restoreSnapshotBtn').addEventListener('click', restoreLatestSnapshot);
-  document.getElementById('driveBackupBtn').addEventListener('click', saveToGoogleDrive);
   document.getElementById('backupReminderBtn').addEventListener('click', function(){
     // Go to settings and trigger drive backup
     go('settings');
@@ -4328,12 +4524,16 @@ window.onload = async function() {
   document.getElementById('resetMonthBtn').addEventListener('click', resetMonth);
   document.getElementById('clearBtn').addEventListener('click', clearAll);
 
+  initAccessibility();
   renderAll();
   updateStorageStatus();
   updateSyncStatus();
+  updateCloudStatus();
   renderRecentActivity();
   scheduleLedgerHealthCheck();
   go('today');
+  var hasFinancialData=!!(S.income.length||S.expenses.length||S.envelopes.length||S.creditCards.length||S.scheduled.length||S.goals.length||S.debts.length||S.owedToMe.length||S.iOwe.length);
+  if(!hasFinancialData&&!localStorage.getItem('ledger_welcome_seen'))setTimeout(function(){openModal('welcomeModal');},250);
   initSwipe();
 
   // Keep the installed app available offline and update it when GitHub Pages changes.
@@ -4348,6 +4548,45 @@ window.onload = async function() {
   });
 };
 </script>
+
+<!-- First-Run Welcome Modal -->
+<div class="overlay" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title" id="welcomeTitle">Welcome to Ledger</div>
+    <div class="restore-preview-hero"><div class="restore-preview-check">◎</div><div><div class="restore-preview-title">Begin where you left off</div><div class="restore-preview-sub">Moving phones should not mean rebuilding your financial plan.</div></div></div>
+    <div class="cloud-choice-copy">Restore a verified Ledger transfer or begin with a clean budget. No account is required, and nothing is sent to the cloud unless you choose it.</div>
+    <button class="btn-p" id="welcomeRestoreBtn">Restore My Ledger</button>
+    <button class="btn-s" id="welcomeStartBtn">Start Fresh</button>
+  </div>
+</div>
+
+<!-- Restore Preview Modal -->
+<div class="overlay" id="restorePreviewModal" role="dialog" aria-modal="true" aria-labelledby="restorePreviewTitle">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title" id="restorePreviewTitle">Restore Ledger</div>
+    <div class="restore-preview-hero"><div class="restore-preview-check">✓</div><div><div class="restore-preview-title" id="restorePreviewHeading">Verified Ledger found</div><div class="restore-preview-sub" id="restorePreviewSub">Review the contents before restoring.</div></div></div>
+    <div class="restore-preview-grid" id="restorePreviewGrid"></div>
+    <div class="restore-preview-note" id="restorePreviewNote">Ledger will save a recovery point first. Nothing changes until you confirm.</div>
+    <button class="btn-p" id="confirmRestoreBtn">Restore This Ledger</button>
+    <button class="btn-s" id="cancelRestorePreviewBtn">Cancel</button>
+  </div>
+</div>
+
+<!-- Cloud Choice Modal -->
+<div class="overlay" id="cloudChoiceModal" role="dialog" aria-modal="true" aria-labelledby="cloudChoiceTitle">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title" id="cloudChoiceTitle">Two Ledger Copies Found</div>
+    <div class="cloud-choice-copy" id="cloudChoiceCopy">Both copies have changed. Choose which one should become current; Ledger will preserve a recovery point first.</div>
+    <div class="cloud-choice-grid">
+      <button class="cloud-choice-card" id="keepLocalBtn" type="button"><span class="cloud-choice-label">This device</span><span class="cloud-choice-value" id="localChoiceValue">Current copy</span><span class="cloud-choice-sub" id="localChoiceSub">Use the Ledger open now</span></button>
+      <button class="cloud-choice-card" id="useCloudBtn" type="button"><span class="cloud-choice-label">Google Drive</span><span class="cloud-choice-value" id="cloudChoiceValue">Cloud copy</span><span class="cloud-choice-sub" id="cloudChoiceSub">Use the saved Drive version</span></button>
+    </div>
+    <button class="btn-s" id="cancelCloudChoiceBtn">Decide Later</button>
+  </div>
+</div>
 
 <!-- Group Modal -->
 <div class="overlay" id="groupModal">

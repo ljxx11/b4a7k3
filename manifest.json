@@ -1,7 +1,7 @@
 {
-  "name": "Ledger",
+  "name": "Ledger \u2014 North Star",
   "short_name": "Ledger",
-  "description": "A calm zero-based budgeting companion for assigning every dollar, planning ahead, aging money, and building financial independence.",
+  "description": "A calm zero-based budgeting companion for assigning every dollar, tracking spending, planning ahead, aging money, and building financial independence.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -18,5 +18,12 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "id": "./",
+  "lang": "en-US",
+  "orientation": "portrait",
+  "categories": [
+    "finance",
+    "productivity"
   ]
 }
