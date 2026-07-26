@@ -1,0 +1,15 @@
+LEDGER — GITHUB PAGES PACKAGE
+
+This public-safe folder contains the blank Ledger app only.
+It includes noindex meta tags to discourage search-engine indexing.
+Noindex is not password protection: anyone with the exact URL can still open the blank app.
+
+UPLOAD THESE FILES TO GITHUB:
+- index.html
+- manifest.json
+- service-worker.js
+- icon-192.png
+- icon-512.png
+- .nojekyll
+
+Do NOT upload your private budget JSON. Restore that file from inside Ledger after installation.
