@@ -1,7 +1,7 @@
 {
   "name": "Ledger",
   "short_name": "Ledger",
-  "description": "A clear, calm, private zero-based budget.",
+  "description": "A calm, private zero-based budget with protected local recovery and sync-ready data.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
