@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="2.0.0">
-<title>Ledger — North Star v2.0</title>
+<meta name="ledger-version" content="2.0.1">
+<title>Ledger — North Star v2.0.1</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -560,7 +560,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 @media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
 
 
-/* ── NORTH STAR v2.0 ── */
+/* ── NORTH STAR v2.0.1 — TRUTH & CLARITY ── */
 :focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 button,input,select,summary{font:inherit}
 button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
@@ -578,6 +578,36 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 @media(max-width:370px){.daily-plan-grid{grid-template-columns:1fr}.daily-plan-card{min-height:78px}.review-question-grid{grid-template-columns:1fr}}
 @media(prefers-contrast:more){:root{--border:rgba(255,255,255,.2)}[data-theme=light]{--border:rgba(31,36,43,.22)}}
 @media(prefers-reduced-motion:reduce){.daily-plan-card:active{transform:none}*{scroll-behavior:auto!important}}
+
+/* ── TRUTH & CLARITY PATCH ── */
+.rta-compact-link{display:none}
+.hdr.compact-mode .rta{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:12px;row-gap:2px;padding:10px 13px;margin-bottom:8px!important;border-radius:14px;align-items:center}
+.hdr.compact-mode .rta::after,.hdr.compact-mode .rta-badge,.hdr.compact-mode .rta-meta,.hdr.compact-mode .rta-prog,.hdr.compact-mode .month-toggle-wrap{display:none!important}
+.hdr.compact-mode .rta-lbl{grid-column:1;grid-row:1;margin:0;font-size:9px}
+.hdr.compact-mode .rta-row{grid-column:1;grid-row:2;display:block}
+.hdr.compact-mode .rta-num{font-size:21px;line-height:1.05}
+.hdr.compact-mode .rta-compact-link{display:block;grid-column:2;grid-row:1/3;min-height:38px;padding:0 13px;border-radius:999px;background:var(--blue-dim);color:var(--acc);font-size:10px;font-weight:800;border:1px solid rgba(168,189,208,.16)}
+.sh>.sh-btn{min-height:38px;padding:0 13px;font-size:11px;box-shadow:none}
+.debt-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.debt-breakdown-card{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:left;color:var(--text);min-width:0}
+.debt-breakdown-label{font-size:9px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.7px}
+.debt-breakdown-value{font-size:15px;font-weight:800;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.debt-breakdown-sub{font-size:10px;color:var(--text3);margin-top:3px;line-height:1.35}
+.settings-section{background:var(--surf);border:1px solid var(--border);border-radius:18px;margin-bottom:12px;overflow:hidden}
+.settings-section>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;cursor:pointer;color:var(--text)}
+.settings-section>summary::-webkit-details-marker{display:none}
+.settings-section-title{display:block;font-size:13px;font-weight:800}
+.settings-section-sub{display:block;font-size:10px;color:var(--text3);line-height:1.35;margin-top:3px}
+.settings-chevron{font-size:18px;color:var(--text3);transition:transform .2s}
+.settings-section[open] .settings-chevron{transform:rotate(180deg)}
+.settings-section[open]>summary{border-bottom:1px solid var(--border)}
+.settings-section-body{padding:12px}
+.settings-section-body>.card:last-child{margin-bottom:0}
+.settings-subhead{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:14px 2px 7px}
+.danger-action{background:var(--red-dim)!important;color:var(--red)!important}
+.rollover-action{background:var(--yellow-dim)!important;color:var(--yellow)!important}
+@media(max-width:360px){.debt-breakdown{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -586,7 +616,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0.1</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -608,9 +638,10 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <span id="rtaTotal" style="color:var(--text3)">Total: $0.00</span>
     </div>
     <div class="rta-prog"><div class="rta-fill" id="rtaFill" style="width:0%"></div></div>
-  <div style="display:flex;justify-content:center;margin-top:8px">
+  <div class="month-toggle-wrap" style="display:flex;justify-content:center;margin-top:8px">
     <button class="month-toggle-btn" id="monthToggleBtn" onclick="toggleNextMonth()">📅 Budget This Month</button>
   </div>
+    <button class="rta-compact-link" type="button" onclick="go('budget')">Open Budget</button>
   </div>
   <div class="tabs" id="tabs">
     <div class="tab on" data-v="today">◯ Today</div>
@@ -622,9 +653,9 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="more-item" data-v="scheduled">🔁 Upcoming</div>
         <div class="more-item" data-v="cards">💳 Credit Cards</div>
         <div class="more-item" data-v="goals">🎯 Goals</div>
-        <div class="more-item" data-v="owed">🤝 Owed</div>
+        <div class="more-item" data-v="owed">🤝 People & IOUs</div>
         <div class="more-item" data-v="reports">📈 Reports</div>
-        <div class="more-item" data-v="debt">🏦 Other Debt</div>
+        <div class="more-item" data-v="debt">🏦 Debt Overview</div>
         <div class="more-item" data-v="history">📅 History</div>
         <div class="more-item" data-v="settings">⚙️ Settings</div>
       </div>
@@ -822,7 +853,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   <!-- OWED -->
   <div class="view" id="view-owed">
     <div class="net-box">
-      <div><div class="net-lbl">Net Position</div><div class="net-sub">What the world owes you overall</div></div>
+      <div><div class="net-lbl">Money Between People</div><div class="net-sub">What others owe you minus what you owe them</div></div>
       <div class="net-val" id="netVal">$0</div>
     </div>
     <div class="owed-sec">
@@ -855,17 +886,19 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
   <!-- DEBT -->
   <div class="view" id="view-debt">
-    <div class="sh"><div class="sh-title">Debts</div><button class="sh-btn" id="addDebtBtn">+ Debt</button></div>
+    <div class="sh"><div><div class="sh-title">Debt Overview</div><div class="sh-sub">Credit cards plus loans and other balances</div></div><button class="sh-btn" id="addDebtBtn">+ Other Debt</button></div>
     <div class="stat-row">
-      <div class="stat"><div class="stat-val" id="debtTot" style="color:var(--red)">$0</div><div class="stat-lbl">Total Debt</div></div>
-      <div class="stat"><div class="stat-val" id="debtMinStat">$0</div><div class="stat-lbl">Min/Month</div></div>
+      <div class="stat"><div class="stat-val" id="debtTot" style="color:var(--red)">$0</div><div class="stat-lbl">Total Owed</div></div>
+      <div class="stat"><div class="stat-val" id="debtMinStat">$0</div><div class="stat-lbl">Required/Month</div></div>
     </div>
-    <div class="card" style="margin-bottom:12px;background:var(--yellow-dim);border-color:rgba(251,191,36,.2)">
-      <div class="card-body" style="font-size:12px;color:var(--yellow);font-weight:700;line-height:1.6">
-        💡 To make debt payments, create an envelope called "Debt Payment" and assign your minimum each month. Log payments as expenses from that envelope. Use this tab to track your remaining balances.
+    <div class="debt-breakdown" id="debtBreakdown"></div>
+    <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(168,189,208,.18)">
+      <div class="card-body" style="font-size:12px;color:var(--acc);font-weight:700;line-height:1.6">
+        Credit-card balances are included automatically. Add loans or other debts here, then fund each required payment in its own envelope before optional spending.
       </div>
     </div>
-    <div id="debtList"><div class="empty"><div class="ei">💳</div><p>No debts tracked yet.</p></div></div>
+    <div class="sh" id="otherDebtHeading"><div class="sh-title">Loans & Other Debt</div></div>
+    <div id="debtList"><div class="empty"><div class="ei">🏦</div><p>No loans or other debts tracked.</p></div></div>
   </div>
 
   <!-- CREDIT CARDS -->
@@ -924,140 +957,88 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
   <!-- SETTINGS -->
   <div class="view" id="view-settings">
-    <div class="sh"><div class="sh-title">Settings</div></div>
-    <div class="card">
-      <div class="card-body">
-        <div class="set-row">
-          <div><div class="set-lbl">Weekly Paycheck Mode</div><div class="set-sub">Shows per-paycheck envelope targets</div></div>
-          <div class="tog" id="weekTog" role="switch" aria-label="Weekly paycheck mode"></div>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Dark Mode</div><div class="set-sub">Switch between dark and light appearance</div></div>
-          <div class="tog" id="darkTog" role="switch" aria-label="Dark mode"></div>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Seasonal Accent</div><div class="set-sub" id="seasonStatus">A quiet accent that changes with the time of year</div></div>
-          <div class="tog" id="seasonTog" role="switch" aria-label="Seasonal accent"></div>
-        </div>
-      </div>
-    </div>
+    <div class="sh"><div><div class="sh-title">Settings</div><div class="sh-sub">Powerful protection, organized into simple sections</div></div></div>
 
-    <div class="sh" style="margin-top:8px"><div class="sh-title">Ledger Health</div></div>
-    <div class="atlas-health-hero">
-      <div class="atlas-health-hero-top">
-        <div>
-          <div class="atlas-health-title" id="healthTitle">Checking Ledger…</div>
-          <div class="atlas-health-copy" id="healthCopy">Confirming that your data, recovery points, and change history agree.</div>
-        </div>
-        <div class="atlas-health-badge checking" id="ledgerHealthBadge">Checking</div>
-      </div>
-      <div class="atlas-health-grid">
-        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Data</div><div class="atlas-health-cell-value" id="healthData">Checking…</div></div>
-        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Recovery</div><div class="atlas-health-cell-value" id="healthRecovery">Checking…</div></div>
-        <div class="atlas-health-cell"><div class="atlas-health-cell-label">History</div><div class="atlas-health-cell-value" id="healthHistory">Checking…</div></div>
-        <div class="atlas-health-cell"><div class="atlas-health-cell-label">Cloud Safety</div><div class="atlas-health-cell-value" id="healthSync">Preparing…</div></div>
-      </div>
-      <div class="atlas-health-actions">
-        <div class="atlas-health-time" id="healthCheckedAt">Ledger checks itself when it opens.</div>
-        <button class="sh-btn" id="healthCheckBtn">Run Check</button>
-      </div>
-    </div>
+    <details class="settings-section" open>
+      <summary><span><span class="settings-section-title">Appearance & Paychecks</span><span class="settings-section-sub">How Ledger looks and plans around your income rhythm</span></span><span class="settings-chevron">⌄</span></summary>
+      <div class="settings-section-body"><div class="card"><div class="card-body">
+        <div class="set-row"><div><div class="set-lbl">Weekly Paycheck Mode</div><div class="set-sub">Shows per-paycheck envelope targets</div></div><div class="tog" id="weekTog" role="switch" aria-label="Weekly paycheck mode"></div></div>
+        <div class="set-row"><div><div class="set-lbl">Dark Mode</div><div class="set-sub">Switch between dark and light appearance</div></div><div class="tog" id="darkTog" role="switch" aria-label="Dark mode"></div></div>
+        <div class="set-row"><div><div class="set-lbl">Seasonal Accent</div><div class="set-sub" id="seasonStatus">A quiet accent that changes with the time of year</div></div><div class="tog" id="seasonTog" role="switch" aria-label="Seasonal accent"></div></div>
+      </div></div></div>
+    </details>
 
-    <div class="sh" style="margin-top:8px"><div class="sh-title">Protection & Sync</div></div>
-    <div class="card">
-      <div class="card-body">
-        <div class="set-row">
-          <div><div class="set-lbl">This Device</div><div class="set-sub" id="deviceStatus">Creating a private device identity…</div></div><span class="set-status-icon">◉</span>
+    <details class="settings-section" open>
+      <summary><span><span class="settings-section-title">Protection & Sync</span><span class="settings-section-sub">Ledger health, device transfer, and your optional Drive copy</span></span><span class="settings-chevron">⌄</span></summary>
+      <div class="settings-section-body">
+        <div class="atlas-health-hero">
+          <div class="atlas-health-hero-top"><div><div class="atlas-health-title" id="healthTitle">Checking Ledger…</div><div class="atlas-health-copy" id="healthCopy">Confirming that your data, recovery points, and change history agree.</div></div><div class="atlas-health-badge checking" id="ledgerHealthBadge">Checking</div></div>
+          <div class="atlas-health-grid">
+            <div class="atlas-health-cell"><div class="atlas-health-cell-label">Data</div><div class="atlas-health-cell-value" id="healthData">Checking…</div></div>
+            <div class="atlas-health-cell"><div class="atlas-health-cell-label">Recovery</div><div class="atlas-health-cell-value" id="healthRecovery">Checking…</div></div>
+            <div class="atlas-health-cell"><div class="atlas-health-cell-label">History</div><div class="atlas-health-cell-value" id="healthHistory">Checking…</div></div>
+            <div class="atlas-health-cell"><div class="atlas-health-cell-label">Cloud Safety</div><div class="atlas-health-cell-value" id="healthSync">Preparing…</div></div>
+          </div>
+          <div class="atlas-health-actions"><div class="atlas-health-time" id="healthCheckedAt">Ledger checks itself when it opens.</div><button class="sh-btn" id="healthCheckBtn">Run Check</button></div>
         </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Google Drive Protection</div><div class="set-sub" id="cloudStatus">Not connected. Tap Sync to add a protected Drive copy.</div></div>
-          <button class="sh-btn" id="cloudSyncBtn">Sync</button>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Move Ledger to a New Device</div><div class="set-sub">Creates one verified transfer file containing your full Ledger.</div></div>
-          <button class="sh-btn" id="transferExportBtn">Create</button>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Restore on This Device</div><div class="set-sub">Preview a transfer or backup before anything is replaced.</div></div>
-          <button class="sh-btn" id="transferImportBtn">Restore</button><input type="file" id="transferImportFile" accept=".json,application/json" style="display:none">
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Change History</div><div class="set-sub" id="revisionStatus">Preparing protected history…</div></div><span class="set-status-icon">✓</span>
-        </div>
-        <button class="soft-link" id="techDetailsBtn" aria-expanded="false">Show technical details</button>
-        <div class="tech-details" id="techDetails">
-          <div class="set-row"><div><div class="set-lbl">Cloud Connection</div><div class="set-sub" id="syncReadinessStatus">Not connected yet. Your budget stays on this device.</div></div><span class="set-status-icon">○</span></div>
-          <div class="set-row"><div><div class="set-lbl">Sync Diagnostic</div><div class="set-sub">Creates a private technical file for troubleshooting. It does not change your budget.</div></div><button class="sh-btn" id="syncPackageBtn">Create</button></div>
-        </div>
+        <div class="card"><div class="card-body">
+          <div class="set-row"><div><div class="set-lbl">This Device</div><div class="set-sub" id="deviceStatus">Creating a private device identity…</div></div><span class="set-status-icon">◉</span></div>
+          <div class="set-row"><div><div class="set-lbl">Google Drive Protection</div><div class="set-sub" id="cloudStatus">Not connected. Tap Sync to add a protected Drive copy.</div></div><button class="sh-btn" id="cloudSyncBtn">Sync</button></div>
+          <div class="set-row"><div><div class="set-lbl">Move Ledger to a New Device</div><div class="set-sub">Creates one verified transfer file containing your full Ledger.</div></div><button class="sh-btn" id="transferExportBtn">Create</button></div>
+          <div class="set-row"><div><div class="set-lbl">Restore on This Device</div><div class="set-sub">Preview a transfer or backup before anything is replaced.</div></div><button class="sh-btn" id="transferImportBtn">Restore</button><input type="file" id="transferImportFile" accept=".json,application/json" style="display:none"></div>
+          <div class="set-row"><div><div class="set-lbl">Change History</div><div class="set-sub" id="revisionStatus">Preparing protected history…</div></div><span class="set-status-icon">✓</span></div>
+          <button class="soft-link" id="techDetailsBtn" aria-expanded="false">Show technical details</button>
+          <div class="tech-details" id="techDetails">
+            <div class="set-row"><div><div class="set-lbl">Cloud Connection</div><div class="set-sub" id="syncReadinessStatus">Not connected yet. Your budget stays on this device.</div></div><span class="set-status-icon">○</span></div>
+            <div class="set-row"><div><div class="set-lbl">Sync Diagnostic</div><div class="set-sub">Creates a private technical file for troubleshooting. It does not change your budget.</div></div><button class="sh-btn" id="syncPackageBtn">Create</button></div>
+          </div>
+        </div></div>
+        <div class="settings-subhead">Recent Activity</div>
+        <div class="card"><div class="card-body" id="activityList"><div class="activity-empty">Activity will appear here as you use Ledger.</div></div></div>
       </div>
-    </div>
+    </details>
 
-    <div class="sh" style="margin-top:8px"><div class="sh-title">Recent Activity</div></div>
-    <div class="card"><div class="card-body" id="activityList"><div class="activity-empty">Activity will appear here as you use Ledger.</div></div></div>
+    <details class="settings-section">
+      <summary><span><span class="settings-section-title">Backup & Recovery</span><span class="settings-section-sub">Save points, phone backups, restore, and reset tools</span></span><span class="settings-chevron">⌄</span></summary>
+      <div class="settings-section-body"><div class="card"><div class="card-body">
+        <div class="set-row"><div><div class="set-lbl">Ledger Database</div><div class="set-sub" id="storageStatus">Preparing protected storage…</div></div><span style="font-size:18px">✓</span></div>
+        <div class="set-row"><div><div class="set-lbl">Automatic Recovery</div><div class="set-sub" id="snapshotStatus">Checking recovery points…</div></div><button class="sh-btn" id="snapshotBtn">Save Point</button></div>
+        <div class="set-row"><div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake without replacing your separate backup.</div></div><button class="sh-btn" id="restoreSnapshotBtn">Restore</button></div>
+        <div class="set-row"><div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Downloads a verified backup file you control.</div></div><button class="sh-btn" id="exportBtn">Save</button></div>
+        <div class="set-row"><div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Previews and verifies a Ledger backup before restoring it.</div></div><button class="sh-btn" id="importBtn">Restore</button><input type="file" id="importFile" accept=".json,application/json" style="display:none"></div>
+        <div class="set-row"><div><div class="set-lbl">Reset This Month</div><div class="set-sub">Clear this month’s expenses while keeping envelopes and assignments.</div></div><button class="sh-btn danger-action" id="resetMonthBtn">Reset</button></div>
+        <div class="set-row"><div><div class="set-lbl">Clear All Data</div><div class="set-sub">Full factory reset. Use only when starting over.</div></div><button class="sh-btn danger-action" id="clearBtn">Clear</button></div>
+      </div></div></div>
+    </details>
 
-    <div class="sh" style="margin-top:8px"><div class="sh-title">Backup & Restore</div></div>
-    <div class="card">
-      <div class="card-body">
-        <div class="set-row">
-          <div><div class="set-lbl">Ledger Database</div><div class="set-sub" id="storageStatus">Preparing protected storage…</div></div>
-          <span style="font-size:18px">✓</span>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Automatic Recovery</div><div class="set-sub" id="snapshotStatus">Checking recovery points…</div></div>
-          <button class="sh-btn" id="snapshotBtn">Save Point</button>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake without replacing your separate backup.</div></div>
-          <button class="sh-btn" id="restoreSnapshotBtn">Restore</button>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Downloads a verified backup file you control.</div></div>
-          <button class="sh-btn" id="exportBtn">Save</button>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Previews and verifies a Ledger backup before restoring it.</div></div>
-          <button class="sh-btn" id="importBtn">Restore</button>
-          <input type="file" id="importFile" accept=".json,application/json" style="display:none">
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Reset This Month</div><div class="set-sub">Clear this month’s expenses while keeping envelopes and assignments.</div></div>
-          <button class="sh-btn" style="background:var(--red-dim);color:var(--red)" id="resetMonthBtn">Reset</button>
-        </div>
-        <div class="set-row">
-          <div><div class="set-lbl">Clear All Data</div><div class="set-sub">Full factory reset. Use only when starting over.</div></div>
-          <button class="sh-btn" style="background:var(--red-dim);color:var(--red)" id="clearBtn">Clear</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="sh" style="margin-top:8px"><div class="sh-title">Month Rollover</div></div>
-    <div class="card" style="margin-bottom:12px">
-      <div class="card-body">
+    <details class="settings-section">
+      <summary><span><span class="settings-section-title">Month Rollover</span><span class="settings-section-sub">Carry savings forward and prepare the next month</span></span><span class="settings-chevron">⌄</span></summary>
+      <div class="settings-section-body"><div class="card"><div class="card-body">
         <div class="set-row"><div><div class="set-lbl">Last Rollover</div><div class="set-sub" id="lastRolloverDate">Never — happens automatically at month end</div></div></div>
         <div class="set-row"><div><div class="set-lbl">Savings Carry-Forward</div><div class="set-sub">Balances that will carry into next month</div></div></div>
         <div id="savingsRolloverList" style="margin-top:4px"></div>
-        <div class="set-row">
-          <div><div class="set-lbl">Simulate Rollover</div><div class="set-sub">Test the rollover now without waiting for month end</div></div>
-          <button class="sh-btn" style="background:var(--yellow-dim);color:var(--yellow)" id="manualRolloverBtn">Roll Over</button>
-        </div>
+        <div class="set-row"><div><div class="set-lbl">Simulate Rollover</div><div class="set-sub">Test the rollover now without waiting for month end</div></div><button class="sh-btn rollover-action" id="manualRolloverBtn">Roll Over</button></div>
+      </div></div></div>
+    </details>
+
+    <details class="settings-section">
+      <summary><span><span class="settings-section-title">Guide & About</span><span class="settings-section-sub">The budgeting method, terminology, privacy, and version notes</span></span><span class="settings-chevron">⌄</span></summary>
+      <div class="settings-section-body">
+        <div class="card"><div class="card-body">
+          <div class="guide-rule"><div class="guide-title">1. Read Budget Health</div><div class="guide-copy">Excellent means no action is waiting. Good means you are safe but still have a task. Caution deserves attention soon. Action required should be handled first.</div></div>
+          <div class="guide-rule"><div class="guide-title">2. Follow Today’s Priority</div><div class="guide-copy">Ledger places the highest-impact item first. Resolve red before yellow, then finish ordinary funding work.</div></div>
+          <div class="guide-rule"><div class="guide-title">3. Bring Ready to Assign to $0</div><div class="guide-copy">A positive amount is not extra spending money until you intentionally assign it. A negative amount means the plan exceeds the money available.</div></div>
+          <div class="guide-rule"><div class="guide-title">4. Log spending promptly</div><div class="guide-copy">Ledger can only be trustworthy when purchases, payments, and income are recorded.</div></div>
+          <div class="guide-rule"><div class="guide-title">5. Check the envelope before buying</div><div class="guide-copy">Your plan is the full budget. Each envelope holds the money for one job. Use Can I afford this? for a quick answer—the envelope balance, not the checking balance, controls the decision.</div></div>
+        </div></div>
+        <div class="settings-subhead">About Ledger</div>
+        <div class="card"><div class="card-body">
+          <div class="set-row"><div><div class="set-lbl">Ledger v2.0.1 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Clarified total debt, separated personal IOUs from net worth, compacted secondary screens, organized Settings, and standardized Ledger’s planning language.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
+        </div></div>
       </div>
-    </div>
-
-    <div class="sh" style="margin-top:8px"><div class="sh-title">Quick Guide</div></div>
-    <div class="card" style="margin-bottom:12px"><div class="card-body">
-      <div class="guide-rule"><div class="guide-title">1. Read Budget Health</div><div class="guide-copy">Excellent means no action is waiting. Good means you are safe but still have a task. Caution deserves attention soon. Action required should be handled first.</div></div>
-      <div class="guide-rule"><div class="guide-title">2. Follow Today’s Priority</div><div class="guide-copy">Ledger places the highest-impact item first. Resolve red before yellow, then finish ordinary funding work.</div></div>
-      <div class="guide-rule"><div class="guide-title">3. Bring Ready to Assign to $0</div><div class="guide-copy">A positive amount is not extra spending money until you intentionally assign it. A negative amount means the plan exceeds the money available.</div></div>
-      <div class="guide-rule"><div class="guide-title">4. Log spending promptly</div><div class="guide-copy">Ledger can only be trustworthy when purchases, payments, and income are recorded.</div></div>
-      <div class="guide-rule"><div class="guide-title">5. Check the envelope before buying</div><div class="guide-copy">Use Can I afford this? for a quick answer. The envelope balance—not the checking balance—controls the decision.</div></div>
-    </div></div>
-
-    <div class="sh" style="margin-top:8px"><div class="sh-title">About</div></div>
-    <div class="card"><div class="card-body">
-      <div class="set-row"><div><div class="set-lbl">Ledger v2.0 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Unified the daily briefing, focused review paths, verified device transfer, protected Google Drive sync with safe merging, accessibility, and long-term planning guidance.</div></div></div>
-      <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
-    </div></div>
+    </details>
   </div>
 
 </div><!-- /views -->
@@ -1179,8 +1160,8 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 <div class="overlay" id="debtModal">
   <div class="sheet">
     <div class="drag"></div>
-    <div class="sheet-title">Add Debt</div>
-    <div class="field"><label>Name</label><input id="debtName" placeholder="e.g. Student Loan"></div>
+    <div class="sheet-title">Add Loan or Other Debt</div>
+    <div class="field"><label>Name</label><input id="debtName" placeholder="e.g. Student Loan, Payment Plan"></div>
     <div class="field"><label>Balance ($)</label><input id="debtBal" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Interest Rate (%)</label><input id="debtRate" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Minimum Payment ($)</label><input id="debtMinInput" type="number" inputmode="decimal" placeholder="0.00"></div>
@@ -1240,7 +1221,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 3;
 var LEDGER_SCHEMA_VERSION = 3;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '2.0.0';
+var LEDGER_APP_VERSION = '2.0.1';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -2899,20 +2880,37 @@ function delGoal(id) { S.goals = S.goals.filter(function(g){return g.id!==id;});
 // ═══════════════════════════════════════════
 // DEBT
 // ═══════════════════════════════════════════
+function cardRequiredPayment(card) {
+  var balance=Math.max(0,Number(card&&card.balance)||0);
+  if(!balance)return 0;
+  var env=ccPaymentEnv(card.id);
+  var planned=Number(card.minimum)||Number(env&&env.target&&env.target.amount)||40;
+  return money(Math.min(balance,Math.max(0,planned)));
+}
 function renderDebts() {
-  var totalBal = 0, totalMin = 0;
-  S.debts.forEach(function(d){ totalBal += d.balance; totalMin += d.minPayment||0; });
-  document.getElementById('debtTot').textContent = fmtS(totalBal);
-  document.getElementById('debtMinStat').textContent = fmtS(totalMin);
-  var el = document.getElementById('debtList');
-  if (!S.debts.length) { el.innerHTML = '<div class="empty"><div class="ei">💳</div><p>No debts tracked.</p></div>'; return; }
-  el.innerHTML = S.debts.map(function(d) {
-    return '<div class="debt-card">' +
-      '<div class="debt-top"><div class="debt-name">'+esc(d.name)+'</div><button class="del-btn" onclick="delDebt(\''+d.id+'\')">×</button></div>' +
-      '<div class="debt-bal">'+fmt(d.balance)+'</div>' +
-      '<div class="debt-grid">' +
-        '<div class="debt-field"><div class="debt-field-lbl">Interest Rate</div><div class="debt-field-val">'+(d.rate||0)+'%</div></div>' +
-        '<div class="debt-field"><div class="debt-field-lbl">Min Payment</div><div class="debt-field-val">'+fmt(d.minPayment||0)+'/mo</div></div>' +
+  var otherBal=0,otherMin=0;
+  S.debts.forEach(function(d){otherBal+=Number(d.balance)||0;otherMin+=Number(d.minPayment)||0;});
+  var cardBal=totalCCDebt(),cardMin=0;
+  S.creditCards.forEach(function(c){cardMin+=cardRequiredPayment(c);});
+  var totalBal=money(cardBal+otherBal),totalMin=money(cardMin+otherMin);
+  document.getElementById('debtTot').textContent=fmtS(totalBal);
+  document.getElementById('debtMinStat').textContent=fmtS(totalMin);
+  var breakdown=document.getElementById('debtBreakdown');
+  if(breakdown)breakdown.innerHTML=
+    '<button class="debt-breakdown-card" type="button" onclick="go(\'cards\')"><div class="debt-breakdown-label">Credit Cards</div><div class="debt-breakdown-value" style="color:'+(cardBal>0?'var(--red)':'var(--text)')+'">'+fmt(cardBal)+'</div><div class="debt-breakdown-sub">'+S.creditCards.length+' card'+(S.creditCards.length===1?'':'s')+' · '+fmt(cardMin)+' required</div></button>'+
+    '<div class="debt-breakdown-card"><div class="debt-breakdown-label">Loans & Other</div><div class="debt-breakdown-value" style="color:'+(otherBal>0?'var(--red)':'var(--text)')+'">'+fmt(otherBal)+'</div><div class="debt-breakdown-sub">'+S.debts.length+' balance'+(S.debts.length===1?'':'s')+' · '+fmt(otherMin)+' required</div></div>';
+  var el=document.getElementById('debtList');
+  if(!S.debts.length){
+    el.innerHTML=cardBal>0?'<div class="guided-empty"><div class="guided-empty-icon">✓</div><div class="guided-empty-title">Your credit card is already included</div><div class="guided-empty-copy">Add only loans or other balances here. The total above already includes every card tracked in Ledger.</div></div>':'<div class="guided-empty"><div class="guided-empty-icon">🏦</div><div class="guided-empty-title">No debt is recorded</div><div class="guided-empty-copy">Credit cards will appear automatically. Use Other Debt for loans, payment plans, or balances outside the card system.</div></div>';
+    return;
+  }
+  el.innerHTML=S.debts.map(function(d){
+    return '<div class="debt-card">'+
+      '<div class="debt-top"><div class="debt-name">'+esc(d.name)+'</div><button class="del-btn" aria-label="Remove '+esc(d.name)+'" onclick="delDebt(\''+d.id+'\')">×</button></div>'+
+      '<div class="debt-bal">'+fmt(d.balance)+'</div>'+
+      '<div class="debt-grid">'+
+        '<div class="debt-field"><div class="debt-field-lbl">Interest Rate</div><div class="debt-field-val">'+(d.rate||0)+'%</div></div>'+
+        '<div class="debt-field"><div class="debt-field-lbl">Required Payment</div><div class="debt-field-val">'+fmt(d.minPayment||0)+'/mo</div></div>'+
       '</div></div>';
   }).join('');
 }
@@ -3120,7 +3118,7 @@ function checkAffordability(){
 var MORE_VIEWS = ['cards','scheduled','reports','goals','owed','debt','history','settings'];
 function go(v) {
   currentView = v;
-  var hdr=document.querySelector('.hdr'); if(hdr) hdr.classList.toggle('today-mode',v==='today');
+  var hdr=document.querySelector('.hdr'); if(hdr){hdr.classList.toggle('today-mode',v==='today');hdr.classList.toggle('compact-mode',v!=='today'&&v!=='budget');}
   document.querySelectorAll('.view').forEach(function(el){el.className='view';});
   document.querySelectorAll('.tab').forEach(function(el){el.className='tab';});
   document.querySelectorAll('.more-item').forEach(function(el){el.className='more-item';});
