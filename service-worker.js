@@ -1,4 +1,4 @@
-const CACHE='ledger-v2.0.1-truth-clarity.1';
+const CACHE='ledger-v2.0.2-honest-outlook.1';
 const CORE=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{

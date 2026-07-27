@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="2.0.1">
-<title>Ledger — North Star v2.0.1</title>
+<meta name="ledger-version" content="2.0.2">
+<title>Ledger — North Star v2.0.2</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -560,7 +560,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 @media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
 
 
-/* ── NORTH STAR v2.0.1 — TRUTH & CLARITY ── */
+/* ── NORTH STAR v2.0.2 — HONEST OUTLOOK ── */
 :focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 button,input,select,summary{font:inherit}
 button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
@@ -616,7 +616,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0.1</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0.2</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -925,7 +925,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       </div>
     </div>
     <div class="sh"><div class="sh-title">Due Soon</div></div>
-    <div id="scheduledDue"><div class="empty"><p>Nothing due in the next 7 days.</p></div></div>
+    <div id="scheduledDue"><div class="empty"><p>Add recurring bills to measure the next 7 days.</p></div></div>
     <div class="sh" style="margin-top:8px"><div class="sh-title">All Scheduled</div></div>
     <div id="scheduledList"><div class="empty"><div class="ei">🔁</div><p>No scheduled transactions.<br>Tap + to add a recurring bill.</p></div></div>
   </div>
@@ -1033,7 +1033,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v2.0.1 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v2.0.2 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
           <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Clarified total debt, separated personal IOUs from net worth, compacted secondary screens, organized Settings, and standardized Ledger’s planning language.</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
         </div></div>
@@ -1221,7 +1221,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 3;
 var LEDGER_SCHEMA_VERSION = 3;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '2.0.1';
+var LEDGER_APP_VERSION = '2.0.2';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -2710,7 +2710,7 @@ function compassLesson(rta,week,month,age,emergency){
   var overspent=S.envelopes.find(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
   if(rta<-.005)return {title:'A plan cannot spend the same dollar twice',copy:'Your assignments exceed the money available by '+fmt(Math.abs(rta))+'. Move money out of a lower-priority envelope before making new spending decisions.'};
   if(overspent)return {title:'Cover overspending deliberately',copy:overspent.name+' is below zero. Moving money from another envelope is not failure—it is an honest update to the plan.'};
-  if(rta>.005)return {title:'Unassigned money is still a decision',copy:fmt(rta)+' is available but has no job yet. Fund near-term bills first, then choose debt, goals, or next month on purpose.'};
+  if(rta>.005)return {title:'Unassigned money is still a decision',copy:fmt(rta)+' is available but has no job yet. '+(week.hasData?'Fund near-term bills first, then choose debt, goals, or next month on purpose.':'Add recurring bills to identify near-term commitments, then choose debt, goals, or next month on purpose.')};
   if(!week.hasData)return {title:'Planning ahead starts with what repeats',copy:'Add rent, phone, minimum payments, and other recurring bills under Upcoming. Ledger can only measure future coverage from commitments you have recorded.'};
   if(week.short>.005)return {title:'Near-term certainty creates breathing room',copy:'Scheduled bills in the next seven days are short by '+fmt(week.short)+'. Funding them before optional spending protects the rest of your plan.'};
   var card=S.creditCards.find(function(c){return (Number(c.balance)||0)>0 && (Number(c.apr)||0)>0;});
@@ -2727,7 +2727,7 @@ function renderFinancialCompass(){
   var overspent=S.envelopes.some(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
   if(headline&&copy){
     if(rta<-.005||overspent){headline.textContent='Start by restoring the plan';copy.textContent='One clear correction now will make the rest of Ledger trustworthy again.';}
-    else if(rta>.005){headline.textContent='Your money is waiting for direction';copy.textContent='You are safe. Finish the plan by assigning every available dollar intentionally.';}
+    else if(rta>.005){headline.textContent='Your money is waiting for direction';copy.textContent=week.hasData?'Finish the plan by assigning every available dollar intentionally.':'Assign every available dollar intentionally, and add recurring bills so Ledger can measure what comes next.';}
     else if(!week.hasData){headline.textContent='Complete your planning picture';copy.textContent='Your assignments are visible. Add recurring bills so Ledger can measure how far ahead you are.';}
     else if(week.short>.005){headline.textContent='Protect the next seven days';copy.textContent='Your plan balances, but a near-term scheduled bill still needs funding.';}
     else if(month.pct<100){headline.textContent='You are stable and building ahead';copy.textContent='This month is organized. The next step is creating more distance between earning and spending.';}
@@ -2991,6 +2991,7 @@ function todayRiskState(rta,upcoming){
   if(rta<-.005||overdue.length||overspent.length) return {level:'bad',label:'Action required',sub:rta<0?'Plan exceeds available money':overdue.length?'A bill is overdue':'An envelope is overspent',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
   if(shortNear.length||cardShort) return {level:'warn',label:'Caution',sub:shortNear.length?'A near-term bill is short':'Card minimum is not fully funded',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
   if(rta>.005||under.length||shortWeek.length) return {level:'good',label:'Good',sub:rta>0.005?'A planning task remains':shortWeek.length?'A bill needs funding':'Monthly targets remain',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
+  if(!S.scheduled.length) return {level:'good',label:'Good',sub:'Upcoming bills are not yet measured',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
   return {level:'excellent',label:'Excellent',sub:'Nothing needs attention',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
 }
 function renderBudgetHealth(rta,upcoming){
@@ -3006,7 +3007,8 @@ function renderTodaySignals(rta,upcoming,state){
   var el=document.getElementById('todaySignals');if(!el)return;
   var chips=[];
   if(upcoming.length){var urgent=upcoming.some(function(x){return x.days<=1;});chips.push('<span class="signal-chip '+(urgent?'warn':'')+'">'+upcoming.length+' due this week</span>');}
-  else chips.push('<span class="signal-chip good">Nothing due this week</span>');
+  else if(S.scheduled.length) chips.push('<span class="signal-chip good">Nothing due this week</span>');
+  else chips.push('<span class="signal-chip warn">Upcoming bills not set</span>');
   var debt=totalCCDebt();if(debt>0)chips.push('<span class="signal-chip '+(state.cardShort?'warn':'')+'">Card debt '+fmt(debt)+'</span>');
   if(state.overspent.length)chips.push('<span class="signal-chip bad">'+state.overspent.length+' overspent</span>');
   el.innerHTML=chips.slice(0,3).join('');
@@ -3022,13 +3024,13 @@ function renderToday() {
   var state=renderBudgetHealth(rta,upcoming);
   renderTodaySignals(rta,upcoming,state);
   var title=document.getElementById('todayFocusTitle'), note=document.getElementById('todayNote');
-  var focusTitle='Your plan is steady', focusCopy='Nothing needs your attention right now. Keep logging transactions so Ledger stays accurate.';
+  var focusTitle=S.scheduled.length?'Your plan is steady':'Complete your planning picture', focusCopy=S.scheduled.length?'Nothing needs your attention right now. Keep logging transactions so Ledger stays accurate.':'Add recurring bills so Ledger can confirm what needs attention during the next seven and thirty days.';
   if(rta<0){focusTitle='Restore the plan first';focusCopy='Your plan is overassigned by '+fmt(Math.abs(rta))+'. Move money out of a lower-priority envelope before spending or assigning more.';}
   else if(state.overspent.length){focusTitle='Cover one overspent envelope';focusCopy=state.overspent[0].name+' is overspent by '+fmt(Math.abs(envAvailable(state.overspent[0].id)))+'. Move money from a lower-priority envelope so the plan becomes trustworthy again.';}
   else if(state.shortNear.length){var x=state.shortNear[0];focusTitle='Protect the next bill';focusCopy=x.s.desc+' is due '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+' and is not fully funded.';}
   else if(state.cardShort){focusTitle='Fund the card minimum';focusCopy='Your credit-card minimum is not fully funded. Handle that before optional spending.';}
   else if(rta>0.005 && state.under.length){focusTitle='Finish giving your money jobs';focusCopy=fmt(rta)+' is waiting for direction. Start with '+state.under[0].env.name+', then choose debt, a goal, or next month.';}
-  else if(rta>0.005){focusTitle='Your essentials are covered';focusCopy='The remaining '+fmt(rta)+' is waiting for a deliberate purpose: debt, a goal, or next month.';}
+  else if(rta>0.005){focusTitle='Your regular targets are funded';focusCopy=S.scheduled.length?'The remaining '+fmt(rta)+' is waiting for a deliberate purpose: debt, a goal, or next month.':fmt(rta)+' remains unassigned. Add recurring bills to confirm the next seven days, then choose debt, goals, or next month.';}
   else if(state.under.length){focusTitle='Complete one monthly target';focusCopy=state.under[0].env.name+' still needs '+fmt(state.under[0].needed)+'. Your plan is stable, but not finished.';}
   if(title) title.textContent=focusTitle;
   if(note) note.textContent=focusCopy;
@@ -3047,7 +3049,8 @@ function renderDailyPlan(rta,upcoming){
   if(as)as.textContent=rta<-.005?'Reduce assignments':rta>.005?'Waiting for a job':'Every dollar assigned';
   var uv=document.getElementById('planUpcomingValue'),us=document.getElementById('planUpcomingSub');
   if(upcoming.length){var first=upcoming[0];if(uv)uv.textContent=first.days<=0?'Today':first.days===1?'Tomorrow':'In '+first.days+' days';if(us)us.textContent=first.s.desc+' · '+fmt(first.s.amount);}
-  else {if(uv)uv.textContent='Clear';if(us)us.textContent='Nothing due this week';}
+  else if(S.scheduled.length){if(uv)uv.textContent='Clear';if(us)us.textContent='Nothing due this week';}
+  else {if(uv)uv.textContent='Not measured';if(us)us.textContent='Add recurring bills';}
   var goals=compassGoalItems(), goal=goals.find(function(g){return /emergency|dental/i.test(g.name);})||goals[0];
   var pv=document.getElementById('planProgressValue'),ps=document.getElementById('planProgressSub');
   if(goal){var pct=goal.target>0?Math.min(100,Math.round(goal.saved/goal.target*100)):0;if(pv)pv.textContent=pct+'%';if(ps)ps.textContent=goal.name+' · '+fmt(goal.saved);}
@@ -3066,10 +3069,13 @@ function renderTodayPriorities(upcoming){
     rows.push(priorityHtml(env?env.emoji:'↗',x.s.desc,when+(av+0.005<x.s.amount?' · envelope is short':' · funded'),fmt(x.s.amount)));
   });
   var card=S.creditCards.find(function(c){return (c.balance||0)>0;});
-  if(card){var pe=ccPaymentEnv(card.id), ready=pe?envAvailable(pe.id):0, daily=card.apr?(card.balance||0)*(card.apr/100)/365:0;if(ready+0.005<Math.min(card.balance,40)) rows.push(priorityHtml('◇','Fund your card payment','High-interest debt should not be invisible.',fmt(ready)+' ready'));else rows.push(priorityHtml('◇','Card payment is ready',(daily>0?'Interest is about '+fmt(daily)+' per day. ':'')+'Current balance: '+fmt(card.balance||0)+'.',fmt(ready)+' ready'));}
+  if(card){var pe=ccPaymentEnv(card.id), ready=pe?envAvailable(pe.id):0, daily=card.apr?(card.balance||0)*(card.apr/100)/365:0, required=cardRequiredPayment(card);if(ready+0.005<required) rows.push(priorityHtml('◇','Fund your card payment','The required payment is '+fmt(required)+'. High-interest debt should not be invisible.',fmt(ready)+' ready'));else rows.push(priorityHtml('◇','Card payment is ready',(daily>0?'Interest is about '+fmt(daily)+' per day. ':'')+'Current balance: '+fmt(card.balance||0)+'.',fmt(ready)+' ready'));}
   var under=regularUnderfunded();
   under.slice(0,Math.max(0,4-rows.length)).forEach(function(x){rows.push(priorityHtml(x.env.emoji||'○',x.env.name,'Target still needs funding.',fmt(x.needed)));});
-  if(!rows.length) rows.push(priorityHtml('✓','Nothing needs attention','Your plan is current. Log purchases as they happen.',''));
+  if(!rows.length){
+    if(!S.scheduled.length) rows.push(priorityHtml('↗','Set up upcoming bills','Add recurring commitments so Ledger can confirm the next seven and thirty days.',''));
+    else rows.push(priorityHtml('✓','Nothing needs attention','Your plan is current. Log purchases as they happen.',''));
+  }
   el.innerHTML=rows.slice(0,3).join('');
 }
 function renderTodaySpending(){
@@ -3090,7 +3096,10 @@ function renderTodayGoals(){
 }
 function renderTodayUpcoming(upcoming){
   var el=document.getElementById('todayUpcoming'); if(!el)return;
-  if(!upcoming.length){el.innerHTML='<div class="priority-empty">✓ Nothing needs your attention for the next seven days.</div>';return;}
+  if(!upcoming.length){
+    el.innerHTML=S.scheduled.length?'<div class="priority-empty">✓ Nothing needs your attention for the next seven days.</div>':'<div class="priority-empty">Add recurring bills to confirm what needs attention during the next seven days.</div>';
+    return;
+  }
   el.innerHTML=upcoming.slice(0,4).map(function(x){var env=S.envelopes.find(function(e){return e.id===x.s.envId;});var when=x.days<0?Math.abs(x.days)+'d overdue':x.days===0?'Today':x.days===1?'Tomorrow':'In '+x.days+' days';return priorityHtml(env?env.emoji:'↗',x.s.desc,when,fmt(x.s.amount));}).join('');
 }
 function populateAffordEnvelopes(){
@@ -4051,7 +4060,9 @@ function renderScheduled() {
 
   var dueEl = document.getElementById('scheduledDue');
   if (!due.length) {
-    dueEl.innerHTML = '<div class="empty" style="padding:12px 0"><p>Nothing due in the next 7 days.</p></div>';
+    dueEl.innerHTML = S.scheduled.length
+      ? '<div class="empty" style="padding:12px 0"><p>Nothing due in the next 7 days.</p></div>'
+      : '<div class="empty" style="padding:12px 0"><p>Add recurring bills to measure the next 7 days.</p></div>';
   } else {
     dueEl.innerHTML = '';
     due.forEach(function(item){ dueEl.appendChild(makeSchedEl(item, true)); });
