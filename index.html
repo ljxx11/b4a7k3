@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="2.0.2">
-<title>Ledger — North Star v2.0.2</title>
+<meta name="ledger-version" content="2.0.3">
+<title>Ledger — North Star v2.0.3</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -560,7 +560,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 @media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
 
 
-/* ── NORTH STAR v2.0.2 — HONEST OUTLOOK ── */
+/* ── NORTH STAR v2.0.3 — CARD RESERVE FIX ── */
 :focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 button,input,select,summary{font:inherit}
 button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
@@ -616,7 +616,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0.2</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0.3</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -1033,7 +1033,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v2.0.2 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v2.0.3 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
           <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Clarified total debt, separated personal IOUs from net worth, compacted secondary screens, organized Settings, and standardized Ledger’s planning language.</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
         </div></div>
@@ -1221,7 +1221,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 3;
 var LEDGER_SCHEMA_VERSION = 3;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '2.0.2';
+var LEDGER_APP_VERSION = '2.0.3';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1655,14 +1655,18 @@ async function loadS() {
   if(S.seasonalAccent===undefined) S.seasonalAccent=true;
   if(S.envelopes.length && !S.groups.length) migrateToGroups();
   if(!S.groups.length) seedGroups();
-  S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;});
+  S.creditCards.forEach(function(c){
+    if(c.apr===undefined)c.apr=0;
+    var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});
+    if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}
+  });
   if(!S.currentMonth) S.currentMonth=currentMonthKey();
   S.currentMonth=normalizeMonthKey(S.currentMonth);
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.envelopes.forEach(function(e,i){
     if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;
     if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;
-    if(!e.isSavings)e.carryForward=0;
+    if(!e.isSavings&&!e.isCCPayment)e.carryForward=0;
   });
   if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
   if(!S.lastBackupDate)S.lastBackupDate=null;
@@ -1690,9 +1694,14 @@ function monthKeyFromDate(dateStr) {
 
 function applyMonthRollover(newKey) {
   var oldKey = normalizeMonthKey(S.currentMonth);
+  var oldAvailableById={};
   S.envelopes.forEach(function(env) {
-    var oldAvailable = money((env.assigned||0) + (env.carryForward||0) - envSpentForMonth(env.id, oldKey));
-    env.carryForward = env.isSavings ? Math.max(0, oldAvailable) : 0;
+    var creditReserve = env.isCCPayment ? fundedCreditActivity(env.id, oldKey) : 0;
+    oldAvailableById[env.id]=money((env.assigned||0) + (env.carryForward||0) + creditReserve - envSpentForMonth(env.id, oldKey));
+  });
+  S.envelopes.forEach(function(env) {
+    var oldAvailable=oldAvailableById[env.id]||0;
+    env.carryForward = (env.isSavings||env.isCCPayment) ? Math.max(0, oldAvailable) : 0;
     env.assigned = money(env.assignedNext||0);
     env.assignedNext = 0;
   });
@@ -1798,12 +1807,31 @@ function envSpentForMonth(envId, monthKey) {
   return money(total);
 }
 function envSpent(envId) { return envSpentForMonth(envId, currentMonthKey()); }
-function fundedCreditActivity(paymentEnvId) {
+function fundedCreditActivity(paymentEnvId, monthKey) {
   var card = S.creditCards.find(function(c){return c.paymentEnvId===paymentEnvId;});
   if (!card) return 0;
+  var key = normalizeMonthKey(monthKey||currentMonthKey());
+  var expensesByEnvelope = {};
+  S.expenses.forEach(function(e,idx){
+    if(e.isCCPayment || monthKeyFromDate(e.date)!==key || !e.envId || !(Number(e.amount)>0))return;
+    if(!expensesByEnvelope[e.envId])expensesByEnvelope[e.envId]=[];
+    expensesByEnvelope[e.envId].push({expense:e,index:idx});
+  });
   var total=0;
-  S.expenses.forEach(function(e){
-    if (e.isCredit && e.ccId===card.id && monthKeyFromDate(e.date)===currentMonthKey()) total += Number(e.fundedAmount)||0;
+  Object.keys(expensesByEnvelope).forEach(function(envId){
+    var env=S.envelopes.find(function(e){return e.id===envId;});
+    if(!env || env.isCCPayment)return;
+    var remaining=money(Math.max(0,(env.assigned||0)+(env.carryForward||0)));
+    expensesByEnvelope[envId].sort(function(a,b){
+      var ad=String(a.expense.datetime||((a.expense.date||'')+'T'+(a.expense.time||'00:00')));
+      var bd=String(b.expense.datetime||((b.expense.date||'')+'T'+(b.expense.time||'00:00')));
+      return ad<bd?-1:(ad>bd?1:a.index-b.index);
+    }).forEach(function(item){
+      var expense=item.expense, amount=money(expense.amount||0);
+      var funded=money(Math.min(amount,Math.max(0,remaining)));
+      remaining=money(Math.max(0,remaining-funded));
+      if(expense.isCredit && expense.ccId===card.id)total=money(total+funded);
+    });
   });
   return money(total);
 }
@@ -1829,7 +1857,7 @@ function envAvailableBase(envId, monthKey) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return 0;
   var key = monthKey || currentMonthKey();
-  var fundedCredit = env.isCCPayment && key===currentMonthKey() ? fundedCreditActivity(env.id) : 0;
+  var fundedCredit = env.isCCPayment ? fundedCreditActivity(env.id,key) : 0;
   return money((env.assigned||0) + fundedCredit - envSpentForMonth(envId,key));
 }
 function envAvailable(envId) {
@@ -2492,7 +2520,7 @@ function renderCCTab() {
   el.innerHTML = '';
   S.creditCards.forEach(function(card) {
     var payEnv = S.envelopes.find(function(e){return e.id===card.paymentEnvId;});
-    var payReady = payEnv ? (payEnv.assigned||0) - envSpent(payEnv.id) : 0;
+    var payReady = payEnv ? envAvailable(payEnv.id) : 0;
     var payPct = card.balance>0 ? Math.min(payReady/card.balance*100,100) : 100;
     var div = document.createElement('div');
     div.className = 'cc-card';
@@ -3590,8 +3618,9 @@ function normalizeRestoredState(data) {
   if(!S.currentMonth)S.currentMonth=currentMonthKey();S.currentMonth=normalizeMonthKey(S.currentMonth);
   if(S.envelopes.length&&!S.groups.length)migrateToGroups();if(!S.groups.length)seedGroups();
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
-  S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;if(!e.isSavings)e.carryForward=0;});
-  S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;});ensureRecordIds();
+  S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}});
+  S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;if(!e.isSavings&&!e.isCCPayment)e.carryForward=0;});
+  ensureRecordIds();
 }
 
 function portableSummary(data){
