@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="2.0.3">
-<title>Ledger — North Star v2.0.3</title>
+<meta name="ledger-version" content="2.2.0">
+<title>Ledger — Clear Boundaries v2.2.0</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -560,7 +560,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 @media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
 
 
-/* ── NORTH STAR v2.0.3 — CARD RESERVE FIX ── */
+/* ── CLEAR BOUNDARIES v2.2.0 ── */
 :focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 button,input,select,summary{font:inherit}
 button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
@@ -608,6 +608,42 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 .rollover-action{background:var(--yellow-dim)!important;color:var(--yellow)!important}
 @media(max-width:360px){.debt-breakdown{grid-template-columns:1fr}}
 
+
+/* ── CLEAR BOUNDARIES: CUSTODIAL FUNDS & TRANSFERS ── */
+.custody-hero{background:linear-gradient(145deg,var(--surf),var(--surf2));border:1px solid var(--border);border-radius:var(--rlg);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.custody-hero-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.custody-kicker{font-size:10px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;color:var(--acc);margin-bottom:7px}
+.custody-total{font-family:'Cormorant Garamond',serif;font-size:42px;line-height:1;color:var(--text);font-weight:600}
+.custody-sub{font-size:12px;color:var(--text3);line-height:1.55;margin-top:8px;max-width:560px}
+.custody-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.custody-btn{border:1px solid var(--border);background:var(--surf3);color:var(--text);border-radius:999px;padding:10px 14px;font:800 12px 'Nunito',sans-serif;cursor:pointer;min-height:42px}
+.custody-btn.primary{background:var(--acc);color:#101317;border-color:transparent}
+.custody-rule{background:var(--blue-dim);border:1px solid rgba(168,189,208,.18);border-radius:var(--r);padding:14px 16px;margin-bottom:14px;color:var(--acc);font-size:12px;font-weight:700;line-height:1.6}
+.custody-account{background:var(--surf);border:1px solid var(--border);border-radius:var(--rlg);margin-bottom:14px;overflow:hidden}
+.custody-account-head{padding:17px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border)}
+.custody-account-left{display:flex;align-items:center;gap:12px;min-width:0}
+.custody-icon{width:48px;height:48px;border-radius:16px;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.custody-name{font-size:16px;font-weight:900;color:var(--text)}
+.custody-note{font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48vw}
+.custody-balance{text-align:right;flex:none}.custody-balance strong{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--green)}
+.custody-balance span{display:block;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.custody-account-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border)}
+.custody-mini-btn{border:0;background:var(--surf3);color:var(--text2);border-radius:12px;padding:9px 12px;font:800 11px 'Nunito',sans-serif;cursor:pointer}
+.custody-mini-btn.in{color:var(--green)}.custody-mini-btn.out{color:var(--yellow)}
+.custody-history{padding:4px 16px 10px}
+.custody-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+.custody-row:last-child{border-bottom:0}.custody-row-sign{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:900;background:var(--surf3)}
+.custody-row-sign.in{color:var(--green)}.custody-row-sign.out{color:var(--yellow)}
+.custody-row-copy{min-width:0;flex:1}.custody-row-title{font-size:12px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.custody-row-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.custody-row-amount{font-size:13px;font-weight:900;text-align:right}.custody-row-amount.in{color:var(--green)}.custody-row-amount.out{color:var(--yellow)}
+.custody-row-delete{border:0;background:transparent;color:var(--text3);font-size:18px;padding:7px;cursor:pointer}
+.transfer-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-top:12px}
+.transfer-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.transfer-card-title{font-size:13px;font-weight:900;color:var(--text)}.transfer-card-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.transfer-list{margin-top:8px}.transfer-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--border);font-size:11px}.transfer-row strong{color:var(--text)}.transfer-row span{color:var(--text3)}
+.custody-empty{padding:34px 18px;text-align:center;background:var(--surf);border:1px dashed var(--border);border-radius:var(--rlg);color:var(--text3);font-size:12px;line-height:1.6}
+.custody-empty strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}
+@media(max-width:520px){.custody-hero-top{display:block}.custody-total{font-size:38px}.custody-note{max-width:58vw}}
+
 </style>
 </head>
 <body>
@@ -616,7 +652,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.0.3</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.2.0</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -654,6 +690,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="more-item" data-v="cards">💳 Credit Cards</div>
         <div class="more-item" data-v="goals">🎯 Goals</div>
         <div class="more-item" data-v="owed">🤝 People & IOUs</div>
+        <div class="more-item" data-v="custody">🛡️ Custodial Funds</div>
         <div class="more-item" data-v="reports">📈 Reports</div>
         <div class="more-item" data-v="debt">🏦 Debt Overview</div>
         <div class="more-item" data-v="history">📅 History</div>
@@ -738,7 +775,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
   <!-- BUDGET -->
   <div class="view" id="view-budget">
-    <div class="warn" id="warnBanner"><span>⚠️ You've assigned more than your bank balance!</span></div>
+    <div class="warn" id="warnBanner"><span>⚠️ Your plan uses more money than you currently control.</span></div>
     <div class="week-banner" id="weekBanner">📅 Weekly mode — showing per-paycheck amounts</div>
     <div class="backup-reminder" id="backupReminder" style="display:none">
       <span id="backupReminderText">💾 Back up your data</span>
@@ -746,7 +783,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     </div>
     <div class="learn-card" style="margin-bottom:10px">
       <div class="learn-title">Start here with your real budget</div>
-      <div class="learn-body">1) Add your opening balances. 2) Add your Chase card. 3) Keep the money you are holding for other people in its own envelope. 4) Use Ready to Assign for the money you actually control. 5) Fund bills first, then groceries and transportation, then dental and emergency savings.</div>
+      <div class="learn-body">1) Add your opening balances. 2) Add your credit cards. 3) Use Custodial Funds for money entrusted to you—it never enters Ready to Assign. 4) Give your own money deliberate jobs. 5) Fund bills first, then everyday needs, debt, and future goals.</div>
     </div>
     <div class="next-month-banner" id="nextMonthBanner">✨ Next Month View — assigning money for next month</div>
     <div class="target-summary-bar" id="targetSummaryBar" style="display:none">
@@ -821,7 +858,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="lesson-card">
       <div class="lesson-eyebrow">Learn as you go</div>
       <div class="lesson-title" id="compassLessonTitle">Give every dollar a job</div>
-      <div class="lesson-copy" id="compassLessonCopy">Money becomes easier to manage when the plan decides what it is for before spending does.</div>
+      <div class="lesson-copy" id="compassLessonCopy">Your money belongs in the budget. Money entrusted to you belongs in Custodial Funds, where it cannot distort Ready to Assign.</div>
     </div>
 
     <div class="compass-section">
@@ -842,7 +879,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
           <div class="stat"><div class="stat-val" id="sumSpent">$0</div><div class="stat-lbl">Spent this month</div></div>
         </div>
         <div class="stat-row">
-          <div class="stat"><div class="stat-val" id="sumAssigned">$0</div><div class="stat-lbl">Assigned</div></div>
+          <div class="stat"><div class="stat-val" id="sumAssigned">$0</div><div class="stat-lbl">Planned</div></div>
           <div class="stat"><div class="stat-val" id="sumAvail">$0</div><div class="stat-lbl">Available in envelopes</div></div>
         </div>
         <div class="card" style="margin-bottom:0"><div class="card-hdr"><span class="card-title">By Envelope</span></div><div class="card-body" id="sumList"></div></div>
@@ -875,6 +912,29 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div>
       </div>
       <div id="iOweList"><div class="empty" style="padding:16px 0"><p>You don't owe anyone! 🙌</p></div></div>
+    </div>
+  </div>
+
+  <!-- CUSTODIAL FUNDS -->
+  <div class="view" id="view-custody">
+    <div class="custody-hero">
+      <div class="custody-hero-top">
+        <div>
+          <div class="custody-kicker">Money entrusted to you</div>
+          <div class="custody-total" id="custodyTotal">$0.00</div>
+          <div class="custody-sub">Custodial funds remain physically in your bank or cash, but they are excluded from Ready to Assign because they do not belong to you.</div>
+        </div>
+      </div>
+      <div class="custody-actions">
+        <button class="custody-btn primary" id="addCustodyAccountBtn">+ Add Person or Fund</button>
+        <button class="custody-btn" id="openTransferBtn">↔ Move Bank / Cash</button>
+      </div>
+    </div>
+    <div class="custody-rule">No envelope moves are needed. Record money received here, record its use here, and Ledger keeps your personal budget unchanged.</div>
+    <div id="custodyAccounts"></div>
+    <div class="transfer-card">
+      <div class="transfer-card-head"><div><div class="transfer-card-title">Bank ↔ Cash Moves</div><div class="transfer-card-sub">Transfers change where money is held, never Ready to Assign.</div></div><button class="sh-btn" id="openTransferBtn2">+ Move</button></div>
+      <div class="transfer-list" id="transferList"><div class="activity-empty">No Bank ↔ Cash moves recorded.</div></div>
     </div>
   </div>
 
@@ -1012,10 +1072,10 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     </details>
 
     <details class="settings-section">
-      <summary><span><span class="settings-section-title">Month Rollover</span><span class="settings-section-sub">Carry savings forward and prepare the next month</span></span><span class="settings-chevron">⌄</span></summary>
+      <summary><span><span class="settings-section-title">Month Rollover</span><span class="settings-section-sub">Carry funded envelope balances forward and prepare the next month</span></span><span class="settings-chevron">⌄</span></summary>
       <div class="settings-section-body"><div class="card"><div class="card-body">
         <div class="set-row"><div><div class="set-lbl">Last Rollover</div><div class="set-sub" id="lastRolloverDate">Never — happens automatically at month end</div></div></div>
-        <div class="set-row"><div><div class="set-lbl">Savings Carry-Forward</div><div class="set-sub">Balances that will carry into next month</div></div></div>
+        <div class="set-row"><div><div class="set-lbl">Envelope Carry-Forward</div><div class="set-sub">Funded balances that remain available next month</div></div></div>
         <div id="savingsRolloverList" style="margin-top:4px"></div>
         <div class="set-row"><div><div class="set-lbl">Simulate Rollover</div><div class="set-sub">Test the rollover now without waiting for month end</div></div><button class="sh-btn rollover-action" id="manualRolloverBtn">Roll Over</button></div>
       </div></div></div>
@@ -1033,8 +1093,8 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v2.0.3 — North Star</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
-          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Clarified total debt, separated personal IOUs from net worth, compacted secondary screens, organized Settings, and standardized Ledger’s planning language.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v2.2.0 — Clear Boundaries</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Separated your budget, reimbursements, and custodial funds; added safe Bank ↔ Cash transfers; corrected month rollover so funded envelopes carry forward; and restored the circle app icon.</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
         </div></div>
       </div>
@@ -1143,6 +1203,50 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   </div>
 </div>
 
+<!-- Custodial Account -->
+<div class="overlay" id="custodyAccountModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title" id="custodyAccountModalTitle">Custodial Fund</div>
+    <div class="field"><label>Person or Fund Name</label><input id="custodyAccountName" placeholder="e.g. Grandma"></div>
+    <div class="field"><label>Emoji</label><input id="custodyAccountEmoji" placeholder="🛡️" maxlength="2"></div>
+    <div class="field"><label>Note (optional)</label><input id="custodyAccountNote" placeholder="What are you safeguarding?"></div>
+    <button class="btn-p" id="saveCustodyAccountBtn">Save</button>
+    <button class="btn-s" id="cancelCustodyAccountBtn">Cancel</button>
+    <button class="btn-d" id="deleteCustodyAccountBtn" style="display:none">Delete Fund</button>
+  </div>
+</div>
+
+<!-- Custodial Transaction -->
+<div class="overlay" id="custodyTxnModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title" id="custodyTxnModalTitle">Record Custodial Money</div>
+    <div class="field"><label>Person or Fund</label><select id="custodyTxnAccount"></select></div>
+    <div class="field"><label>Action</label><select id="custodyTxnDirection"><option value="in">Money received</option><option value="out">Money used or returned</option></select></div>
+    <div class="field"><label>Amount ($)</label><input id="custodyTxnAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Description</label><input id="custodyTxnDesc" placeholder="e.g. Aunt deposit, Rent paid"></div>
+    <div class="field"><label>Date</label><input id="custodyTxnDate" type="date"></div>
+    <div class="field"><label>Where did the money enter or leave?</label><select id="custodyTxnLocation"><option value="bank">🏦 Bank</option><option value="cash">💵 Cash</option></select></div>
+    <button class="btn-p" id="saveCustodyTxnBtn">Save</button>
+    <button class="btn-s" id="cancelCustodyTxnBtn">Cancel</button>
+  </div>
+</div>
+
+<!-- Bank / Cash Transfer -->
+<div class="overlay" id="transferModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title">Move Between Bank and Cash</div>
+    <div class="field"><label>Direction</label><select id="transferDirection"><option value="bank-cash">🏦 Bank → 💵 Cash</option><option value="cash-bank">💵 Cash → 🏦 Bank</option></select></div>
+    <div class="field"><label>Amount ($)</label><input id="transferAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Description (optional)</label><input id="transferDesc" placeholder="e.g. Cash withdrawal"></div>
+    <div class="field"><label>Date</label><input id="transferDate" type="date"></div>
+    <button class="btn-p" id="saveTransferBtn">Record Move</button>
+    <button class="btn-s" id="cancelTransferBtn">Cancel</button>
+  </div>
+</div>
+
 <!-- Add Goal -->
 <div class="overlay" id="goalModal">
   <div class="sheet">
@@ -1184,6 +1288,10 @@ var S = {
   scheduled: [],    // {id, desc, amount, envId, dayOfMonth, freq:'monthly'|'weekly', nextDate, isCredit, ccId}
   owedToMe: [],
   iOwe: [],
+  custodialAccounts: [], // {id,name,emoji,note,createdAt}
+  custodialTransactions: [], // {id,accountId,direction,amount,desc,date,location,affectsCash,embeddedInOpening}
+  transfers: [], // {id,direction,amount,desc,date}
+  custodialMigrationVersion: 0,
   goals: [],
   debts: [],
   weeklyMode: false,
@@ -1218,10 +1326,10 @@ var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 // existing installations can migrate safely and older backups stay readable.
 // ═══════════════════════════════════════════
 var LEDGER_DB_NAME = 'ledger_database';
-var LEDGER_DB_VERSION = 3;
-var LEDGER_SCHEMA_VERSION = 3;
+var LEDGER_DB_VERSION = 4;
+var LEDGER_SCHEMA_VERSION = 4;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '2.0.3';
+var LEDGER_APP_VERSION = '2.2.0';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1239,8 +1347,8 @@ var pendingRestore = null;
 var pendingCloudPackage = null;
 var previousModalFocus = null;
 
-var LEDGER_COLLECTIONS = ['income','expenses','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts'];
-var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','viewingNextMonth','rolloverDate'];
+var LEDGER_COLLECTIONS = ['income','expenses','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','transfers'];
+var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','viewingNextMonth','rolloverDate','custodialMigrationVersion'];
 
 function openLedgerDB() {
   return new Promise(function(resolve, reject){
@@ -1412,6 +1520,9 @@ function operationSummary(collection, operation, current, previous, changedSetti
   if(collection==='scheduled') return operation==='delete' ? 'Scheduled item removed · ' + name : (operation==='insert' ? 'Scheduled item added · ' + name : 'Scheduled item updated · ' + name);
   if(collection==='groups') return operation==='delete' ? 'Budget group removed · ' + name : (operation==='insert' ? 'Budget group created · ' + name : 'Budget group updated · ' + name);
   if(collection==='owedToMe' || collection==='iOwe') return operation==='delete' ? 'Balance removed · ' + name : (operation==='insert' ? 'Balance tracked · ' + name : 'Balance updated · ' + name);
+  if(collection==='custodialAccounts') return operation==='delete' ? 'Custodial fund removed · ' + name : (operation==='insert' ? 'Custodial fund added · ' + name : 'Custodial fund updated · ' + name);
+  if(collection==='custodialTransactions') return operation==='delete' ? 'Custodial entry removed · ' + name : (operation==='insert' ? 'Custodial entry added · ' + name : 'Custodial entry updated · ' + name);
+  if(collection==='transfers') return operation==='delete' ? 'Account move removed · ' + name : (operation==='insert' ? 'Account move recorded · ' + name : 'Account move updated · ' + name);
   if(collection==='settings') {
     changedSettings=changedSettings||[];
     if(changedSettings.indexOf('lastBackupDate')>=0) return 'Backup completed';
@@ -1645,6 +1756,10 @@ async function loadS() {
   if(!S.envelopes) S.envelopes=[];
   if(!S.owedToMe) S.owedToMe=[];
   if(!S.iOwe) S.iOwe=[];
+  if(!S.custodialAccounts) S.custodialAccounts=[];
+  if(!S.custodialTransactions) S.custodialTransactions=[];
+  if(!S.transfers) S.transfers=[];
+  if(S.custodialMigrationVersion===undefined) S.custodialMigrationVersion=0;
   if(!S.goals) S.goals=[];
   if(!S.debts) S.debts=[];
   if(!S.creditCards) S.creditCards=[];
@@ -1655,6 +1770,7 @@ async function loadS() {
   if(S.seasonalAccent===undefined) S.seasonalAccent=true;
   if(S.envelopes.length && !S.groups.length) migrateToGroups();
   if(!S.groups.length) seedGroups();
+  migrateCustodialFunds();
   S.creditCards.forEach(function(c){
     if(c.apr===undefined)c.apr=0;
     var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});
@@ -1666,7 +1782,6 @@ async function loadS() {
   S.envelopes.forEach(function(e,i){
     if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;
     if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;
-    if(!e.isSavings&&!e.isCCPayment)e.carryForward=0;
   });
   if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
   if(!S.lastBackupDate)S.lastBackupDate=null;
@@ -1701,7 +1816,7 @@ function applyMonthRollover(newKey) {
   });
   S.envelopes.forEach(function(env) {
     var oldAvailable=oldAvailableById[env.id]||0;
-    env.carryForward = (env.isSavings||env.isCCPayment) ? Math.max(0, oldAvailable) : 0;
+    env.carryForward = Math.max(0, oldAvailable);
     env.assigned = money(env.assignedNext||0);
     env.assignedNext = 0;
   });
@@ -1714,11 +1829,11 @@ function checkMonthRollover() {
   if (normalizeMonthKey(S.currentMonth) !== key) {
     applyMonthRollover(key);
     saveS();
-    toast('New month started. Savings carried forward and monthly assignments reset.');
+    toast('New month started. Funded envelope balances carried forward safely.');
   }
 }
 function manualRollover() {
-  if (!confirm('Simulate month rollover? Savings will carry forward; regular monthly assignments will reset.')) return;
+  if (!confirm('Simulate month rollover? Available envelope balances will carry forward and new monthly assignments will begin.')) return;
   var d=new Date(); d.setMonth(d.getMonth()+1);
   applyMonthRollover(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
   saveS(); renderAll();
@@ -1732,33 +1847,60 @@ function migrateToGroups() {
 }
 
 function seedGroups() {
-  var g1 = uid(), g2 = uid(), g3 = uid(), g4 = uid(), g5 = uid(), g6 = uid();
+  var g1 = uid(), g2 = uid(), g3 = uid(), g4 = uid(), g5 = uid();
   S.groups = [
-    {id:g1, name:'Holding', collapsed:false, order:0},
-    {id:g2, name:'Monthly Bills', collapsed:false, order:1},
-    {id:g3, name:'Daily Living', collapsed:false, order:2},
-    {id:g4, name:'Health & Beauty', collapsed:false, order:3},
-    {id:g5, name:'Debt', collapsed:false, order:4},
-    {id:g6, name:'Future Goals', collapsed:false, order:5}
+    {id:g1, name:'Monthly Bills', collapsed:false, order:0},
+    {id:g2, name:'Daily Living', collapsed:false, order:1},
+    {id:g3, name:'Health & Beauty', collapsed:false, order:2},
+    {id:g4, name:'Debt', collapsed:false, order:3},
+    {id:g5, name:'Future Goals', collapsed:false, order:4}
   ];
   S.envelopes = [
-    {id:uid(),groupId:g1,name:'Money I’m Holding for Others',emoji:'🔒',color:'#a9b0d8',assigned:0,order:0,target:null},
-    {id:uid(),groupId:g2,name:'Rent',emoji:'🏠',color:'#a8cfb3',assigned:0,order:0,target:{type:'refill',amount:650,byDate:null}},
-    {id:uid(),groupId:g2,name:'Phone',emoji:'📱',color:'#9db7d6',assigned:0,order:1,target:{type:'refill',amount:55,byDate:null}},
-    {id:uid(),groupId:g2,name:'Hospital Bill',emoji:'🏥',color:'#d9a0a5',assigned:0,order:2,target:{type:'refill',amount:60,byDate:null}},
-    {id:uid(),groupId:g2,name:'Laser Hair Removal',emoji:'✨',color:'#d3a1c0',assigned:0,order:3,target:{type:'refill',amount:275,byDate:null}},
-    {id:uid(),groupId:g3,name:'Groceries',emoji:'🛒',color:'#a8cfb3',assigned:0,order:0,target:{type:'refill',amount:175,byDate:null}},
-    {id:uid(),groupId:g3,name:'Transportation',emoji:'🚗',color:'#9db7d6',assigned:0,order:1,target:{type:'refill',amount:40,byDate:null}},
-    {id:uid(),groupId:g3,name:'Bird Food & Supplies',emoji:'🐦',color:'#d9c38b',assigned:0,order:2,target:{type:'refill',amount:30,byDate:null}},
-    {id:uid(),groupId:g3,name:'Eating Out',emoji:'🍕',color:'#d5a47f',assigned:0,order:3,target:{type:'refill',amount:150,byDate:null}},
-    {id:uid(),groupId:g3,name:'Household / Personal Care',emoji:'🧼',color:'#9f8fc4',assigned:0,order:4,target:{type:'refill',amount:50,byDate:null}},
-    {id:uid(),groupId:g3,name:'Clothing & Shoes',emoji:'👟',color:'#d3a1c0',assigned:0,order:5,target:{type:'refill',amount:100,byDate:null}},
-    {id:uid(),groupId:g4,name:'Dental Work',emoji:'🦷',color:'#b7a6d9',assigned:0,order:0,target:{type:'save',amount:5000,byDate:null},isSavings:true,carryForward:0},
-    {id:uid(),groupId:g4,name:'Emergency Fund',emoji:'🛟',color:'#a7cbbf',assigned:0,order:1,target:{type:'save',amount:7000,byDate:null},isSavings:true,carryForward:0},
-    {id:uid(),groupId:g4,name:'Christmas',emoji:'🎄',color:'#d9c38b',assigned:0,order:2,target:{type:'save',amount:300,byDate:null},isSavings:true,carryForward:0},
-    {id:uid(),groupId:g5,name:'Credit Card Payment',emoji:'💳',color:'#9db7d6',assigned:0,order:0,target:{type:'refill',amount:40,byDate:null}},
-    {id:uid(),groupId:g6,name:'Next Month Buffer',emoji:'🧾',color:'#a9b0d8',assigned:0,order:0,target:null}
+    {id:uid(),groupId:g1,name:'Rent',emoji:'🏠',color:'#a8cfb3',assigned:0,order:0,target:{type:'refill',amount:650,byDate:null}},
+    {id:uid(),groupId:g1,name:'Phone',emoji:'📱',color:'#9db7d6',assigned:0,order:1,target:{type:'refill',amount:55,byDate:null}},
+    {id:uid(),groupId:g1,name:'Hospital Bill',emoji:'🏥',color:'#d9a0a5',assigned:0,order:2,target:{type:'refill',amount:60,byDate:null}},
+    {id:uid(),groupId:g1,name:'Laser Hair Removal',emoji:'✨',color:'#d3a1c0',assigned:0,order:3,target:{type:'refill',amount:275,byDate:null}},
+    {id:uid(),groupId:g2,name:'Groceries',emoji:'🛒',color:'#a8cfb3',assigned:0,order:0,target:{type:'refill',amount:175,byDate:null}},
+    {id:uid(),groupId:g2,name:'Transportation',emoji:'🚗',color:'#9db7d6',assigned:0,order:1,target:{type:'refill',amount:40,byDate:null}},
+    {id:uid(),groupId:g2,name:'Bird Food & Supplies',emoji:'🐦',color:'#d9c38b',assigned:0,order:2,target:{type:'refill',amount:30,byDate:null}},
+    {id:uid(),groupId:g2,name:'Eating Out',emoji:'🍕',color:'#d5a47f',assigned:0,order:3,target:{type:'refill',amount:150,byDate:null}},
+    {id:uid(),groupId:g2,name:'Household / Personal Care',emoji:'🧼',color:'#9f8fc4',assigned:0,order:4,target:{type:'refill',amount:50,byDate:null}},
+    {id:uid(),groupId:g2,name:'Clothing & Shoes',emoji:'👟',color:'#d3a1c0',assigned:0,order:5,target:{type:'refill',amount:100,byDate:null}},
+    {id:uid(),groupId:g3,name:'Dental Work',emoji:'🦷',color:'#b7a6d9',assigned:0,order:0,target:{type:'save',amount:5000,byDate:null},isSavings:true,carryForward:0},
+    {id:uid(),groupId:g3,name:'Emergency Fund',emoji:'🛟',color:'#a7cbbf',assigned:0,order:1,target:{type:'save',amount:7000,byDate:null},isSavings:true,carryForward:0},
+    {id:uid(),groupId:g3,name:'Christmas',emoji:'🎄',color:'#d9c38b',assigned:0,order:2,target:{type:'save',amount:300,byDate:null},isSavings:true,carryForward:0},
+    {id:uid(),groupId:g4,name:'Credit Card Payment',emoji:'💳',color:'#9db7d6',assigned:0,order:0,target:{type:'refill',amount:40,byDate:null}},
+    {id:uid(),groupId:g5,name:'Next Month Buffer',emoji:'🧾',color:'#a9b0d8',assigned:0,order:0,target:null}
   ];
+}
+
+// Move the legacy holding envelope into a separate custodial ledger without
+// changing physical balances or Ready to Assign.
+function migrateCustodialFunds() {
+  if(Number(S.custodialMigrationVersion||0)>=1) return;
+  if(!Array.isArray(S.custodialAccounts))S.custodialAccounts=[];
+  if(!Array.isArray(S.custodialTransactions))S.custodialTransactions=[];
+  if(!Array.isArray(S.transfers))S.transfers=[];
+  var held=S.envelopes.find(function(e){return /money.*holding.*others|holding for others|held for others/i.test(String(e.name||''));});
+  if(!held){S.custodialMigrationVersion=1;return;}
+  var heldSpent=0;
+  S.expenses.forEach(function(x){if(x.envId===held.id)heldSpent+=Number(x.amount)||0;});
+  var heldBalance=money(Math.max(0,(Number(held.assigned)||0)+(Number(held.carryForward)||0)-heldSpent));
+  var related=S.income.filter(function(i){return !i.isReimb && /held|holding|grandma|custodial|aunt.*grandma/i.test(String(i.name||''));});
+  var relatedTotal=money(related.reduce(function(t,i){return t+(Number(i.amount)||0);},0));
+  if(relatedTotal>heldBalance){related=[];relatedTotal=0;}
+  var accountId='custody_migrated_'+held.id;
+  var accountName=related.some(function(i){return /grandma/i.test(String(i.name||''));})?'Grandma':'Held for Others';
+  var createdDate=(related[0]&&related[0].date)||(S.income[0]&&S.income[0].date)||'2026-01-01';
+  S.custodialAccounts.push({id:accountId,name:accountName,emoji:'🛡️',note:'Money entrusted to me',createdAt:createdDate+'T12:00:00.000Z'});
+  var embedded=money(Math.max(0,heldBalance-relatedTotal));
+  if(embedded>0)S.custodialTransactions.push({id:'custody_opening_'+held.id,accountId:accountId,direction:'in',amount:embedded,desc:'Beginning custodial balance',date:(S.income[0]&&S.income[0].date)||new Date().toISOString().slice(0,10),location:'bank',affectsCash:false,embeddedInOpening:true});
+  related.forEach(function(i){S.custodialTransactions.push({id:'custody_from_'+i.id,accountId:accountId,direction:'in',amount:money(i.amount),desc:i.name||'Custodial money received',date:i.date||new Date().toISOString().slice(0,10),location:i.isCash?'cash':'bank',affectsCash:true,sourceIncomeId:i.id});});
+  if(related.length){var ids=related.map(function(i){return i.id;});S.income=S.income.filter(function(i){return ids.indexOf(i.id)<0;});}
+  var gid=held.groupId;
+  S.envelopes=S.envelopes.filter(function(e){return e.id!==held.id;});
+  if(gid&&!S.envelopes.some(function(e){return e.groupId===gid;}))S.groups=S.groups.filter(function(g){return g.id!==gid;});
+  S.custodialMigrationVersion=1;
 }
 
 function uid() { return makeLedgerId('rec'); }
@@ -1772,10 +1914,17 @@ function fmtS(n) {
 // COMPUTED
 // ═══════════════════════════════════════════
 function money(n) { return Math.round((Number(n)||0) * 100) / 100; }
+function custodialSignedAmount(t){return money((t&&t.direction==='out'?-1:1)*(Number(t&&t.amount)||0));}
+function custodyAccountBalance(accountId){var total=0;(S.custodialTransactions||[]).forEach(function(t){if(t.accountId===accountId)total+=custodialSignedAmount(t);});return money(total);}
+function custodialBalanceTotal(){var total=0;(S.custodialAccounts||[]).forEach(function(a){total+=custodyAccountBalance(a.id);});return money(total);}
+function transferBankEffect(t){var amount=Number(t&&t.amount)||0;return t&&t.direction==='bank-cash'?-amount:amount;}
+function transferCashEffect(t){var amount=Number(t&&t.amount)||0;return t&&t.direction==='bank-cash'?amount:-amount;}
 function bankBalance() {
   var total = 0;
   S.income.forEach(function(i) { if (!i.isCash) total += Number(i.amount)||0; });
   S.expenses.forEach(function(e) { if (!e.isCredit && e.payMethod !== 'cash') total -= Number(e.amount)||0; });
+  (S.custodialTransactions||[]).forEach(function(t){if(t.affectsCash!==false&&t.location==='bank')total+=custodialSignedAmount(t);});
+  (S.transfers||[]).forEach(function(t){total+=transferBankEffect(t);});
   return money(total);
 }
 function cashIncomeTotal() {
@@ -1785,20 +1934,23 @@ function cashIncomeTotal() {
 function cashBalance() {
   var total = cashIncomeTotal();
   S.expenses.forEach(function(e) { if (e.payMethod === 'cash') total -= Number(e.amount)||0; });
+  (S.custodialTransactions||[]).forEach(function(t){if(t.affectsCash!==false&&t.location==='cash')total+=custodialSignedAmount(t);});
+  (S.transfers||[]).forEach(function(t){total+=transferCashEffect(t);});
   return money(total);
 }
 function totalInflows() {
-  var total=0; S.income.forEach(function(i){ if(!i.isReimb) total += Number(i.amount)||0; });
+  var total=0; S.income.forEach(function(i){ total += Number(i.amount)||0; });
   return money(total);
 }
-function budgetBalance() { return totalInflows(); }
 function currentOnBudgetCash() { return money(bankBalance()+cashBalance()); }
+function budgetBalance() { return money(currentOnBudgetCash()-custodialBalanceTotal()); }
 function totalAssigned() {
   var total = 0;
   S.envelopes.forEach(function(e) { total += Number(e.assigned)||0; });
   return money(total);
 }
-function readyToAssign() { return money(budgetBalance() - totalAssigned()); }
+function totalPositiveAvailable(){var total=0;S.envelopes.forEach(function(e){total+=Math.max(0,envAvailable(e.id));});return money(total);}
+function readyToAssign() { return money(budgetBalance() - totalPositiveAvailable()); }
 function envSpentForMonth(envId, monthKey) {
   var total = 0;
   S.expenses.forEach(function(e) {
@@ -1879,7 +2031,7 @@ function totalAssignedNext() {
 }
 function readyToAssignNext() {
   // RTA for next month = bank balance - this month assigned - next month assigned
-  return Math.round((budgetBalance() - totalAssigned() - totalAssignedNext()) * 100) / 100;
+  return money(readyToAssign() - totalAssignedNext());
 }
 
 // ── MONEY AGE ──
@@ -1895,6 +2047,8 @@ function moneyAgeDetails() {
     var d=new Date(i.date+'T12:00:00'); return !isNaN(d) && d<=today;
   }).map(function(i){return {date:new Date(i.date+'T12:00:00'),remaining:Number(i.amount)||0};})
     .sort(function(a,b){return a.date-b.date;});
+  var embeddedCustody=(S.custodialTransactions||[]).filter(function(t){return t.embeddedInOpening;}).reduce(function(t,x){return t+(Number(x.amount)||0);},0);
+  lots.forEach(function(lot){if(embeddedCustody<=0)return;var cut=Math.min(lot.remaining,embeddedCustody);lot.remaining=money(lot.remaining-cut);embeddedCustody=money(embeddedCustody-cut);});
 
   var outflows = S.expenses.filter(function(e){
     if(!(Number(e.amount)>0) || !e.date) return false;
@@ -1980,19 +2134,20 @@ function groupEnvelopes(gid) {
 function targetProgress(env) {
   if (!env.target) return null;
   var assigned = env.assigned || 0;
+  var funded = money(assigned + (env.carryForward||0));
   var avail = envAvailable(env.id);
   var spent = envSpent(env.id);
   var t = env.target;
   if (t.type === 'spend') {
     // Target: spend up to X — show how much of budget is used
     var pct = t.amount > 0 ? Math.min(spent / t.amount * 100, 120) : 0;
-    var needed = Math.max(0, t.amount - assigned);
+    var needed = Math.max(0, t.amount - funded);
     return {pct:pct, label: needed > 0 ? fmt(needed)+' more to assign' : '✓ Funded', color: spent>t.amount?'var(--red)':'var(--acc)', icon:'💸'};
   }
   if (t.type === 'refill') {
     // Target: refill envelope to X each month
-    var pct = t.amount > 0 ? Math.min(assigned / t.amount * 100, 100) : 0;
-    var needed = Math.max(0, t.amount - assigned);
+    var pct = t.amount > 0 ? Math.min(funded / t.amount * 100, 100) : 0;
+    var needed = Math.max(0, t.amount - funded);
     return {pct:pct, label: needed > 0 ? fmt(needed)+' to go' : '✓ Fully funded', color:'var(--blue)', icon:'🔄'};
   }
   if (t.type === 'save') {
@@ -2027,7 +2182,7 @@ function updateRTA() {
   var assigned = S.viewingNextMonth ? totalAssigned() + totalAssignedNext() : totalAssigned();
   var assignedNext = totalAssignedNext();
   var rta = S.viewingNextMonth ? readyToAssignNext() : readyToAssign();
-  var pct = bank > 0 ? Math.min(totalAssigned() / bank * 100, 100) : 0;
+  var pct = bank > 0 ? Math.min(totalPositiveAvailable() / bank * 100, 100) : 0;
 
   var rtaNum = document.getElementById('rtaNum');
   var rtaBadge = document.getElementById('rtaBadge');
@@ -2035,20 +2190,20 @@ function updateRTA() {
   var warn = document.getElementById('warnBanner');
 
   rtaNum.textContent = (rta < 0 ? '-' : '') + fmt(Math.abs(rta));
-  document.getElementById('rtaBank').textContent = 'Budget pool: ' + fmt(bank);
+  document.getElementById('rtaBank').textContent = 'Money you control: ' + fmt(bank);
   document.getElementById('rtaAssigned').textContent = S.viewingNextMonth
     ? 'Next: ' + fmt(assignedNext)
-    : 'Assigned: ' + fmt(totalAssigned());
+    : 'Planned: ' + fmt(totalPositiveAvailable());
   var cash = cashBalance();
   var cashEl = document.getElementById('rtaCash');
   var totalEl = document.getElementById('rtaTotal');
   if (cashEl) cashEl.textContent = '💵 Cash: ' + fmt(cash);
-  if (totalEl) totalEl.textContent = 'Income loaded: ' + fmt(bank);
+  if (totalEl) totalEl.textContent = 'Custodial excluded: ' + fmt(custodialBalanceTotal());
   var cash = cashBalance();
   var cashEl = document.getElementById('rtaCash');
   var totalEl = document.getElementById('rtaTotal');
   if (cashEl) cashEl.textContent = '💵 Cash: ' + fmt(cash);
-  if (totalEl) totalEl.textContent = 'Income loaded: ' + fmt(bank);
+  if (totalEl) totalEl.textContent = 'Custodial excluded: ' + fmt(custodialBalanceTotal());
   var age = moneyAge();
   var ageEl = document.getElementById('moneyAge');
   if (ageEl) {
@@ -2216,7 +2371,8 @@ function renderEnvCard(env) {
   var assigned = env.assigned || 0;
   var spent = envSpent(env.id);
   var avail = envAvailable(env.id);
-  var pct = assigned > 0 ? Math.min(spent / assigned * 100, 100) : 0;
+  var budgeted = money(assigned + (env.carryForward||0));
+  var pct = budgeted > 0 ? Math.min(spent / budgeted * 100, 100) : 0;
   var wk = S.weeklyMode ? ' <span style="color:var(--text3);font-size:10px">('+fmt(assigned/4)+'/wk)</span>' : '';
   var availClass = avail < 0 ? ' over' : (avail === 0 && assigned > 0 ? ' empty' : '');
   var tp = targetProgress(env);
@@ -2230,7 +2386,7 @@ function renderEnvCard(env) {
   var eid = env.id;
   var savingsCls = env.isSavings ? ' savings-on' : '';
   var savingsLbl = env.isSavings ? '&#x1F437; Savings' : '&#x1F4B0; Regular';
-  var carryHtml = (env.isSavings && (env.carryForward||0)>0)
+  var carryHtml = ((env.carryForward||0)>0)
     ? '<div class="env-num"><div class="env-num-val" style="color:var(--green)">'+fmt(env.carryForward||0)+'</div><div class="env-num-lbl">Carried Over</div></div>'
     : '<div class="env-num"><div class="env-num-val">'+fmt(spent)+'</div><div class="env-num-lbl">Spent</div></div>';
 
@@ -2240,7 +2396,7 @@ function renderEnvCard(env) {
       '<div class="env-icon" style="background:'+env.color+'55">'+env.emoji+'</div>' +
       '<div class="env-info">' +
         '<div class="env-name">'+esc(env.name)+'</div>' +
-        '<div class="env-assigned">'+fmt(assigned)+wk+(((env.assignedNext||0)>0)?' <span style="color:var(--acc);font-size:10px">next: '+fmt(env.assignedNext)+'</span>':'')+'</div>' +
+        '<div class="env-assigned">'+fmt(assigned)+' assigned'+((env.carryForward||0)>0?' · '+fmt(env.carryForward)+' carried':'')+wk+(((env.assignedNext||0)>0)?' <span style="color:var(--acc);font-size:10px">next: '+fmt(env.assignedNext)+'</span>':'')+'</div>' +
       '</div>' +
       '<div class="env-right">' +
         '<div class="env-avail'+availClass+'">'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div>' +
@@ -2564,8 +2720,7 @@ function toggleSavingsFlag(envId) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
   env.isSavings = !env.isSavings;
-  if (!env.isSavings) env.carryForward = 0; // reset if unset
-  saveS(); renderEnvelopes(); toast(env.isSavings ? 'Savings mode on — balance carries forward!' : 'Savings mode off');
+  saveS(); renderEnvelopes(); toast(env.isSavings ? 'Savings mode on — shown as long-term savings' : 'Savings mode off');
 }
 
 // ═══════════════════════════════════════════
@@ -2631,8 +2786,27 @@ function renderExpenses() {
     el.appendChild(div);
   });
 }
+function applyBackdatedExpenseEffect(exp,mode){
+  if(!exp||!exp.date)return;
+  var currentKey=normalizeMonthKey(S.currentMonth||currentMonthKey());
+  if(monthKeyFromDate(exp.date)>=currentKey)return;
+  var env=S.envelopes.find(function(e){return e.id===exp.envId;});if(!env)return;
+  if(mode==='remove'){
+    if(exp.carryAdjustedMonth!==currentKey)return;
+    var oldFunded=money(exp.rolloverFundedAmount||0);
+    env.carryForward=money((env.carryForward||0)+oldFunded);
+    if(exp.isCredit&&exp.ccId){var pe=ccPaymentEnv(exp.ccId);if(pe)pe.carryForward=money(Math.max(0,(pe.carryForward||0)-oldFunded));}
+    delete exp.carryAdjustedMonth;delete exp.rolloverFundedAmount;return;
+  }
+  var funded=money(Math.min(Number(exp.amount)||0,Math.max(0,Number(env.carryForward)||0)));
+  env.carryForward=money(Math.max(0,(env.carryForward||0)-funded));
+  if(exp.isCredit&&exp.ccId){var pay=ccPaymentEnv(exp.ccId);if(pay)pay.carryForward=money((pay.carryForward||0)+funded);exp.fundedAmount=funded;}
+  exp.carryAdjustedMonth=currentKey;exp.rolloverFundedAmount=funded;
+}
+
 function delExp(id) {
   var exp=S.expenses.find(function(e){return e.id===id;});
+  applyBackdatedExpenseEffect(exp,'remove');
   if (exp && exp.isCredit && exp.ccId) {
     var card=S.creditCards.find(function(c){return c.id===exp.ccId;});
     if(card) card.balance=money(Math.max(0,(card.balance||0)-(exp.amount||0)));
@@ -2818,9 +2992,9 @@ function renderReviewLanes(){
 function renderSummary() {
   renderFinancialCompass();
   renderReviewLanes();
-  document.getElementById('sumInc').textContent = fmt(bankBalance());
+  document.getElementById('sumInc').textContent = fmt(budgetBalance());
   document.getElementById('sumSpent').textContent = fmt(totalSpent());
-  document.getElementById('sumAssigned').textContent = fmt(totalAssigned());
+  document.getElementById('sumAssigned').textContent = fmt(totalPositiveAvailable());
   document.getElementById('sumAvail').textContent = fmt(totalAvailable());
   var el = document.getElementById('sumList');
   var html = '';
@@ -2886,6 +3060,41 @@ function delOwed(type, id) {
   else S.iOwe = S.iOwe.filter(function(i){return i.id!==id;});
   saveS(); renderOwed(); toast('Removed');
 }
+
+
+// ═══════════════════════════════════════════
+// CUSTODIAL FUNDS
+// ═══════════════════════════════════════════
+var editingCustodyAccountId=null;
+function custodyAccountName(id){var a=(S.custodialAccounts||[]).find(function(x){return x.id===id;});return a?a.name:'Custodial fund';}
+function custodyLocationLabel(value){return value==='cash'?'Cash':'Bank';}
+function sortedCustodyTransactions(accountId){return (S.custodialTransactions||[]).filter(function(t){return t.accountId===accountId;}).sort(function(a,b){var ad=String(a.date||'')+(a.time||'');var bd=String(b.date||'')+(b.time||'');return ad<bd?1:ad>bd?-1:0;});}
+function renderCustody(){
+  var totalEl=document.getElementById('custodyTotal');if(totalEl)totalEl.textContent=fmt(custodialBalanceTotal());
+  var host=document.getElementById('custodyAccounts');if(!host)return;
+  if(!(S.custodialAccounts||[]).length){host.innerHTML='<div class="custody-empty"><strong>No custodial funds yet</strong>Add a person or fund when money is entrusted to you. It will stay outside your personal budget.</div>';}
+  else host.innerHTML=S.custodialAccounts.map(function(a){
+    var bal=custodyAccountBalance(a.id),txns=sortedCustodyTransactions(a.id);
+    var history=txns.length?txns.map(function(t){var incoming=t.direction!=='out';var action=t.embeddedInOpening?'<span style="font-size:9px;color:var(--text3);font-weight:800">Protected</span>':'<button class="custody-row-delete" onclick="deleteCustodyTransaction(\''+t.id+'\')" aria-label="Delete custodial entry">×</button>';return '<div class="custody-row"><div class="custody-row-sign '+(incoming?'in':'out')+'">'+(incoming?'+':'−')+'</div><div class="custody-row-copy"><div class="custody-row-title">'+esc(t.desc|| (incoming?'Money received':'Money used'))+'</div><div class="custody-row-sub">'+esc(t.date||'')+' · '+esc(t.affectsCash===false?'Already in Ledger':custodyLocationLabel(t.location))+'</div></div><div class="custody-row-amount '+(incoming?'in':'out')+'">'+(incoming?'+':'−')+fmt(t.amount||0)+'</div>'+action+'</div>';}).join(''):'<div class="activity-empty" style="padding:14px 0">No activity yet.</div>';
+    return '<div class="custody-account"><div class="custody-account-head"><div class="custody-account-left"><div class="custody-icon">'+esc(a.emoji||'🛡️')+'</div><div style="min-width:0"><div class="custody-name">'+esc(a.name)+'</div><div class="custody-note">'+esc(a.note||'Money entrusted to me')+'</div></div></div><div class="custody-balance"><strong>'+fmt(bal)+'</strong><span>Currently held</span></div></div><div class="custody-account-actions"><button class="custody-mini-btn in" onclick="openCustodyTxnModal(\''+a.id+'\',\'in\')">+ Money received</button><button class="custody-mini-btn out" onclick="openCustodyTxnModal(\''+a.id+'\',\'out\')">− Money used</button><button class="custody-mini-btn" onclick="openCustodyAccountModal(\''+a.id+'\')">Edit</button></div><div class="custody-history">'+history+'</div></div>';
+  }).join('');
+  renderTransfers();
+}
+function openCustodyAccountModal(id){
+  editingCustodyAccountId=id||null;var a=id?(S.custodialAccounts||[]).find(function(x){return x.id===id;}):null;
+  document.getElementById('custodyAccountModalTitle').textContent=a?'Edit Custodial Fund':'New Custodial Fund';
+  document.getElementById('custodyAccountName').value=a?a.name:'';document.getElementById('custodyAccountEmoji').value=a?(a.emoji||'🛡️'):'🛡️';document.getElementById('custodyAccountNote').value=a?(a.note||''):'';
+  document.getElementById('deleteCustodyAccountBtn').style.display=a?'block':'none';openModal('custodyAccountModal');
+}
+function saveCustodyAccount(){var name=document.getElementById('custodyAccountName').value.trim(),emoji=document.getElementById('custodyAccountEmoji').value.trim()||'🛡️',note=document.getElementById('custodyAccountNote').value.trim();if(!name){toast('Enter a name');return;}if(editingCustodyAccountId){var a=S.custodialAccounts.find(function(x){return x.id===editingCustodyAccountId;});if(a){a.name=name;a.emoji=emoji;a.note=note;}}else S.custodialAccounts.push({id:makeLedgerId('custody'),name:name,emoji:emoji,note:note,createdAt:new Date().toISOString()});saveS();closeModal('custodyAccountModal');editingCustodyAccountId=null;renderCustody();toast('Custodial fund saved');}
+function deleteCustodyAccount(){if(!editingCustodyAccountId)return;var bal=custodyAccountBalance(editingCustodyAccountId);if(Math.abs(bal)>0.005){toast('Bring the custodial balance to $0 before deleting it');return;}if(!confirm('Delete this custodial fund and its history?'))return;S.custodialTransactions=S.custodialTransactions.filter(function(t){return t.accountId!==editingCustodyAccountId;});S.custodialAccounts=S.custodialAccounts.filter(function(a){return a.id!==editingCustodyAccountId;});editingCustodyAccountId=null;saveS();closeModal('custodyAccountModal');renderCustody();}
+function openCustodyTxnModal(accountId,direction){var sel=document.getElementById('custodyTxnAccount');sel.innerHTML=(S.custodialAccounts||[]).map(function(a){return '<option value="'+a.id+'">'+esc(a.emoji||'🛡️')+' '+esc(a.name)+'</option>';}).join('');if(accountId)sel.value=accountId;document.getElementById('custodyTxnDirection').value=direction||'in';document.getElementById('custodyTxnAmount').value='';document.getElementById('custodyTxnDesc').value=direction==='out'?'':'Money received';document.getElementById('custodyTxnDate').value=new Date().toISOString().slice(0,10);document.getElementById('custodyTxnLocation').value='bank';openModal('custodyTxnModal');}
+function saveCustodyTransaction(){var accountId=document.getElementById('custodyTxnAccount').value,direction=document.getElementById('custodyTxnDirection').value,amount=money(parseFloat(document.getElementById('custodyTxnAmount').value)||0),desc=document.getElementById('custodyTxnDesc').value.trim(),date=document.getElementById('custodyTxnDate').value,location=document.getElementById('custodyTxnLocation').value;if(!accountId||amount<=0||!date){toast('Complete the custodial entry');return;}if(direction==='out'&&amount>custodyAccountBalance(accountId)+0.005){toast('That is more than the custodial balance');return;}if(direction==='out'&&location==='cash'&&amount>cashBalance()+0.005){toast('Record a Bank → Cash move first');return;}if(direction==='out'&&location==='bank'&&amount>bankBalance()+0.005){toast('Ledger does not show enough money in Bank');return;}S.custodialTransactions.push({id:makeLedgerId('custody_txn'),accountId:accountId,direction:direction,amount:amount,desc:desc||(direction==='out'?'Money used':'Money received'),date:date,time:new Date().toTimeString().slice(0,5),location:location,affectsCash:true});saveS();closeModal('custodyTxnModal');renderAll();toast(direction==='out'?'Custodial use recorded':'Custodial money recorded');}
+function deleteCustodyTransaction(id){var t=S.custodialTransactions.find(function(x){return x.id===id;});if(!t)return;if(t.embeddedInOpening){toast('The migrated beginning balance is protected');return;}if(t.direction!=='out'&&custodyAccountBalance(t.accountId)-(Number(t.amount)||0)<-0.005){toast('Remove later custodial uses before deleting this deposit');return;}if(!confirm('Delete this custodial entry?'))return;S.custodialTransactions=S.custodialTransactions.filter(function(x){return x.id!==id;});saveS();renderAll();}
+function openTransferModal(){document.getElementById('transferAmount').value='';document.getElementById('transferDesc').value='';document.getElementById('transferDate').value=new Date().toISOString().slice(0,10);openModal('transferModal');}
+function saveTransfer(){var direction=document.getElementById('transferDirection').value,amount=money(parseFloat(document.getElementById('transferAmount').value)||0),desc=document.getElementById('transferDesc').value.trim(),date=document.getElementById('transferDate').value;if(amount<=0||!date){toast('Enter a valid move');return;}if(direction==='cash-bank'&&amount>cashBalance()+0.005){toast('That is more cash than Ledger shows');return;}if(direction==='bank-cash'&&amount>bankBalance()+0.005){toast('That is more bank money than Ledger shows');return;}S.transfers.push({id:makeLedgerId('transfer'),direction:direction,amount:amount,desc:desc||(direction==='bank-cash'?'Cash withdrawal':'Cash deposit'),date:date});saveS();closeModal('transferModal');renderAll();toast('Bank / cash move recorded');}
+function deleteTransfer(id){if(!confirm('Delete this Bank ↔ Cash move?'))return;S.transfers=S.transfers.filter(function(t){return t.id!==id;});saveS();renderAll();}
+function renderTransfers(){var el=document.getElementById('transferList');if(!el)return;var items=(S.transfers||[]).slice().sort(function(a,b){return String(a.date||'')<String(b.date||'')?1:-1;});if(!items.length){el.innerHTML='<div class="activity-empty">No Bank ↔ Cash moves recorded.</div>';return;}el.innerHTML=items.slice(0,8).map(function(t){var label=t.direction==='bank-cash'?'Bank → Cash':'Cash → Bank';return '<div class="transfer-row"><div><strong>'+esc(t.desc||label)+'</strong><br><span>'+esc(t.date||'')+' · '+label+'</span></div><div style="display:flex;align-items:center;gap:8px"><strong>'+fmt(t.amount||0)+'</strong><button class="custody-row-delete" onclick="deleteTransfer(\''+t.id+'\')">×</button></div></div>';}).join('');}
 
 // ═══════════════════════════════════════════
 // GOALS
@@ -3152,7 +3361,7 @@ function checkAffordability(){
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-var MORE_VIEWS = ['cards','scheduled','reports','goals','owed','debt','history','settings'];
+var MORE_VIEWS = ['cards','scheduled','reports','goals','owed','custody','debt','history','settings'];
 function go(v) {
   currentView = v;
   var hdr=document.querySelector('.hdr'); if(hdr){hdr.classList.toggle('today-mode',v==='today');hdr.classList.toggle('compact-mode',v!=='today'&&v!=='budget');}
@@ -3176,6 +3385,7 @@ function go(v) {
   if (v==='expenses') renderExpenses();
   if (v==='summary') renderSummary();
   if (v==='owed') renderOwed();
+  if (v==='custody') renderCustody();
   if (v==='goals') renderGoals();
   if (v==='debt') renderDebts();
   if (v==='history') renderHistory();
@@ -3443,11 +3653,13 @@ function saveExp() {
     // Edit existing expense
     var exp = S.expenses.find(function(e){return e.id===editingExpId;});
     if (exp) {
+      applyBackdatedExpenseEffect(exp,'remove');
       if(exp.isCredit && exp.ccId){var oldCard=S.creditCards.find(function(c){return c.id===exp.ccId;});if(oldCard)oldCard.balance=money(Math.max(0,(oldCard.balance||0)-(exp.amount||0)));}
       var beforeAvail = envAvailable(envId) + (exp.envId===envId ? (exp.amount||0) : 0);
       exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.time=time; exp.datetime=datetime; exp.payMethod=payMethod; exp.isCredit=isCredit; exp.ccId=ccId||null;
       exp.fundedAmount=isCredit?money(Math.min(amt,Math.max(0,beforeAvail))):0;
       if(isCredit && ccId){var newCard=S.creditCards.find(function(c){return c.id===ccId;});if(newCard)newCard.balance=money((newCard.balance||0)+amt);}
+      applyBackdatedExpenseEffect(exp,'add');
     }
     editingExpId = null;
     saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
@@ -3474,6 +3686,7 @@ function saveExp() {
     var justAdded=S.expenses[S.expenses.length-1];
     justAdded.fundedAmount=money(Math.min(amt,Math.max(0,avail)));
   }
+  applyBackdatedExpenseEffect(S.expenses[S.expenses.length-1],'add');
   saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
   toast('✓ Expense logged!');
 }
@@ -3613,13 +3826,14 @@ function readBackupPackage(value){
 function normalizeRestoredState(data) {
   S=cloneLedger(data);
   LEDGER_COLLECTIONS.forEach(function(collection){if(!Array.isArray(S[collection]))S[collection]=[];});
+  if(!S.custodialAccounts)S.custodialAccounts=[];if(!S.custodialTransactions)S.custodialTransactions=[];if(!S.transfers)S.transfers=[];if(S.custodialMigrationVersion===undefined)S.custodialMigrationVersion=0;
   if(S.weeklyMode===undefined)S.weeklyMode=false;if(S.darkMode===undefined)S.darkMode=true;if(S.seasonalAccent===undefined)S.seasonalAccent=true;
   if(S.incomeCollapsed===undefined)S.incomeCollapsed=false;if(S.cashBalance===undefined)S.cashBalance=0;if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
   if(!S.currentMonth)S.currentMonth=currentMonthKey();S.currentMonth=normalizeMonthKey(S.currentMonth);
-  if(S.envelopes.length&&!S.groups.length)migrateToGroups();if(!S.groups.length)seedGroups();
+  if(S.envelopes.length&&!S.groups.length)migrateToGroups();if(!S.groups.length)seedGroups();migrateCustodialFunds();
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}});
-  S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;if(!e.isSavings&&!e.isCCPayment)e.carryForward=0;});
+  S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;});
   ensureRecordIds();
 }
 
@@ -3627,7 +3841,7 @@ function portableSummary(data){
   data=data||{};
   var savings=(data.envelopes||[]).filter(function(e){return e.isSavings&&e.target&&e.target.type==='save';}).length+(data.goals||[]).length;
   var updated=(data.expenses||[]).concat(data.income||[]).map(function(x){return x.datetime||x.date||'';}).sort().pop();
-  return {transactions:(data.expenses||[]).length,income:(data.income||[]).length,envelopes:(data.envelopes||[]).length,goals:savings,updated:updated||null};
+  return {transactions:(data.expenses||[]).length,income:(data.income||[]).length,envelopes:(data.envelopes||[]).length,goals:savings,custody:(data.custodialAccounts||[]).length,updated:updated||null};
 }
 
 async function buildTransferPackage(){
@@ -3648,7 +3862,7 @@ function previewRestorePackage(parsed,source){
     var heading=document.getElementById('restorePreviewHeading'),sub=document.getElementById('restorePreviewSub'),grid=document.getElementById('restorePreviewGrid'),note=document.getElementById('restorePreviewNote');
     if(heading)heading.textContent=parsed.format==='ledger-transfer'?'Verified device transfer found':'Verified Ledger backup found';
     if(sub)sub.textContent=(date?'Created '+new Date(date).toLocaleString():'Date unavailable')+(parsed.appVersion?' · Ledger v'+String(parsed.appVersion).replace(/\.0$/,''):'');
-    if(grid)grid.innerHTML=[['Transactions',summary.transactions],['Budget envelopes',summary.envelopes],['Savings goals',summary.goals],['Income records',summary.income]].map(function(x){return '<div class="restore-preview-cell"><div class="restore-preview-cell-label">'+x[0]+'</div><div class="restore-preview-cell-value">'+x[1]+'</div></div>';}).join('');
+    if(grid)grid.innerHTML=[['Transactions',summary.transactions],['Budget envelopes',summary.envelopes],['Custodial funds',summary.custody],['Savings goals',summary.goals],['Income records',summary.income]].map(function(x){return '<div class="restore-preview-cell"><div class="restore-preview-cell-label">'+x[0]+'</div><div class="restore-preview-cell-value">'+x[1]+'</div></div>';}).join('');
     if(note)note.textContent='Ledger will save the current device as a recovery point first. Nothing changes until you confirm.';
     openModal('restorePreviewModal');
   }catch(e){console.error(e);toast(e.message==='Backup verification failed'?'This file could not be verified':'This is not a supported Ledger file');}
@@ -3779,7 +3993,7 @@ function showCloudChoice(pack,file,reason){
   pendingCloudPackage={pack:pack,file:file};
   var local=portableSummary(S),cloud=portableSummary(pack.data),copy=document.getElementById('cloudChoiceCopy');if(copy)copy.textContent=reason||'Both copies have changed. Choose the one that should become current. Ledger will keep a recovery point first.';
   var lv=document.getElementById('localChoiceValue'),ls=document.getElementById('localChoiceSub'),cv=document.getElementById('cloudChoiceValue'),cs=document.getElementById('cloudChoiceSub');
-  if(lv)lv.textContent=local.transactions+' transactions';if(ls)ls.textContent='Current device · '+local.envelopes+' envelopes';if(cv)cv.textContent=cloud.transactions+' transactions';if(cs)cs.textContent='Drive copy · '+cloud.envelopes+' envelopes';openModal('cloudChoiceModal');
+  if(lv)lv.textContent=local.transactions+' transactions';if(ls)ls.textContent='Current device · '+local.envelopes+' envelopes · '+local.custody+' custodial';if(cv)cv.textContent=cloud.transactions+' transactions';if(cs)cs.textContent='Drive copy · '+cloud.envelopes+' envelopes · '+cloud.custody+' custodial';openModal('cloudChoiceModal');
 }
 async function performDriveSync(token,quiet){
   if(cloudSyncBusy)return;cloudSyncBusy=true;var btn=document.getElementById('cloudSyncBtn');if(btn){btn.disabled=true;btn.textContent='Checking…';}
@@ -3965,8 +4179,8 @@ function getUnderfunded() {
   S.envelopes.forEach(function(env) {
     var monthlyTarget = monthlyTargetAmount(env);
     if (!monthlyTarget) return;
-    var assigned = env.assigned || 0;
-    var needed = Math.max(0, monthlyTarget - assigned);
+    var funded = money((env.assigned||0)+(env.carryForward||0));
+    var needed = Math.max(0, monthlyTarget - funded);
     if (needed > 0.005) items.push({env:env, needed:money(needed)});
   });
   return items;
@@ -4292,13 +4506,13 @@ function renderRolloverSummary() {
 
   var listEl = document.getElementById('savingsRolloverList');
   if (!listEl) return;
-  var savingsEnvs = S.envelopes.filter(function(e){return e.isSavings;});
+  var savingsEnvs = S.envelopes.filter(function(e){return (e.carryForward||0)>0 || envAvailable(e.id)>0;});
   if (!savingsEnvs.length) {
-    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:6px 0">No savings envelopes yet. Toggle any envelope to Savings mode.</div>';
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:6px 0">No funded envelope balances are waiting to carry forward.</div>';
     return;
   }
   listEl.innerHTML = savingsEnvs.map(function(env) {
-    var avail = envAvailableBase(env.id);
+    var avail = envAvailable(env.id);
     var carry = env.carryForward || 0;
     return '<div class="rollover-env-row">' +
       '<span class="rollover-env-name">'+env.emoji+' '+esc(env.name)+'</span>' +
@@ -4341,7 +4555,7 @@ function renderBackupBanner() {
 
 function renderAll() {
   renderIncome(); renderEnvelopes(); renderExpenses(); renderSummary(); renderToday();
-  renderOwed(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
+  renderOwed(); renderCustody(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
   renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary(); renderBackupBanner();
   updateRTA(); applyTheme(); renderRecentActivity(); scheduleLedgerHealthCheck();
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':''); document.getElementById('weekTog').setAttribute('aria-checked',S.weeklyMode?'true':'false');
@@ -4500,6 +4714,21 @@ window.onload = async function() {
   document.getElementById('saveOwedBtn').addEventListener('click', saveOwed);
   document.getElementById('cancelOwedBtn').addEventListener('click', function(){closeModal('owedModal');});
   document.getElementById('owedModal').addEventListener('click', function(e){modalBg(e,'owedModal');});
+
+  // Custodial funds and Bank / Cash moves
+  document.getElementById('addCustodyAccountBtn').addEventListener('click', function(){openCustodyAccountModal(null);});
+  document.getElementById('saveCustodyAccountBtn').addEventListener('click', saveCustodyAccount);
+  document.getElementById('cancelCustodyAccountBtn').addEventListener('click', function(){closeModal('custodyAccountModal');});
+  document.getElementById('deleteCustodyAccountBtn').addEventListener('click', deleteCustodyAccount);
+  document.getElementById('custodyAccountModal').addEventListener('click', function(e){modalBg(e,'custodyAccountModal');});
+  document.getElementById('saveCustodyTxnBtn').addEventListener('click', saveCustodyTransaction);
+  document.getElementById('cancelCustodyTxnBtn').addEventListener('click', function(){closeModal('custodyTxnModal');});
+  document.getElementById('custodyTxnModal').addEventListener('click', function(e){modalBg(e,'custodyTxnModal');});
+  document.getElementById('openTransferBtn').addEventListener('click', openTransferModal);
+  document.getElementById('openTransferBtn2').addEventListener('click', openTransferModal);
+  document.getElementById('saveTransferBtn').addEventListener('click', saveTransfer);
+  document.getElementById('cancelTransferBtn').addEventListener('click', function(){closeModal('transferModal');});
+  document.getElementById('transferModal').addEventListener('click', function(e){modalBg(e,'transferModal');});
 
   // Goal modal
   document.getElementById('addGoalBtn').addEventListener('click', function(){openGoalModal();});
