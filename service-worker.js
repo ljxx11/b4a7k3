@@ -1,4 +1,4 @@
-const CACHE='ledger-v2.2.0-clear-boundaries.1';
+const CACHE='ledger-v2.2.1-clear-boundaries.1';
 const CORE=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{

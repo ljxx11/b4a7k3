@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="ledger-version" content="2.2.0">
-<title>Ledger — Clear Boundaries v2.2.0</title>
+<title>Ledger — Clear Boundaries v2.2.1</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -560,7 +560,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 @media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
 
 
-/* ── CLEAR BOUNDARIES v2.2.0 ── */
+/* ── CLEAR BOUNDARIES v2.2.1 ── */
 :focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 button,input,select,summary{font:inherit}
 button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
@@ -652,7 +652,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.2.0</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.2.1</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -1093,7 +1093,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v2.2.0 — Clear Boundaries</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v2.2.1 — Clear Boundaries</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
           <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Separated your budget, reimbursements, and custodial funds; added safe Bank ↔ Cash transfers; corrected month rollover so funded envelopes carry forward; and restored the circle app icon.</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
         </div></div>
@@ -1329,7 +1329,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 4;
 var LEDGER_SCHEMA_VERSION = 4;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '2.2.0';
+var LEDGER_APP_VERSION = '2.2.1';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1886,7 +1886,7 @@ function migrateCustodialFunds() {
   var heldSpent=0;
   S.expenses.forEach(function(x){if(x.envId===held.id)heldSpent+=Number(x.amount)||0;});
   var heldBalance=money(Math.max(0,(Number(held.assigned)||0)+(Number(held.carryForward)||0)-heldSpent));
-  var related=S.income.filter(function(i){return !i.isReimb && /held|holding|grandma|custodial|aunt.*grandma/i.test(String(i.name||''));});
+  var related=S.income.filter(function(i){return !i.isReimb && /held|holding|grandma|grandmother|mama|custodial|aunt.*(?:grandma|grandmother|mama)/i.test(String(i.name||''));});
   var relatedTotal=money(related.reduce(function(t,i){return t+(Number(i.amount)||0);},0));
   if(relatedTotal>heldBalance){related=[];relatedTotal=0;}
   var accountId='custody_migrated_'+held.id;
