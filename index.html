@@ -378,6 +378,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 /* ── NEXT MONTH MODE ── */
 .month-toggle-btn{background:var(--surf3);color:var(--text2);border-radius:999px;padding:6px 16px;font-size:11px;font-weight:800;transition:.2s;border:1px solid var(--border)}
+.month-nav{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}.month-nav-btn{width:32px;height:30px;border-radius:999px;border:1px solid var(--border);background:var(--surf3);color:var(--text);font-weight:900;cursor:pointer}.month-nav-label{min-width:132px;text-align:center;font-size:12px;font-weight:900;color:var(--acc);border:0;background:transparent;cursor:pointer;padding:5px}.month-today-btn{border:0;background:transparent;color:var(--text3);font-size:10px;font-weight:800;cursor:pointer;padding:5px}
 .month-toggle-btn.next-month{background:var(--acc);color:#fff;border-color:var(--acc)}
 .next-month-banner{background:linear-gradient(135deg,rgba(232,121,249,.15),rgba(168,85,247,.1));border:1px solid rgba(232,121,249,.3);border-radius:var(--rsm);padding:8px 14px;margin-bottom:10px;font-size:12px;color:var(--acc);font-weight:800;display:none}
 .next-month-banner.show{display:block}
@@ -652,7 +653,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v2.2.1</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.0.0</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -674,8 +675,11 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <span id="rtaTotal" style="color:var(--text3)">Total: $0.00</span>
     </div>
     <div class="rta-prog"><div class="rta-fill" id="rtaFill" style="width:0%"></div></div>
-  <div class="month-toggle-wrap" style="display:flex;justify-content:center;margin-top:8px">
-    <button class="month-toggle-btn" id="monthToggleBtn" onclick="toggleNextMonth()">📅 Budget This Month</button>
+  <div class="month-toggle-wrap month-nav">
+    <button class="month-nav-btn" onclick="changeBudgetMonth(-1)" aria-label="Previous month">‹</button>
+    <button class="month-nav-label" id="budgetMonthLabel" onclick="goToCurrentBudgetMonth()">This Month</button>
+    <button class="month-nav-btn" onclick="changeBudgetMonth(1)" aria-label="Next month">›</button>
+    <button class="month-today-btn" id="budgetTodayBtn" onclick="goToCurrentBudgetMonth()" style="display:none">Today</button>
   </div>
     <button class="rta-compact-link" type="button" onclick="go('budget')">Open Budget</button>
   </div>
@@ -785,7 +789,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <div class="learn-title">Start here with your real budget</div>
       <div class="learn-body">1) Add your opening balances. 2) Add your credit cards. 3) Use Custodial Funds for money entrusted to you—it never enters Ready to Assign. 4) Give your own money deliberate jobs. 5) Fund bills first, then everyday needs, debt, and future goals.</div>
     </div>
-    <div class="next-month-banner" id="nextMonthBanner">✨ Next Month View — assigning money for next month</div>
+    <div class="next-month-banner" id="nextMonthBanner">✨ Future month — assign money here without changing another month</div>
     <div class="target-summary-bar" id="targetSummaryBar" style="display:none">
       <div class="tsb-left">
         <div class="tsb-label">Monthly Targets Total</div>
@@ -1282,7 +1286,7 @@ var S = {
   income: [],
   expenses: [],
   groups: [],       // {id, name, collapsed, order}
-  envelopes: [],    // {id, groupId, name, emoji, color, assigned, assignedNext, order, target, isSavings, carryForward}
+  envelopes: [],    // {id, groupId, name, emoji, color, assignments:{YYYY-MM:amount}, openingCarry, order, target, isSavings}
   // target: {type:'spend'|'save'|'refill', amount, byDate(optional)}
   creditCards: [],  // {id, name, lastFour, balance, paymentEnvId}
   scheduled: [],    // {id, desc, amount, envId, dayOfMonth, freq:'monthly'|'weekly', nextDate, isCredit, ccId}
@@ -1300,8 +1304,9 @@ var S = {
   lastBackupDate: null,
   cashBalance: 0,
   incomeCollapsed: false,
-  currentMonth: '',  // tracks month for savings carry-forward
-  viewingNextMonth: false  // toggle for next month budgeting
+  currentMonth: '',
+  selectedMonth: '',
+  budgetStartMonth: ''
 };
 
 var COLORS = ['#b7a6d9','#9f8fc4','#9db7d6','#a8cfb3','#d9c38b','#d9a0a5','#a7cbbf','#d5a47f','#d3a1c0','#a9b0d8'];
@@ -1326,10 +1331,10 @@ var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 // existing installations can migrate safely and older backups stay readable.
 // ═══════════════════════════════════════════
 var LEDGER_DB_NAME = 'ledger_database';
-var LEDGER_DB_VERSION = 4;
-var LEDGER_SCHEMA_VERSION = 4;
+var LEDGER_DB_VERSION = 5;
+var LEDGER_SCHEMA_VERSION = 5;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '2.2.1';
+var LEDGER_APP_VERSION = '3.0.0';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1348,7 +1353,7 @@ var pendingCloudPackage = null;
 var previousModalFocus = null;
 
 var LEDGER_COLLECTIONS = ['income','expenses','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','transfers'];
-var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','viewingNextMonth','rolloverDate','custodialMigrationVersion'];
+var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','selectedMonth','budgetStartMonth','rolloverDate','custodialMigrationVersion'];
 
 function openLedgerDB() {
   return new Promise(function(resolve, reject){
@@ -1778,12 +1783,23 @@ async function loadS() {
   });
   if(!S.currentMonth) S.currentMonth=currentMonthKey();
   S.currentMonth=normalizeMonthKey(S.currentMonth);
+  if(!S.budgetStartMonth) S.budgetStartMonth=S.currentMonth;
+  S.budgetStartMonth=normalizeMonthKey(S.budgetStartMonth);
+  if(!S.selectedMonth) S.selectedMonth=S.viewingNextMonth ? addMonths(S.currentMonth,1) : S.currentMonth;
+  S.selectedMonth=normalizeMonthKey(S.selectedMonth);
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.envelopes.forEach(function(e,i){
     if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;
-    if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;
+    if(!e.assignments || typeof e.assignments!=='object'){
+      e.assignments={};
+      e.assignments[S.currentMonth]=money(e.assigned||0);
+      if(Number(e.assignedNext||0)!==0)e.assignments[addMonths(S.currentMonth,1)]=money(e.assignedNext||0);
+      e.openingCarry=money(e.carryForward||0);
+    }
+    if(e.openingCarry===undefined)e.openingCarry=0;
+    delete e.assignedNext;
   });
-  if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
+  delete S.viewingNextMonth;
   if(!S.lastBackupDate)S.lastBackupDate=null;
   if(S.cashBalance===undefined)S.cashBalance=0;
   ensureRecordIds();
@@ -1803,25 +1819,23 @@ function normalizeMonthKey(key) {
   var m = String(key||'').match(/^(\d{4})-(\d{1,2})$/);
   return m ? m[1]+'-'+String(Number(m[2])).padStart(2,'0') : currentMonthKey();
 }
+function addMonths(key, amount) {
+  var parts=normalizeMonthKey(key).split('-');
+  var d=new Date(Number(parts[0]),Number(parts[1])-1+Number(amount||0),1,12);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function monthLabel(key) {
+  var parts=normalizeMonthKey(key).split('-');
+  return new Date(Number(parts[0]),Number(parts[1])-1,1,12).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+}
+function selectedMonthKey(){ return normalizeMonthKey(S.selectedMonth||currentMonthKey()); }
 function monthKeyFromDate(dateStr) {
   return String(dateStr||'').slice(0,7);
 }
 
 function applyMonthRollover(newKey) {
-  var oldKey = normalizeMonthKey(S.currentMonth);
-  var oldAvailableById={};
-  S.envelopes.forEach(function(env) {
-    var creditReserve = env.isCCPayment ? fundedCreditActivity(env.id, oldKey) : 0;
-    oldAvailableById[env.id]=money((env.assigned||0) + (env.carryForward||0) + creditReserve - envSpentForMonth(env.id, oldKey));
-  });
-  S.envelopes.forEach(function(env) {
-    var oldAvailable=oldAvailableById[env.id]||0;
-    env.carryForward = Math.max(0, oldAvailable);
-    env.assigned = money(env.assignedNext||0);
-    env.assignedNext = 0;
-  });
   S.currentMonth = normalizeMonthKey(newKey);
-  S.viewingNextMonth = false;
+  S.selectedMonth = S.currentMonth;
   S.rolloverDate = new Date().toISOString().slice(0,10);
 }
 function checkMonthRollover() {
@@ -1833,11 +1847,10 @@ function checkMonthRollover() {
   }
 }
 function manualRollover() {
-  if (!confirm('Simulate month rollover? Available envelope balances will carry forward and new monthly assignments will begin.')) return;
-  var d=new Date(); d.setMonth(d.getMonth()+1);
-  applyMonthRollover(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+  if (!confirm('Open next month? Existing assignments and balances will remain in their original months.')) return;
+  S.selectedMonth=addMonths(selectedMonthKey(),1);
   saveS(); renderAll();
-  toast('Month rolled over.');
+  toast('Opened '+monthLabel(S.selectedMonth)+'.');
 }
 
 function migrateToGroups() {
@@ -1944,13 +1957,26 @@ function totalInflows() {
 }
 function currentOnBudgetCash() { return money(bankBalance()+cashBalance()); }
 function budgetBalance() { return money(currentOnBudgetCash()-custodialBalanceTotal()); }
-function totalAssigned() {
+function assignmentForMonth(env, monthKey) {
+  if(!env)return 0;
+  var key=normalizeMonthKey(monthKey||currentMonthKey());
+  if(env.assignments && Object.prototype.hasOwnProperty.call(env.assignments,key))return money(env.assignments[key]||0);
+  return key===normalizeMonthKey(S.currentMonth) ? money(env.assigned||0) : 0;
+}
+function setAssignmentForMonth(env, monthKey, value) {
+  if(!env.assignments)env.assignments={};
+  var key=normalizeMonthKey(monthKey);
+  env.assignments[key]=money(value||0);
+  if(key===currentMonthKey())env.assigned=env.assignments[key]; // compatibility for older backups and secondary views
+}
+function totalAssigned(monthKey) {
+  var key=normalizeMonthKey(monthKey||currentMonthKey());
   var total = 0;
-  S.envelopes.forEach(function(e) { total += Number(e.assigned)||0; });
+  S.envelopes.forEach(function(e) { total += assignmentForMonth(e,key); });
   return money(total);
 }
-function totalPositiveAvailable(){var total=0;S.envelopes.forEach(function(e){total+=Math.max(0,envAvailable(e.id));});return money(total);}
-function readyToAssign() { return money(budgetBalance() - totalPositiveAvailable()); }
+function totalPositiveAvailable(monthKey){var key=normalizeMonthKey(monthKey||currentMonthKey()),total=0;S.envelopes.forEach(function(e){total+=Math.max(0,envAvailableForMonth(e.id,key));});return money(total);}
+function readyToAssign(monthKey) { return money(budgetBalance() - totalPositiveAvailable(monthKey||currentMonthKey())); }
 function envSpentForMonth(envId, monthKey) {
   var total = 0;
   S.expenses.forEach(function(e) {
@@ -1973,7 +1999,7 @@ function fundedCreditActivity(paymentEnvId, monthKey) {
   Object.keys(expensesByEnvelope).forEach(function(envId){
     var env=S.envelopes.find(function(e){return e.id===envId;});
     if(!env || env.isCCPayment)return;
-    var remaining=money(Math.max(0,(env.assigned||0)+(env.carryForward||0)));
+    var remaining=money(Math.max(0,assignmentForMonth(env,key)+carryIntoMonth(env.id,key)));
     expensesByEnvelope[envId].sort(function(a,b){
       var ad=String(a.expense.datetime||((a.expense.date||'')+'T'+(a.expense.time||'00:00')));
       var bd=String(b.expense.datetime||((b.expense.date||'')+'T'+(b.expense.time||'00:00')));
@@ -2010,12 +2036,28 @@ function envAvailableBase(envId, monthKey) {
   if (!env) return 0;
   var key = monthKey || currentMonthKey();
   var fundedCredit = env.isCCPayment ? fundedCreditActivity(env.id,key) : 0;
-  return money((env.assigned||0) + fundedCredit - envSpentForMonth(envId,key));
+  return money(assignmentForMonth(env,key) + fundedCredit - envSpentForMonth(envId,key));
 }
-function envAvailable(envId) {
+function carryIntoMonth(envId, monthKey) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return 0;
-  return money((env.assigned||0) + (env.carryForward||0) + (env.isCCPayment?fundedCreditActivity(env.id):0) - envSpent(envId));
+  var key=normalizeMonthKey(monthKey), start=normalizeMonthKey(S.budgetStartMonth||S.currentMonth||currentMonthKey());
+  if(key<=start)return key===start?money(env.openingCarry||0):0;
+  var cursor=start, carry=money(env.openingCarry||0), guard=0;
+  while(cursor<key && guard++<240){
+    var available=money(carry+assignmentForMonth(env,cursor)+(env.isCCPayment?fundedCreditActivity(env.id,cursor):0)-envSpentForMonth(envId,cursor));
+    carry=money(Math.max(0,available));
+    cursor=addMonths(cursor,1);
+  }
+  return carry;
+}
+function envAvailableForMonth(envId, monthKey) {
+  var env=S.envelopes.find(function(e){return e.id===envId;});if(!env)return 0;
+  var key=normalizeMonthKey(monthKey);
+  return money(carryIntoMonth(envId,key)+assignmentForMonth(env,key)+(env.isCCPayment?fundedCreditActivity(env.id,key):0)-envSpentForMonth(envId,key));
+}
+function envAvailable(envId) {
+  return envAvailableForMonth(envId,currentMonthKey());
 }
 
 // ── CREDIT CARD: find payment envelope for a card ──
@@ -2023,15 +2065,6 @@ function ccPaymentEnv(cardId) {
   var card = S.creditCards.find(function(c){return c.id===cardId;});
   if (!card) return null;
   return S.envelopes.find(function(e){return e.id===card.paymentEnvId;});
-}
-
-// ── NEXT MONTH HELPERS ──
-function totalAssignedNext() {
-  var t = 0; S.envelopes.forEach(function(e){ t += (e.assignedNext||0); }); return t;
-}
-function readyToAssignNext() {
-  // RTA for next month = bank balance - this month assigned - next month assigned
-  return money(readyToAssign() - totalAssignedNext());
 }
 
 // ── MONEY AGE ──
@@ -2119,10 +2152,10 @@ function totalCCDebt() {
   var t = 0; S.creditCards.forEach(function(c){ t += c.balance||0; }); return t;
 }
 function groupAssigned(gid) {
-  var t=0; S.envelopes.filter(function(e){return e.groupId===gid;}).forEach(function(e){t+=e.assigned||0;}); return t;
+  var key=selectedMonthKey(),t=0; S.envelopes.filter(function(e){return e.groupId===gid;}).forEach(function(e){t+=assignmentForMonth(e,key);}); return money(t);
 }
 function groupAvailable(gid) {
-  var t=0; S.envelopes.filter(function(e){return e.groupId===gid;}).forEach(function(e){t+=envAvailable(e.id);}); return t;
+  var key=selectedMonthKey(),t=0; S.envelopes.filter(function(e){return e.groupId===gid;}).forEach(function(e){t+=envAvailableForMonth(e.id,key);}); return money(t);
 }
 function sortedGroups() {
   return S.groups.slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
@@ -2133,10 +2166,11 @@ function groupEnvelopes(gid) {
 // Target progress helpers
 function targetProgress(env) {
   if (!env.target) return null;
-  var assigned = env.assigned || 0;
-  var funded = money(assigned + (env.carryForward||0));
-  var avail = envAvailable(env.id);
-  var spent = envSpent(env.id);
+  var key=selectedMonthKey();
+  var assigned = assignmentForMonth(env,key);
+  var funded = money(assigned + carryIntoMonth(env.id,key));
+  var avail = envAvailableForMonth(env.id,key);
+  var spent = envSpentForMonth(env.id,key);
   var t = env.target;
   if (t.type === 'spend') {
     // Target: spend up to X — show how much of budget is used
@@ -2161,28 +2195,37 @@ function targetProgress(env) {
 }
 
 // ═══════════════════════════════════════════
-// HEADER / RTA
+// MONTH NAVIGATION / HEADER / RTA
 // ═══════════════════════════════════════════
-function toggleNextMonth() {
-  S.viewingNextMonth = !S.viewingNextMonth;
-  saveS();
-  var btn = document.getElementById('monthToggleBtn');
+function renderMonthNavigator() {
+  var key=selectedMonthKey(), current=currentMonthKey();
+  var label=document.getElementById('budgetMonthLabel'), today=document.getElementById('budgetTodayBtn');
   var banner = document.getElementById('nextMonthBanner');
-  if (btn) {
-    btn.textContent = S.viewingNextMonth ? '✨ Budgeting Next Month' : '📅 Budget This Month';
-    btn.className = 'month-toggle-btn' + (S.viewingNextMonth ? ' next-month' : '');
-  }
-  if (banner) banner.className = 'next-month-banner' + (S.viewingNextMonth ? ' show' : '');
+  if(label)label.textContent=monthLabel(key);
+  if(today)today.style.display=key===current?'none':'inline-block';
+  if(banner){banner.textContent=key>current?'✨ Future month — assign money here without changing another month':key<current?'📚 Past month — assignments and activity are preserved':'📅 Current month';banner.className='next-month-banner'+(key===current?'':' show');}
+}
+function changeBudgetMonth(offset) {
+  S.selectedMonth=addMonths(selectedMonthKey(),offset);
+  saveS(); renderMonthNavigator(); renderEnvelopes(); renderTargetSummary(); renderUnderfunded(); updateRTA();
+}
+function goToCurrentBudgetMonth() {
+  S.selectedMonth=currentMonthKey();
+  saveS(); renderMonthNavigator(); renderEnvelopes(); renderTargetSummary(); renderUnderfunded(); updateRTA();
+}
+function toggleNextMonth() {
+  S.selectedMonth=addMonths(currentMonthKey(),selectedMonthKey()===currentMonthKey()?1:0);
+  saveS(); renderMonthNavigator();
   renderEnvelopes(); updateRTA();
 }
 
 function updateRTA() {
   var bank = budgetBalance();
   var currentCash = currentOnBudgetCash();
-  var assigned = S.viewingNextMonth ? totalAssigned() + totalAssignedNext() : totalAssigned();
-  var assignedNext = totalAssignedNext();
-  var rta = S.viewingNextMonth ? readyToAssignNext() : readyToAssign();
-  var pct = bank > 0 ? Math.min(totalPositiveAvailable() / bank * 100, 100) : 0;
+  var key=selectedMonthKey();
+  var assigned = totalAssigned(key);
+  var rta = readyToAssign(key);
+  var pct = bank > 0 ? Math.min(totalPositiveAvailable(key) / bank * 100, 100) : 0;
 
   var rtaNum = document.getElementById('rtaNum');
   var rtaBadge = document.getElementById('rtaBadge');
@@ -2191,9 +2234,7 @@ function updateRTA() {
 
   rtaNum.textContent = (rta < 0 ? '-' : '') + fmt(Math.abs(rta));
   document.getElementById('rtaBank').textContent = 'Money you control: ' + fmt(bank);
-  document.getElementById('rtaAssigned').textContent = S.viewingNextMonth
-    ? 'Next: ' + fmt(assignedNext)
-    : 'Planned: ' + fmt(totalPositiveAvailable());
+  document.getElementById('rtaAssigned').textContent = 'Assigned in '+monthLabel(key)+': ' + fmt(assigned);
   var cash = cashBalance();
   var cashEl = document.getElementById('rtaCash');
   var totalEl = document.getElementById('rtaTotal');
@@ -2368,10 +2409,12 @@ function renderEnvelopes() {
 }
 
 function renderEnvCard(env) {
-  var assigned = env.assigned || 0;
-  var spent = envSpent(env.id);
-  var avail = envAvailable(env.id);
-  var budgeted = money(assigned + (env.carryForward||0));
+  var key=selectedMonthKey();
+  var assigned = assignmentForMonth(env,key);
+  var spent = envSpentForMonth(env.id,key);
+  var avail = envAvailableForMonth(env.id,key);
+  var carried=carryIntoMonth(env.id,key);
+  var budgeted = money(assigned + carried);
   var pct = budgeted > 0 ? Math.min(spent / budgeted * 100, 100) : 0;
   var wk = S.weeklyMode ? ' <span style="color:var(--text3);font-size:10px">('+fmt(assigned/4)+'/wk)</span>' : '';
   var availClass = avail < 0 ? ' over' : (avail === 0 && assigned > 0 ? ' empty' : '');
@@ -2386,8 +2429,8 @@ function renderEnvCard(env) {
   var eid = env.id;
   var savingsCls = env.isSavings ? ' savings-on' : '';
   var savingsLbl = env.isSavings ? '&#x1F437; Savings' : '&#x1F4B0; Regular';
-  var carryHtml = ((env.carryForward||0)>0)
-    ? '<div class="env-num"><div class="env-num-val" style="color:var(--green)">'+fmt(env.carryForward||0)+'</div><div class="env-num-lbl">Carried Over</div></div>'
+  var carryHtml = (carried>0)
+    ? '<div class="env-num"><div class="env-num-val" style="color:var(--green)">'+fmt(carried)+'</div><div class="env-num-lbl">Carried Over</div></div>'
     : '<div class="env-num"><div class="env-num-val">'+fmt(spent)+'</div><div class="env-num-lbl">Spent</div></div>';
 
   return '<div class="env" id="env_'+eid+'" data-eid="'+eid+'" draggable="true">' +
@@ -2396,7 +2439,7 @@ function renderEnvCard(env) {
       '<div class="env-icon" style="background:'+env.color+'55">'+env.emoji+'</div>' +
       '<div class="env-info">' +
         '<div class="env-name">'+esc(env.name)+'</div>' +
-        '<div class="env-assigned">'+fmt(assigned)+' assigned'+((env.carryForward||0)>0?' · '+fmt(env.carryForward)+' carried':'')+wk+(((env.assignedNext||0)>0)?' <span style="color:var(--acc);font-size:10px">next: '+fmt(env.assignedNext)+'</span>':'')+'</div>' +
+        '<div class="env-assigned">'+fmt(assigned)+' assigned'+(carried>0?' · '+fmt(carried)+' carried':'')+wk+'</div>' +
       '</div>' +
       '<div class="env-right">' +
         '<div class="env-avail'+availClass+'">'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div>' +
@@ -2412,7 +2455,7 @@ function renderEnvCard(env) {
         '<div class="env-num"><div class="env-num-val'+(avail<0?' style=\"color:var(--red)\"':'')+'>'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div><div class="env-num-lbl">Available</div></div>' +
       '</div>' +
       '<div class="env-assign-row">' +
-        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="'+(S.viewingNextMonth?'Next month amount...':'Assign amount...')+'" value="'+(S.viewingNextMonth?((env.assignedNext||0).toFixed(2)):assigned.toFixed(2))+'" oninput="window._lastAssignVal=this.value" onchange="window._lastAssignVal=this.value">' +
+        '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="Assign for '+monthLabel(key)+'..." value="'+assigned.toFixed(2)+'" oninput="window._lastAssignVal=this.value" onchange="window._lastAssignVal=this.value">' +
         '<button class="env-set-btn" data-eid="'+eid+'" onclick="setAssigned(this.dataset.eid)">Set</button>' +
       '</div>' +
       '<button class="env-act-btn" style="width:100%;margin-top:6px" data-eid="'+eid+'" onclick="setAssignedDirect(this.dataset.eid,0)">Clear (set to $0)</button>' +
@@ -2440,10 +2483,11 @@ function setAssignedDirect(envId, val) {
   val = Math.round(val * 100) / 100;
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
-  var diff = val - (env.assigned || 0);
-  var rta = readyToAssign();
+  var key=selectedMonthKey();
+  var diff = val - assignmentForMonth(env,key);
+  var rta = readyToAssign(key);
   if (diff > rta + 0.005) { toast('⚠️ Only '+fmt(rta)+' left to assign!'); return; }
-  env.assigned = val;
+  setAssignmentForMonth(env,key,val);
   saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
   toast('✓ '+env.name+' cleared');
 }
@@ -2454,30 +2498,23 @@ function setAssigned(envId) {
   var val = Math.round((parseFloat(raw) || 0) * 100) / 100;
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
-  if (S.viewingNextMonth) {
-    var diff = val - (env.assignedNext||0);
-    var rtaNext = readyToAssignNext();
-    if (diff > rtaNext + 0.005) {
-      toast('⚠️ Only '+fmt(rtaNext)+' left for next month!'); return;
-    }
-    env.assignedNext = val;
-    saveS(); renderEnvelopes(); updateRTA();
-    toast('✨ Next month: '+env.name+' → '+fmt(val));
-  } else {
-    var diff = val - (env.assigned || 0);
-    var rta = readyToAssign();
+  {
+    var key=selectedMonthKey();
+    var diff = val - assignmentForMonth(env,key);
+    var rta = readyToAssign(key);
     // Only block if INCREASING assignment beyond available RTA
     // Always allow reductions (diff < 0) or no change
     if (diff > rta + 0.005) {
       toast('⚠️ Only '+fmt(rta)+' left to assign!'); return;
     }
-    env.assigned = val;
+    setAssignmentForMonth(env,key,val);
     saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
-    toast('✓ '+env.name+' set to '+fmt(val));
+    toast('✓ '+env.name+' set to '+fmt(val)+' for '+monthLabel(key));
   }
 }
 
 function moveToEnv(fromId) {
+  var key=selectedMonthKey();
   var others = S.envelopes.filter(function(e){return e.id!==fromId;});
   if (!others.length) { toast('No other envelopes'); return; }
   var fromEnv = S.envelopes.find(function(e){return e.id===fromId;});
@@ -2489,9 +2526,9 @@ function moveToEnv(fromId) {
   var toEnv = others[idx];
   var amt = parseFloat(prompt('How much to move to '+toEnv.name+'?')||'0');
   if (!amt||amt<=0) return;
-  if (amt>(fromEnv.assigned||0)) { toast('Not enough in '+fromEnv.name); return; }
-  fromEnv.assigned=(fromEnv.assigned||0)-amt;
-  toEnv.assigned=(toEnv.assigned||0)+amt;
+  if (amt>assignmentForMonth(fromEnv,key)) { toast('Not enough assigned in '+monthLabel(key)); return; }
+  setAssignmentForMonth(fromEnv,key,assignmentForMonth(fromEnv,key)-amt);
+  setAssignmentForMonth(toEnv,key,assignmentForMonth(toEnv,key)+amt);
   saveS(); renderEnvelopes(); toast('↔️ Moved '+fmt(amt)+' to '+toEnv.name);
 }
 
@@ -2787,21 +2824,9 @@ function renderExpenses() {
   });
 }
 function applyBackdatedExpenseEffect(exp,mode){
-  if(!exp||!exp.date)return;
-  var currentKey=normalizeMonthKey(S.currentMonth||currentMonthKey());
-  if(monthKeyFromDate(exp.date)>=currentKey)return;
-  var env=S.envelopes.find(function(e){return e.id===exp.envId;});if(!env)return;
-  if(mode==='remove'){
-    if(exp.carryAdjustedMonth!==currentKey)return;
-    var oldFunded=money(exp.rolloverFundedAmount||0);
-    env.carryForward=money((env.carryForward||0)+oldFunded);
-    if(exp.isCredit&&exp.ccId){var pe=ccPaymentEnv(exp.ccId);if(pe)pe.carryForward=money(Math.max(0,(pe.carryForward||0)-oldFunded));}
-    delete exp.carryAdjustedMonth;delete exp.rolloverFundedAmount;return;
-  }
-  var funded=money(Math.min(Number(exp.amount)||0,Math.max(0,Number(env.carryForward)||0)));
-  env.carryForward=money(Math.max(0,(env.carryForward||0)-funded));
-  if(exp.isCredit&&exp.ccId){var pay=ccPaymentEnv(exp.ccId);if(pay)pay.carryForward=money((pay.carryForward||0)+funded);exp.fundedAmount=funded;}
-  exp.carryAdjustedMonth=currentKey;exp.rolloverFundedAmount=funded;
+  // Month balances are derived from preserved assignments and dated activity,
+  // so backdated edits flow forward automatically without mutating carry-over.
+  if(exp){delete exp.carryAdjustedMonth;delete exp.rolloverFundedAmount;}
 }
 
 function delExp(id) {
@@ -3001,7 +3026,7 @@ function renderSummary() {
   sortedGroups().forEach(function(g) {
     html += '<div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:10px 0 4px">'+esc(g.name)+'</div>';
     groupEnvelopes(g.id).forEach(function(env) {
-      var assigned = env.assigned || 0;
+      var assigned = assignmentForMonth(env,currentMonthKey());
       var spent = envSpent(env.id);
       var avail = envAvailable(env.id);
       var pct = assigned > 0 ? Math.min(spent/assigned*100, 120) : 0;
@@ -3320,7 +3345,7 @@ function renderTodaySpending(){
   var wanted=[['grocer'],['eating','restaurant'],['transport'],['household','personal'],['shoe','clothing']];
   var envs=[]; wanted.forEach(function(words){var e=findEnvByWords(words);if(e&&envs.indexOf(e)<0)envs.push(e);});
   if(!envs.length){el.innerHTML='<div class="priority-empty">Create everyday spending envelopes to see them here.</div>';return;}
-  el.innerHTML=envs.slice(0,5).map(function(e){var spent=monthExpensesForEnv(e.id), limit=e.target&&e.target.amount?e.target.amount:Math.max(0,(e.assigned||0)+(e.carryForward||0));var pct=limit>0?Math.min(spent/limit*100,100):0;return '<div class="snapshot-row"><div class="snapshot-top"><div class="snapshot-name">'+(e.emoji||'')+' '+esc(e.name)+'</div><div class="snapshot-num">'+fmt(spent)+' / '+fmt(limit)+'</div></div><div class="snapshot-track"><div class="snapshot-fill'+(limit>0&&spent>limit?' over':'')+'" style="width:'+pct+'%"></div></div></div>';}).join('');
+  el.innerHTML=envs.slice(0,5).map(function(e){var spent=monthExpensesForEnv(e.id), limit=e.target&&e.target.amount?e.target.amount:Math.max(0,assignmentForMonth(e,currentMonthKey())+carryIntoMonth(e.id,currentMonthKey()));var pct=limit>0?Math.min(spent/limit*100,100):0;return '<div class="snapshot-row"><div class="snapshot-top"><div class="snapshot-name">'+(e.emoji||'')+' '+esc(e.name)+'</div><div class="snapshot-num">'+fmt(spent)+' / '+fmt(limit)+'</div></div><div class="snapshot-track"><div class="snapshot-fill'+(limit>0&&spent>limit?' over':'')+'" style="width:'+pct+'%"></div></div></div>';}).join('');
 }
 function renderTodayGoals(){
   var el=document.getElementById('todayGoals'); if(!el)return;
@@ -3516,7 +3541,7 @@ function openExpModal() {
 function clearEnvelope(envId) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
   if (!env) return;
-  env.assigned = 0;
+  setAssignmentForMonth(env,selectedMonthKey(),0);
   saveS(); renderEnvelopes(); updateRTA(); renderUnderfunded();
   toast('✓ '+env.name+' cleared to $0');
 }
@@ -3621,7 +3646,7 @@ function saveIncome() {
     // New income
     if (isReimb && reimbEnvId) {
       var env = S.envelopes.find(function(e){return e.id===reimbEnvId;});
-      if (env) { env.assigned = (env.assigned||0) + amt; }
+      if (env) { var key=normalizeMonthKey(monthKeyFromDate(date));setAssignmentForMonth(env,key,assignmentForMonth(env,key)+amt); }
     }
     S.income.push({id:uid(), name:name, amount:amt, date:date, isCash:cashIncOn, isReimb:isReimb, reimbEnvId:reimbEnvId});
     toast('💰 Income added!');
@@ -3743,7 +3768,8 @@ function saveGoal() {
   var existing=S.envelopes.find(function(e){return String(e.name||'').toLowerCase()===name.toLowerCase();});
   if(existing){toast('A budget envelope already uses that name');return;}
   var group=goalGroup(),maxOrder=S.envelopes.filter(function(e){return e.groupId===group.id;}).reduce(function(m,e){return Math.max(m,Number(e.order)||0);},0);
-  S.envelopes.push({id:uid(),groupId:group.id,name:name,emoji:'🎯',color:COLORS[3],assigned:money(assignNow),assignedNext:0,order:maxOrder+1,target:{type:'save',amount:money(target)},isSavings:true,carryForward:0});
+  var goalEnv={id:uid(),groupId:group.id,name:name,emoji:'🎯',color:COLORS[3],assigned:money(assignNow),assignments:{},openingCarry:0,order:maxOrder+1,target:{type:'save',amount:money(target)},isSavings:true};
+  setAssignmentForMonth(goalEnv,currentMonthKey(),money(assignNow));S.envelopes.push(goalEnv);
   saveS();closeModal('goalModal');renderEnvelopes();renderGoals();renderSummary();updateRTA();toast(assignNow>0?'Goal created and '+fmt(assignNow)+' assigned':'Goal created. Fund it from Budget.');
 }
 
@@ -3828,12 +3854,14 @@ function normalizeRestoredState(data) {
   LEDGER_COLLECTIONS.forEach(function(collection){if(!Array.isArray(S[collection]))S[collection]=[];});
   if(!S.custodialAccounts)S.custodialAccounts=[];if(!S.custodialTransactions)S.custodialTransactions=[];if(!S.transfers)S.transfers=[];if(S.custodialMigrationVersion===undefined)S.custodialMigrationVersion=0;
   if(S.weeklyMode===undefined)S.weeklyMode=false;if(S.darkMode===undefined)S.darkMode=true;if(S.seasonalAccent===undefined)S.seasonalAccent=true;
-  if(S.incomeCollapsed===undefined)S.incomeCollapsed=false;if(S.cashBalance===undefined)S.cashBalance=0;if(S.viewingNextMonth===undefined)S.viewingNextMonth=false;
+  if(S.incomeCollapsed===undefined)S.incomeCollapsed=false;if(S.cashBalance===undefined)S.cashBalance=0;
   if(!S.currentMonth)S.currentMonth=currentMonthKey();S.currentMonth=normalizeMonthKey(S.currentMonth);
+  if(!S.budgetStartMonth)S.budgetStartMonth=S.currentMonth;S.budgetStartMonth=normalizeMonthKey(S.budgetStartMonth);
+  if(!S.selectedMonth)S.selectedMonth=S.viewingNextMonth?addMonths(S.currentMonth,1):S.currentMonth;S.selectedMonth=normalizeMonthKey(S.selectedMonth);delete S.viewingNextMonth;
   if(S.envelopes.length&&!S.groups.length)migrateToGroups();if(!S.groups.length)seedGroups();migrateCustodialFunds();
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}});
-  S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(e.carryForward===undefined)e.carryForward=0;if(e.assignedNext===undefined)e.assignedNext=0;});
+  S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(!e.assignments||typeof e.assignments!=='object'){e.assignments={};e.assignments[S.currentMonth]=money(e.assigned||0);if(Number(e.assignedNext||0)!==0)e.assignments[addMonths(S.currentMonth,1)]=money(e.assignedNext||0);e.openingCarry=money(e.carryForward||0);}if(e.openingCarry===undefined)e.openingCarry=0;delete e.assignedNext;});
   ensureRecordIds();
 }
 
@@ -4175,11 +4203,12 @@ function toggleTechnicalDetails() {
 // UNDERFUNDED + AUTO-ASSIGN
 // ═══════════════════════════════════════════
 function getUnderfunded() {
+  var key=selectedMonthKey();
   var items = [];
   S.envelopes.forEach(function(env) {
     var monthlyTarget = monthlyTargetAmount(env);
     if (!monthlyTarget) return;
-    var funded = money((env.assigned||0)+(env.carryForward||0));
+    var funded = money(assignmentForMonth(env,key)+carryIntoMonth(env.id,key));
     var needed = Math.max(0, monthlyTarget - funded);
     if (needed > 0.005) items.push({env:env, needed:money(needed)});
   });
@@ -4242,7 +4271,7 @@ function renderUnderfunded() {
 }
 
 function autoAssign() {
-  var rta = readyToAssign();
+  var key=selectedMonthKey(),rta = readyToAssign(key);
   if (rta <= 0) { toast('Nothing left to assign!'); return; }
   var items = getUnderfunded();
   if (!items.length) { toast('All targets are funded! ✓'); return; }
@@ -4250,7 +4279,7 @@ function autoAssign() {
   items.forEach(function(item) {
     if (rta <= 0) return;
     var give = Math.min(item.needed, rta);
-    item.env.assigned = (item.env.assigned||0) + give;
+    setAssignmentForMonth(item.env,key,assignmentForMonth(item.env,key)+give);
     rta -= give;
     assigned_count++;
   });
@@ -4506,14 +4535,15 @@ function renderRolloverSummary() {
 
   var listEl = document.getElementById('savingsRolloverList');
   if (!listEl) return;
-  var savingsEnvs = S.envelopes.filter(function(e){return (e.carryForward||0)>0 || envAvailable(e.id)>0;});
+  var key=selectedMonthKey();
+  var savingsEnvs = S.envelopes.filter(function(e){return carryIntoMonth(e.id,key)>0 || envAvailable(e.id)>0;});
   if (!savingsEnvs.length) {
     listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:6px 0">No funded envelope balances are waiting to carry forward.</div>';
     return;
   }
   listEl.innerHTML = savingsEnvs.map(function(env) {
     var avail = envAvailable(env.id);
-    var carry = env.carryForward || 0;
+    var carry = carryIntoMonth(env.id,key);
     return '<div class="rollover-env-row">' +
       '<span class="rollover-env-name">'+env.emoji+' '+esc(env.name)+'</span>' +
       '<div style="text-align:right">' +
@@ -4523,14 +4553,7 @@ function renderRolloverSummary() {
     '</div>';
   }).join('');
 
-  // Restore next month toggle button state
-  var btn = document.getElementById('monthToggleBtn');
-  var banner = document.getElementById('nextMonthBanner');
-  if (btn) {
-    btn.textContent = S.viewingNextMonth ? '✨ Budgeting Next Month' : '📅 Budget This Month';
-    btn.className = 'month-toggle-btn' + (S.viewingNextMonth ? ' next-month' : '');
-  }
-  if (banner) banner.className = 'next-month-banner' + (S.viewingNextMonth ? ' show' : '');
+  renderMonthNavigator();
 }
 
 function renderBackupBanner() {
