@@ -3028,6 +3028,7 @@ function openEditExpModal(id) {
   var exp = S.expenses.find(function(e){return e.id===id;});
   if (!exp) return;
   if(exp.reconciled){toast('Reconciled transactions are locked');return;}
+  if(exp.isCCPayment){editingExpId=null;toast('Card payments cannot be edited. Remove and re-record the payment instead.');return;}
   creditOn = exp.isCredit || false;
   document.getElementById('creditTog').className = 'tog'+(creditOn?' on':'');
   var ccf = document.getElementById('ccSelectField');
@@ -4399,6 +4400,15 @@ function setHealthBadge(state,label) {
   badge.textContent=label;
 }
 
+function ledgerInvariantIssues(){
+  var issues=[];
+  LEDGER_COLLECTIONS.forEach(function(name){var seen={};(S[name]||[]).forEach(function(item){if(!item||!item.id)return;if(seen[item.id])issues.push('Duplicate '+name+' record');seen[item.id]=true;});});
+  S.envelopes.forEach(function(env){Object.keys(env.assignments||{}).forEach(function(key){if(!/^\d{4}-\d{2}$/.test(key)||!isFinite(Number(env.assignments[key])))issues.push('Invalid monthly assignment');});});
+  S.creditCards.forEach(function(card){if(!ccPaymentEnv(card.id))issues.push('Card payment envelope missing');else if(Math.abs((Number(card.balance)||0)-creditCardRegisterBalance(card.id))>0.01)issues.push('Card register balance mismatch');});
+  S.expenses.forEach(function(exp){if(!exp.isCredit&&exp.accountId&&!S.accounts.some(function(a){return a.id===exp.accountId;}))issues.push('Expense account missing');});
+  return issues;
+}
+
 async function runLedgerHealthCheck(showToast) {
   clearTimeout(healthCheckTimer);
   var title=document.getElementById('healthTitle'), copy=document.getElementById('healthCopy');
@@ -4420,9 +4430,10 @@ async function runLedgerHealthCheck(showToast) {
     var results=await Promise.all([dbGet('current','ledger-state'),dbCount('snapshots'),dbCount('operations'),dbGet('metadata','device')]);
     var current=results[0], snapshotCount=results[1], operationCount=results[2], device=results[3];
     var currentHash=current&&current.data?ledgerStateHash(current.data):'';
-    var dataOkay=!!(current && current.data && current.stateHash===currentHash && currentHash===ledgerStateHash(S));
+    var invariantIssues=ledgerInvariantIssues();
+    var dataOkay=!!(current && current.data && current.stateHash===currentHash && currentHash===ledgerStateHash(S) && !invariantIssues.length);
     var deviceOkay=!!(device && device.value && device.value.id);
-    var dataEl=document.getElementById('healthData'); if(dataEl)dataEl.textContent=dataOkay?'Verified and consistent':'Needs attention';
+    var dataEl=document.getElementById('healthData'); if(dataEl)dataEl.textContent=dataOkay?'Verified and consistent':(invariantIssues[0]||'Needs attention');
     var recoveryEl=document.getElementById('healthRecovery'); if(recoveryEl)recoveryEl.textContent=snapshotCount?snapshotCount+' save point'+(snapshotCount===1?'':'s'):'Ready to create one';
     var historyEl=document.getElementById('healthHistory'); if(historyEl)historyEl.textContent=ledgerRevision+' revision'+(ledgerRevision===1?'':'s')+' · '+operationCount+' record change'+(operationCount===1?'':'s');
     var syncEl=document.getElementById('healthSync'); if(syncEl)syncEl.textContent=ledgerCloud.enabled?(ledgerCloud.lastSyncedAt?'Drive protection verified':'Drive connection ready'):(deviceOkay?'Device identity ready':'Still preparing');
@@ -4616,7 +4627,7 @@ function makeSchedEl(item, showLog) {
     '<div class="sched-icon">'+(env?env.emoji:'📅')+'</div>' +
     '<div class="sched-body">' +
       '<div class="sched-desc">'+esc(s.desc)+'</div>' +
-      '<div class="sched-meta">'+(env?esc(env.name):'?')+' · '+s.freq+'</div>' +
+      '<div class="sched-meta">'+(env?esc(env.name):'?')+' · '+s.freq+' · '+esc(s.isCredit?((S.creditCards.find(function(c){return c.id===s.ccId;})||{}).name||'Credit card'):accountName(s.accountId))+'</div>' +
       (showLog ? '<button class="sched-log-btn" id="slog_'+s.id+'">✓ Log it now</button>' : '') +
     '</div>' +
     '<div class="sched-right">' +
@@ -4637,9 +4648,12 @@ function makeSchedEl(item, showLog) {
 function logScheduled(id, nextDate) {
   var s = S.scheduled.find(function(x){return x.id===id;});
   if (!s) return;
-  // Log as expense
-  S.expenses.push({id:uid(), desc:s.desc, amount:s.amount, envId:s.envId,
-    date:new Date().toISOString().slice(0,10), isCredit:s.isCredit||false, ccId:s.ccId||null});
+  var env=S.envelopes.find(function(e){return e.id===s.envId;}),card=s.ccId?S.creditCards.find(function(c){return c.id===s.ccId;}):null;
+  var isPayment=!!(s.isCCPayment||(env&&env.isCCPayment)),amount=money(Number(s.amount)||0),date=new Date(nextDate).toISOString().slice(0,10);
+  if(isPayment){card=card||S.creditCards.find(function(c){return env&&c.paymentEnvId===env.id;});if(!card){toast('Choose a valid card payment envelope');return;}if(amount>(Number(card.balance)||0)+0.005){toast('Scheduled payment exceeds the current card balance');return;}card.balance=money(Math.max(0,(Number(card.balance)||0)-amount));}
+  else if(s.isCredit&&card)card.balance=money((Number(card.balance)||0)+amount);
+  var avail=env?envAvailable(env.id):0;
+  S.expenses.push({id:uid(),desc:s.desc,amount:amount,envId:s.envId,date:date,time:'12:00',datetime:date+'T12:00',payMethod:s.isCredit?'credit':((S.accounts.find(function(a){return a.id===s.accountId;})||{}).type==='cash'?'cash':'debit'),accountId:s.isCredit?null:(s.accountId||(defaultAccount('checking')||{}).id),isCredit:!!s.isCredit,ccId:card&&card.id||null,isCCPayment:isPayment,cleared:false,fundedAmount:s.isCredit?money(Math.min(amount,Math.max(0,avail))):0});
   // Advance nextDate
   var next = new Date(nextDate);
   if (s.freq==='monthly') next.setMonth(next.getMonth()+1);
@@ -4665,6 +4679,8 @@ function openSchedModal(preset) {
   sortedGroups().forEach(function(g){opts+='<optgroup label="'+esc(g.name)+'">';groupEnvelopes(g.id).forEach(function(e){opts+='<option value="'+e.id+'">'+e.emoji+' '+e.name+'</option>';});opts+='</optgroup>';});
   sel.innerHTML=opts;
   if(preset.words){var env=findEnvByWords(preset.words);if(env)sel.value=env.id;}
+  var pay=document.getElementById('schedPayFrom'),checking=defaultAccount('checking');
+  pay.innerHTML=activeAccounts().map(function(a){return '<option value="'+esc(a.id)+'"'+(checking&&a.id===checking.id?' selected':'')+'>'+esc(a.name)+'</option>';}).join('')+S.creditCards.map(function(c){return '<option value="cc:'+esc(c.id)+'">'+esc(c.name)+' (credit)</option>';}).join('');
   openModal('schedModal');
   setTimeout(function(){document.getElementById(preset.desc?'schedAmt':'schedDesc').focus();},200);
 }
@@ -4676,10 +4692,12 @@ function saveSched() {
   var envId = document.getElementById('schedEnv').value;
   var freq = document.getElementById('schedFreq').value;
   var nextDate = document.getElementById('schedNextDate').value;
+  var payFrom=document.getElementById('schedPayFrom').value,env=S.envelopes.find(function(e){return e.id===envId;}),isPayment=!!(env&&env.isCCPayment),isCredit=String(payFrom).indexOf('cc:')===0,ccId=isCredit?String(payFrom).slice(3):(isPayment&&env?env.ccId:null),accountId=isCredit?null:payFrom;
   if (!desc) { toast('Enter a description'); return; }
   if (!amt||amt<=0) { toast('Enter a valid amount'); return; }
   if (!nextDate) { toast('Pick a date'); return; }
-  S.scheduled.push({id:uid(), desc:desc, amount:amt, envId:envId, freq:freq, nextDate:nextDate});
+  if(isPayment&&isCredit){toast('Card payments must come from a cash account');return;}
+  S.scheduled.push({id:uid(),desc:desc,amount:money(amt),envId:envId,freq:freq,nextDate:nextDate,accountId:accountId,isCredit:isCredit,ccId:ccId||null,isCCPayment:isPayment});
   saveS(); closeModal('schedModal'); renderScheduled(); toast('🔁 Scheduled!');
 }
 
@@ -5257,6 +5275,7 @@ window.onload = async function() {
     <div class="field"><label>Description</label><input id="schedDesc" placeholder="e.g. Rent, Netflix"></div>
     <div class="field"><label>Amount ($)</label><input id="schedAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Envelope</label><select id="schedEnv"></select></div>
+    <div class="field"><label>Pay From</label><select id="schedPayFrom"></select></div>
     <div class="field"><label>Frequency</label>
       <select id="schedFreq">
         <option value="monthly">Monthly</option>
