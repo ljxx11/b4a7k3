@@ -1809,6 +1809,7 @@ async function loadS() {
     var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});
     if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}
   });
+  migrateCreditCardRegisters();
   if(!S.currentMonth) S.currentMonth=currentMonthKey();
   S.currentMonth=normalizeMonthKey(S.currentMonth);
   if(!S.budgetStartMonth) S.budgetStartMonth=S.currentMonth;
@@ -1870,6 +1871,12 @@ function migrateAccounts(){
   if(!cash){cash={id:makeLedgerId('account'),name:'Cash',type:'cash',closed:false,createdAt:new Date().toISOString()};S.accounts.push(cash);}
   S.income.forEach(function(i){if(!i.accountId)i.accountId=i.isCash?cash.id:checking.id;if(i.cleared===undefined)i.cleared=false;});
   S.expenses.forEach(function(e){if(!e.isCredit&&!e.accountId)e.accountId=e.payMethod==='cash'?cash.id:checking.id;if(e.cleared===undefined)e.cleared=false;});
+}
+function migrateCreditCardRegisters(){
+  S.creditCards.forEach(function(card){
+    if(card.openingBalance===undefined){var purchases=0,payments=0;S.expenses.forEach(function(e){if(e.isCredit&&e.ccId===card.id)purchases+=Number(e.amount)||0;else if(e.isCCPayment&&e.envId===card.paymentEnvId)payments+=Number(e.amount)||0;});card.openingBalance=money((Number(card.balance)||0)-purchases+payments);}
+    if(card.reconciledAt===undefined)card.reconciledAt=null;
+  });
 }
 
 function applyMonthRollover(newKey) {
@@ -1980,6 +1987,10 @@ function accountBalance(accountId,clearedOnly,throughDate){
   (S.transfers||[]).forEach(function(t){if(!included(t))return;if(checking&&checking.id===accountId)total+=transferBankEffect(t);if(cash&&cash.id===accountId)total+=transferCashEffect(t);});
   return money(total);
 }
+function creditCardRegisterEntries(cardId){var card=S.creditCards.find(function(c){return c.id===cardId;}),rows=[];if(!card)return rows;S.expenses.forEach(function(e){if(e.isCredit&&e.ccId===cardId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Purchase',date:e.date,amount:Number(e.amount)||0,cleared:!!e.cleared,reconciled:!!e.reconciled});else if(e.isCCPayment&&e.envId===card.paymentEnvId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Payment',date:e.date,amount:-(Number(e.amount)||0),cleared:!!e.cleared,reconciled:!!e.reconciled});});return rows.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});}
+function creditCardRegisterBalance(cardId,clearedOnly,throughDate){var card=S.creditCards.find(function(c){return c.id===cardId;});if(!card)return 0;var total=Number(card.openingBalance)||0;creditCardRegisterEntries(cardId).forEach(function(x){if((!clearedOnly||x.cleared)&&(!throughDate||String(x.date)<=throughDate))total+=x.amount;});return money(total);}
+function selectedRegisterEntries(){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterEntries(String(activeAccountId).slice(3)):accountRegisterEntries(activeAccountId);}
+function selectedRegisterBalance(clearedOnly,throughDate){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterBalance(String(activeAccountId).slice(3),clearedOnly,throughDate):accountBalance(activeAccountId,clearedOnly,throughDate);}
 function accountOptions(selectedId,includeCash){return activeAccounts().filter(function(a){return includeCash!==false||a.type!=='cash';}).map(function(a){return '<option value="'+a.id+'"'+(a.id===selectedId?' selected':'')+'>'+esc(a.name)+' · '+a.type+'</option>';}).join('');}
 function custodialSignedAmount(t){return money((t&&t.direction==='out'?-1:1)*(Number(t&&t.amount)||0));}
 function custodyAccountBalance(accountId){var total=0;(S.custodialTransactions||[]).forEach(function(t){if(t.accountId===accountId)total+=custodialSignedAmount(t);});return money(total);}
@@ -2419,6 +2430,7 @@ function envName(id) {
   var e = S.envelopes.find(function(e){return e.id===id;}); return e ? e.name : id;
 }
 function delIncome(id) {
+  var locked=S.income.find(function(i){return i.id===id;});if(locked&&locked.reconciled){toast('Reconciled transactions are locked');return;}
   S.income = S.income.filter(function(i){return i.id!==id;});
   saveS(); renderIncome(); renderEnvelopes(); renderSummary(); toast('Income removed');
 }
@@ -2428,6 +2440,7 @@ function openEditIncomeModal(id) {
   editingIncomeId = id;
   var inc = S.income.find(function(i){return i.id===id;});
   if (!inc) return;
+  if(inc.reconciled){toast('Reconciled transactions are locked');return;}
   cashIncOn = inc.isCash || false;
   document.getElementById('cashIncTog').className = 'tog' + (cashIncOn?' on':'');
   reimbOn = inc.isReimb || false;
@@ -2762,7 +2775,7 @@ function saveCC() {
   if (!name) { toast('Enter a card name'); return; }
   if (editingCCId) {
     var card = S.creditCards.find(function(c){return c.id===editingCCId;});
-    if (card) { card.name=name; card.lastFour=lastFour; card.balance=balance; card.apr=apr; }
+    if (card) { var current=creditCardRegisterBalance(card.id);card.openingBalance=money((Number(card.openingBalance)||0)+(balance-current));card.name=name; card.lastFour=lastFour; card.balance=balance; card.apr=apr; }
   } else {
     // Create card + auto-create a CC Payment envelope in a "Credit Cards" group
     var ccGroupId = ensureCCGroup();
@@ -2774,7 +2787,7 @@ function saveCC() {
       assigned:0, order:S.envelopes.length, target:null,
       isSavings:false, carryForward:0, isCCPayment:true, ccId:cardId
     });
-    S.creditCards.push({id:cardId, name:name, lastFour:lastFour, balance:balance, apr:apr, paymentEnvId:payEnvId});
+    S.creditCards.push({id:cardId, name:name, lastFour:lastFour, balance:balance, openingBalance:balance,apr:apr, paymentEnvId:payEnvId,reconciledAt:null});
     toast('💳 Card added! A payment envelope was created automatically.');
   }
   saveS(); closeModal('ccModal'); renderEnvelopes(); renderCCTab();
@@ -2795,17 +2808,44 @@ function ensureCCGroup() {
   S.groups.push({id:gid, name:'Credit Cards', collapsed:false, order:maxOrder+1, isCCGroup:true});
   return gid;
 }
+var payingCCId = null;
+function cardFundingDetails(card) {
+  var paymentEnv=ccPaymentEnv(card.id), ready=paymentEnv?Math.max(0,envAvailable(paymentEnv.id)):0;
+  var month=currentMonthKey(), purchases=0;
+  S.expenses.forEach(function(e){
+    if((e.isCredit||e.payMethod==='credit')&&!e.isCCPayment&&e.ccId===card.id&&monthKeyFromDate(e.date)===month) purchases+=Number(e.amount)||0;
+  });
+  purchases=money(purchases);
+  var funded=paymentEnv?Math.min(purchases,Math.max(0,fundedCreditActivity(paymentEnv.id,month))):0;
+  var balance=Math.max(0,Number(card.balance)||0);
+  return {ready:money(ready),balance:money(balance),gap:money(Math.max(0,balance-ready)),purchases:purchases,funded:money(funded),unfunded:money(Math.max(0,purchases-funded))};
+}
 function recordCCPayment(cardId) {
-  var card = S.creditCards.find(function(c){return c.id===cardId;});
-  if (!card) return;
-  var amt = parseFloat(prompt('Record payment for '+card.name+'\nCurrent balance: '+fmt(card.balance)+'\n\nPayment amount:'));
-  if (!amt||amt<=0) return;
-  // Reduce card balance
-  card.balance = Math.max(0, (card.balance||0)-amt);
-  // Log as expense from payment envelope
-  var paymentAccount=defaultAccount('checking');
-  S.expenses.push({id:uid(), desc:'CC Payment — '+card.name, amount:amt, envId:card.paymentEnvId, date:new Date().toISOString().slice(0,10), payMethod:'debit', accountId:paymentAccount&&paymentAccount.id,cleared:false,isCredit:false, isCCPayment:true});
-  saveS(); renderEnvelopes(); renderCCTab(); renderExpenses(); toast('💳 Payment recorded!');
+  var card=S.creditCards.find(function(c){return c.id===cardId;}); if(!card)return;
+  payingCCId=cardId;
+  var accounts=(S.accounts||[]).filter(function(a){return a.type!=='credit';});
+  var preferred=defaultAccount('checking')||accounts[0];
+  document.getElementById('ccPayTitle').textContent='Pay '+card.name;
+  document.getElementById('ccPaySummary').textContent=fmt(card.balance||0)+' owed · '+fmt(cardFundingDetails(card).ready)+' ready';
+  document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(preferred&&a.id===preferred.id?' selected':'')+'>'+esc(a.name)+' · '+fmt(accountBalance(a.id))+'</option>';}).join('');
+  document.getElementById('ccPayAmount').value='';
+  document.getElementById('ccPayDate').value=new Date().toISOString().slice(0,10);
+  openModal('ccPaymentModal');
+}
+function saveCCPayment() {
+  var card=S.creditCards.find(function(c){return c.id===payingCCId;}); if(!card)return;
+  var amt=money(parseFloat(document.getElementById('ccPayAmount').value)||0), accountId=document.getElementById('ccPayAccount').value, date=document.getElementById('ccPayDate').value;
+  var account=(S.accounts||[]).find(function(a){return a.id===accountId;});
+  if(!account){toast('Choose the account paying the card');return;}
+  if(!amt||amt<=0){toast('Enter a payment amount');return;}
+  if(!date){toast('Choose a payment date');return;}
+  if(amt>(Number(card.balance)||0)+0.005){toast('Payment cannot exceed the card balance');return;}
+  if(amt>accountBalance(accountId)+0.005&&!confirm(account.name+' does not currently have enough cash. Record the payment anyway?'))return;
+  var ready=cardFundingDetails(card).ready;
+  if(amt>ready+0.005&&!confirm(fmt(amt-ready)+' of this payment is not ready in the payment envelope. Record it anyway?'))return;
+  card.balance=money(Math.max(0,(Number(card.balance)||0)-amt));
+  S.expenses.push({id:uid(),desc:'CC Payment — '+card.name,amount:amt,envId:card.paymentEnvId,date:date,payMethod:'debit',accountId:accountId,cleared:false,isCredit:false,isCCPayment:true,ccId:card.id});
+  saveS();closeModal('ccPaymentModal');renderEnvelopes();renderCCTab();renderExpenses();renderAccounts();updateRTA();toast('💳 Payment recorded');
 }
 function renderCCTab() {
   var el = document.getElementById('ccList');
@@ -2818,9 +2858,8 @@ function renderCCTab() {
   var ccCountEl = document.getElementById('ccCardCount'); if(ccCountEl) ccCountEl.textContent = S.creditCards.length;
   el.innerHTML = '';
   S.creditCards.forEach(function(card) {
-    var payEnv = S.envelopes.find(function(e){return e.id===card.paymentEnvId;});
-    var payReady = payEnv ? envAvailable(payEnv.id) : 0;
-    var payPct = card.balance>0 ? Math.min(payReady/card.balance*100,100) : 100;
+    var details=cardFundingDetails(card), payReady=details.ready;
+    var payPct = details.balance>0 ? Math.min(payReady/details.balance*100,100) : 100;
     var div = document.createElement('div');
     div.className = 'cc-card';
     div.innerHTML = [
@@ -2833,6 +2872,10 @@ function renderCCTab() {
           '<div class="cc-balance">'+fmt(card.balance||0)+'</div>',
           '<button class="grp-menu-btn" id="ccEditBtn_'+card.id+'">&#8943;</button>',
         '</div>',
+      '</div>',
+      '<div style="display:flex;justify-content:space-between;gap:12px;margin:10px 0;font-size:12px;color:var(--muted)">',
+        '<span>This month: <b style="color:var(--green)">'+fmt(details.funded)+' funded</b> · <b style="color:'+(details.unfunded>0?'var(--red)':'var(--muted)')+'">'+fmt(details.unfunded)+' unfunded</b></span>',
+        '<span style="text-align:right"><b style="color:'+(details.gap>0?'var(--yellow)':'var(--green)')+'">'+(details.gap>0?fmt(details.gap)+' payment gap':'Fully backed')+'</b></span>',
       '</div>',
       '<div class="cc-payment-row">',
         '<div>',
@@ -2937,6 +2980,7 @@ function applyBackdatedExpenseEffect(exp,mode){
 
 function delExp(id) {
   var exp=S.expenses.find(function(e){return e.id===id;});
+  if(exp&&exp.reconciled){toast('Reconciled transactions are locked');return;}
   applyBackdatedExpenseEffect(exp,'remove');
   if (exp && exp.isCredit && exp.ccId) {
     var card=S.creditCards.find(function(c){return c.id===exp.ccId;});
@@ -2953,6 +2997,7 @@ function openEditExpModal(id) {
   editingExpId = id;
   var exp = S.expenses.find(function(e){return e.id===id;});
   if (!exp) return;
+  if(exp.reconciled){toast('Reconciled transactions are locked');return;}
   creditOn = exp.isCredit || false;
   document.getElementById('creditTog').className = 'tog'+(creditOn?' on':'');
   var ccf = document.getElementById('ccSelectField');
@@ -3506,23 +3551,25 @@ function accountRegisterEntries(accountId){
   return rows.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
 }
 function renderAccounts(){
-  var accounts=activeAccounts(),grid=document.getElementById('accountGrid'),register=document.getElementById('accountRegister');if(!grid||!register)return;
-  if(!activeAccountId||!accounts.some(function(a){return a.id===activeAccountId;}))activeAccountId=accounts[0]&&accounts[0].id;
-  grid.innerHTML=accounts.map(function(a){var bal=accountBalance(a.id),icon=a.type==='savings'?'◈':a.type==='cash'?'●':'▣';return '<button class="account-card'+(a.id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+a.id+'\')"><div class="account-name">'+icon+' '+esc(a.name)+'</div><div class="account-type">'+a.type+'</div><div class="account-balance" style="color:'+(bal<0?'var(--red)':'var(--text)')+'">'+(bal<0?'-':'')+fmt(Math.abs(bal))+'</div></button>';}).join('');
-  var account=accounts.find(function(a){return a.id===activeAccountId;});if(!account){register.innerHTML='<div class="empty"><p>Add an account to begin.</p></div>';return;}
-  document.getElementById('registerTitle').textContent=account.name+' Register';
-  document.getElementById('registerStatus').textContent=account.reconciledAt?'Reconciled through '+account.reconciledAt:'Not reconciled yet';
-  var rows=accountRegisterEntries(account.id);register.innerHTML=rows.length?rows.map(function(x){return '<div class="register-row"><button class="clear-btn'+(x.cleared?' cleared':'')+'" onclick="toggleTransactionCleared(\''+x.kind+'\',\''+x.id+'\')" aria-label="'+(x.cleared?'Cleared':'Uncleared')+'">'+(x.reconciled?'◆':x.cleared?'✓':'○')+'</button><div class="register-main"><div class="register-name">'+esc(x.name)+'</div><div class="register-meta">'+x.date+' · '+(x.reconciled?'Reconciled':x.cleared?'Cleared':'Uncleared')+'</div></div><div class="register-amount" style="color:'+(x.amount<0?'var(--red)':'var(--green)')+'">'+(x.amount<0?'-':'+')+fmt(Math.abs(x.amount))+'</div></div>';}).join(''):'<div class="empty"><p>No transactions in this account.</p></div>';
+  var accounts=activeAccounts(),cards=S.creditCards||[],grid=document.getElementById('accountGrid'),register=document.getElementById('accountRegister');if(!grid||!register)return;
+  var valid=accounts.map(function(a){return a.id;}).concat(cards.map(function(c){return 'cc:'+c.id;}));if(!activeAccountId||valid.indexOf(activeAccountId)<0)activeAccountId=valid[0]||null;
+  var assetHtml=accounts.map(function(a){var bal=accountBalance(a.id),icon=a.type==='savings'?'◈':a.type==='cash'?'●':'▣';return '<button class="account-card'+(a.id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+a.id+'\')"><div class="account-name">'+icon+' '+esc(a.name)+'</div><div class="account-type">'+a.type+'</div><div class="account-balance" style="color:'+(bal<0?'var(--red)':'var(--text)')+'">'+(bal<0?'-':'')+fmt(Math.abs(bal))+'</div></button>';}).join('');
+  var cardHtml=cards.map(function(c){var id='cc:'+c.id,bal=creditCardRegisterBalance(c.id);return '<button class="account-card'+(id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+id+'\')"><div class="account-name">◇ '+esc(c.name)+'</div><div class="account-type">Credit card'+(c.lastFour?' · '+esc(c.lastFour):'')+'</div><div class="account-balance" style="color:'+(bal>0?'var(--red)':'var(--green)')+'">'+fmt(Math.abs(bal))+(bal<0?' credit':' owed')+'</div></button>';}).join('');
+  grid.innerHTML=assetHtml+cardHtml;
+  var isCard=String(activeAccountId||'').indexOf('cc:')===0,record=isCard?cards.find(function(c){return c.id===activeAccountId.slice(3);}):accounts.find(function(a){return a.id===activeAccountId;});if(!record){register.innerHTML='<div class="empty"><p>Add an account to begin.</p></div>';return;}
+  document.getElementById('registerTitle').textContent=record.name+' Register';document.getElementById('registerStatus').textContent=record.reconciledAt?'Reconciled through '+record.reconciledAt:'Not reconciled yet';
+  var rows=selectedRegisterEntries();register.innerHTML=rows.length?rows.map(function(x){var positiveColor=isCard?(x.amount>0?'var(--red)':'var(--green)'):(x.amount<0?'var(--red)':'var(--green)');return '<div class="register-row"><button class="clear-btn'+(x.cleared?' cleared':'')+'" onclick="toggleTransactionCleared(\''+x.kind+'\',\''+x.id+'\')" aria-label="'+(x.cleared?'Cleared':'Uncleared')+'">'+(x.reconciled?'◆':x.cleared?'✓':'○')+'</button><div class="register-main"><div class="register-name">'+esc(x.name)+'</div><div class="register-meta">'+x.date+' · '+(x.reconciled?'Reconciled':x.cleared?'Cleared':'Uncleared')+'</div></div><div class="register-amount" style="color:'+positiveColor+'">'+(x.amount<0?'-':'+')+fmt(Math.abs(x.amount))+'</div></div>';}).join(''):'<div class="empty"><p>No transactions in this account.</p></div>';
 }
 function selectAccount(id){activeAccountId=id;renderAccounts();}
 function toggleTransactionCleared(kind,id){var list=kind==='income'?S.income:kind==='expense'?S.expenses:kind==='legacyTransfer'?S.transfers:kind==='custody'?S.custodialTransactions:S.accountTransfers,record=list.find(function(x){return x.id===id;});if(!record)return;if(record.reconciled){toast('Reconciled transactions are locked');return;}record.cleared=!record.cleared;saveS();renderAccounts();}
 function openAccountModal(){document.getElementById('accountName').value='';document.getElementById('accountType').value='savings';openModal('accountModal');}
 function saveAccount(){var name=document.getElementById('accountName').value.trim(),type=document.getElementById('accountType').value;if(!name){toast('Enter an account name');return;}var account={id:makeLedgerId('account'),name:name,type:type,closed:false,createdAt:new Date().toISOString()};S.accounts.push(account);activeAccountId=account.id;saveS();closeModal('accountModal');renderAccounts();toast(name+' added');}
-function openAccountTransferModal(){var accounts=activeAccounts();if(accounts.length<2){toast('Add another account first');return;}document.getElementById('accountTransferFrom').innerHTML=accountOptions(activeAccountId,true);document.getElementById('accountTransferTo').innerHTML=accountOptions(accounts.find(function(a){return a.id!==activeAccountId;}).id,true);document.getElementById('accountTransferAmount').value='';document.getElementById('accountTransferDate').value=new Date().toISOString().slice(0,10);document.getElementById('accountTransferNote').value='';openModal('accountTransferModal');}
+function openAccountTransferModal(){var accounts=activeAccounts();if(accounts.length<2){toast('Add another account first');return;}var from=accounts.some(function(a){return a.id===activeAccountId;})?activeAccountId:accounts[0].id;document.getElementById('accountTransferFrom').innerHTML=accountOptions(from,true);document.getElementById('accountTransferTo').innerHTML=accountOptions(accounts.find(function(a){return a.id!==from;}).id,true);document.getElementById('accountTransferAmount').value='';document.getElementById('accountTransferDate').value=new Date().toISOString().slice(0,10);document.getElementById('accountTransferNote').value='';openModal('accountTransferModal');}
 function saveAccountTransfer(){var from=document.getElementById('accountTransferFrom').value,to=document.getElementById('accountTransferTo').value,amount=money(parseFloat(document.getElementById('accountTransferAmount').value)||0),date=document.getElementById('accountTransferDate').value,note=document.getElementById('accountTransferNote').value.trim();if(!from||!to||from===to){toast('Choose two different accounts');return;}if(amount<=0||!date){toast('Enter a valid amount and date');return;}if(amount>accountBalance(from)+.005){toast('That is more than '+accountName(from)+' contains');return;}S.accountTransfers.push({id:makeLedgerId('account_transfer'),fromAccountId:from,toAccountId:to,amount:amount,date:date,note:note||'Account transfer',cleared:false});saveS();closeModal('accountTransferModal');renderAccounts();toast('Transfer recorded');}
-function openReconcileModal(){var account=S.accounts.find(function(a){return a.id===activeAccountId;});if(!account){toast('Choose an account');return;}document.getElementById('reconcileAccountName').textContent=account.name;document.getElementById('reconcileDate').value=new Date().toISOString().slice(0,10);document.getElementById('reconcileBalance').value='';updateReconcileDifference();openModal('reconcileModal');}
-function updateReconcileDifference(){var date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value),cleared=accountBalance(activeAccountId,true,date),difference=isNaN(statement)?0:money(statement-cleared);document.getElementById('reconcileCleared').textContent=(cleared<0?'-':'')+fmt(Math.abs(cleared));document.getElementById('reconcileDifference').textContent=(difference<0?'-':'')+fmt(Math.abs(difference));document.getElementById('reconcileDifference').style.color=Math.abs(difference)<.005?'var(--green)':'var(--red)';document.getElementById('reconcileHint').textContent=isNaN(statement)?'Enter the statement balance':Math.abs(difference)<.005?'Balances match':'Clear or correct transactions until this reaches $0.00';}
-function finishReconcile(){var account=S.accounts.find(function(a){return a.id===activeAccountId;}),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the statement date and balance');return;}var cleared=accountBalance(account.id,true,date),difference=money(statement-cleared);if(Math.abs(difference)>=.005){toast('Difference must be $0.00 before finishing');return;}accountRegisterEntries(account.id).forEach(function(x){if(x.cleared&&String(x.date)<=date)x.record.reconciled=true;});account.reconciledAt=date;account.reconciledBalance=money(statement);saveS();closeModal('reconcileModal');renderAccounts();toast(account.name+' reconciled');}
+function selectedRegisterRecord(){return String(activeAccountId||'').indexOf('cc:')===0?S.creditCards.find(function(c){return c.id===activeAccountId.slice(3);}):S.accounts.find(function(a){return a.id===activeAccountId;});}
+function openReconcileModal(){var account=selectedRegisterRecord();if(!account){toast('Choose an account');return;}document.getElementById('reconcileAccountName').textContent=account.name;document.getElementById('reconcileDate').value=new Date().toISOString().slice(0,10);document.getElementById('reconcileBalance').value='';updateReconcileDifference();openModal('reconcileModal');}
+function updateReconcileDifference(){var date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value),cleared=selectedRegisterBalance(true,date),difference=isNaN(statement)?0:money(statement-cleared);document.getElementById('reconcileCleared').textContent=(cleared<0?'-':'')+fmt(Math.abs(cleared));document.getElementById('reconcileDifference').textContent=(difference<0?'-':'')+fmt(Math.abs(difference));document.getElementById('reconcileDifference').style.color=Math.abs(difference)<.005?'var(--green)':'var(--red)';document.getElementById('reconcileHint').textContent=isNaN(statement)?'Enter the statement balance':Math.abs(difference)<.005?'Balances match':'Clear or correct transactions until this reaches $0.00';}
+function finishReconcile(){var account=selectedRegisterRecord(),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the statement date and balance');return;}var cleared=selectedRegisterBalance(true,date),difference=money(statement-cleared);if(Math.abs(difference)>=.005){toast('Difference must be $0.00 before finishing');return;}selectedRegisterEntries().forEach(function(x){if(x.cleared&&String(x.date)<=date)x.record.reconciled=true;});account.reconciledAt=date;account.reconciledBalance=money(statement);saveS();closeModal('reconcileModal');renderAccounts();toast(account.name+' reconciled');}
 
 // ═══════════════════════════════════════════
 // NAVIGATION
@@ -4013,6 +4060,7 @@ function normalizeRestoredState(data) {
   if(S.envelopes.length&&!S.groups.length)migrateToGroups();if(!S.groups.length)seedGroups();migrateCustodialFunds();
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}});
+  migrateCreditCardRegisters();
   S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(!e.assignments||typeof e.assignments!=='object'){e.assignments={};e.assignments[S.currentMonth]=money(e.assigned||0);if(Number(e.assignedNext||0)!==0)e.assignments[addMonths(S.currentMonth,1)]=money(e.assignedNext||0);e.openingCarry=money(e.carryForward||0);}if(e.openingCarry===undefined)e.openingCarry=0;delete e.assignedNext;});
   ensureRecordIds();
 }
@@ -4941,6 +4989,9 @@ window.onload = async function() {
   document.getElementById('cancelCCBtn').addEventListener('click', function(){closeModal('ccModal');});
   document.getElementById('deleteCCBtn').addEventListener('click', deleteCC);
   document.getElementById('ccModal').addEventListener('click', function(e){modalBg(e,'ccModal');});
+  document.getElementById('saveCCPaymentBtn').addEventListener('click', saveCCPayment);
+  document.getElementById('cancelCCPaymentBtn').addEventListener('click', function(){closeModal('ccPaymentModal');});
+  document.getElementById('ccPaymentModal').addEventListener('click', function(e){modalBg(e,'ccPaymentModal');});
 
   // Settings
   document.getElementById('manualRolloverBtn').addEventListener('click', manualRollover);
@@ -5088,6 +5139,20 @@ window.onload = async function() {
     <button class="btn-p" id="saveCCBtn">Add Card</button>
     <button class="btn-s" id="cancelCCBtn">Cancel</button>
     <button class="btn-d" id="deleteCCBtn" style="display:none">Remove Card</button>
+  </div>
+</div>
+
+<!-- Credit Card Payment Modal -->
+<div class="overlay" id="ccPaymentModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title" id="ccPayTitle">Record Card Payment</div>
+    <div id="ccPaySummary" style="color:var(--muted);font-size:13px;margin:-4px 0 18px"></div>
+    <div class="field"><label>Pay From</label><select id="ccPayAccount"></select></div>
+    <div class="field"><label>Amount ($)</label><input id="ccPayAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Payment Date</label><input id="ccPayDate" type="date"></div>
+    <button class="btn-p" id="saveCCPaymentBtn">Record Payment</button>
+    <button class="btn-s" id="cancelCCPaymentBtn">Cancel</button>
   </div>
 </div>
 
