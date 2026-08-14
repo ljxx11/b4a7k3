@@ -2125,24 +2125,61 @@ function moneyAgeDetails() {
 }
 function moneyAge(){ return moneyAgeDetails().days; }
 
-// ── TOTAL TARGETS ──
-function monthlyTargetAmount(env) {
-  if (!env.target || !env.target.amount) return 0;
-  // Savings targets are lifetime goals, not a bill due in full this month.
-  if (env.target.type === 'save') return 0;
-  return money(env.target.amount);
+// ── TARGETS + SCHEDULED FUNDING ──
+function monthsInclusive(fromKey,toKey){var from=normalizeMonthKey(fromKey).split('-'),to=normalizeMonthKey(toKey).split('-');return Math.max(1,(Number(to[0])-Number(from[0]))*12+Number(to[1])-Number(from[1])+1);}
+function weeklyOccurrencesInMonth(monthKey,anchorDate){
+  var p=normalizeMonthKey(monthKey).split('-'),year=Number(p[0]),month=Number(p[1])-1,days=new Date(year,month+1,0).getDate();
+  var weekday=anchorDate?new Date(anchorDate+'T12:00:00').getDay():1,count=0;
+  for(var day=1;day<=days;day++)if(new Date(year,month,day,12).getDay()===weekday)count++;
+  return count;
 }
-function totalTargets() {
+function targetAmountForMonth(env,monthKey){
+  if(!env||!env.target||!(Number(env.target.amount)>0))return 0;
+  var t=env.target,key=normalizeMonthKey(monthKey),cadence=t.cadence||(t.type==='save'&&t.byDate?'custom':'monthly');
+  if(cadence==='weekly')return money(Number(t.amount)*weeklyOccurrencesInMonth(key,t.byDate));
+  if(cadence==='monthly'&&t.type!=='save')return money(t.amount);
+  if(!t.byDate)return t.type==='save'?0:money(t.amount);
+  var dueKey=normalizeMonthKey(monthKeyFromDate(t.byDate));
+  if(t.repeat&&cadence==='yearly')while(dueKey<key)dueKey=addMonths(dueKey,12);
+  if(key>dueKey)return 0;
+  var remaining=Math.max(0,Number(t.amount)-carryIntoMonth(env.id,key));
+  return money(remaining/monthsInclusive(key,dueKey));
+}
+function advanceRecurringDate(date,freq,anchorDay){
+  if(freq==='weekly')date.setDate(date.getDate()+7);
+  else if(freq==='biweekly')date.setDate(date.getDate()+14);
+  else {var day=anchorDay||date.getDate();date.setDate(1);date.setMonth(date.getMonth()+1);date.setDate(Math.min(day,new Date(date.getFullYear(),date.getMonth()+1,0).getDate()));}
+  return date;
+}
+function scheduledOccurrencesForMonth(sched,monthKey){
+  if(!sched||!sched.nextDate)return 0;
+  var key=normalizeMonthKey(monthKey),p=key.split('-'),start=new Date(Number(p[0]),Number(p[1])-1,1,12),end=new Date(Number(p[0]),Number(p[1]),1,12),d=new Date(sched.nextDate+'T12:00:00'),guard=0,count=0;
+  if(isNaN(d))return 0;
+  var anchorDay=d.getDate();
+  while(d<start&&guard++<1200)advanceRecurringDate(d,sched.freq,anchorDay);
+  while(d<end&&guard++<1300){if(d>=start)count++;advanceRecurringDate(d,sched.freq,anchorDay);}
+  return count;
+}
+function firstScheduledDateForMonth(envId,monthKey){
+  var key=normalizeMonthKey(monthKey),p=key.split('-'),start=new Date(Number(p[0]),Number(p[1])-1,1,12),end=new Date(Number(p[0]),Number(p[1]),1,12),first=null;
+  S.scheduled.forEach(function(s){if(s.envId!==envId||!s.nextDate)return;var d=new Date(s.nextDate+'T12:00:00'),anchor=d.getDate(),guard=0;while(d<start&&guard++<1200)advanceRecurringDate(d,s.freq,anchor);if(d>=start&&d<end&&(!first||d<first))first=new Date(d);});
+  return first?first.toISOString().slice(0,10):null;
+}
+function scheduledAmountForMonth(envId,monthKey){var total=0;S.scheduled.forEach(function(s){if(s.envId===envId)total+=Number(s.amount||0)*scheduledOccurrencesForMonth(s,monthKey);});return money(total);}
+function requiredFundingForMonth(env,monthKey){return money(Math.max(targetAmountForMonth(env,monthKey),scheduledAmountForMonth(env.id,monthKey)));}
+function monthlyTargetAmount(env,monthKey) { return targetAmountForMonth(env,monthKey||selectedMonthKey()); }
+function totalTargets(monthKey) {
+  var key=normalizeMonthKey(monthKey||selectedMonthKey());
   var t = 0;
-  S.envelopes.forEach(function(env) { t += monthlyTargetAmount(env); });
+  S.envelopes.forEach(function(env) { t += requiredFundingForMonth(env,key); });
   return money(t);
 }
-function monthlyIncome() {
+function monthlyIncome(monthKey) {
   // Opening balances are assets, not monthly income. Use paychecks/income added in the current month.
   var total = 0;
   S.income.forEach(function(i){
     var opening = /^opening|cash on hand/i.test(String(i.name||''));
-    if(!i.isReimb && !opening && monthKeyFromDate(i.date)===currentMonthKey()) total += Number(i.amount)||0;
+    if(!i.isReimb && !opening && monthKeyFromDate(i.date)===normalizeMonthKey(monthKey||currentMonthKey())) total += Number(i.amount)||0;
   });
   return money(total);
 }
@@ -2172,16 +2209,17 @@ function targetProgress(env) {
   var avail = envAvailableForMonth(env.id,key);
   var spent = envSpentForMonth(env.id,key);
   var t = env.target;
+  var required=requiredFundingForMonth(env,key);
   if (t.type === 'spend') {
     // Target: spend up to X — show how much of budget is used
     var pct = t.amount > 0 ? Math.min(spent / t.amount * 100, 120) : 0;
-    var needed = Math.max(0, t.amount - funded);
+    var needed = Math.max(0, required - funded);
     return {pct:pct, label: needed > 0 ? fmt(needed)+' more to assign' : '✓ Funded', color: spent>t.amount?'var(--red)':'var(--acc)', icon:'💸'};
   }
   if (t.type === 'refill') {
     // Target: refill envelope to X each month
-    var pct = t.amount > 0 ? Math.min(funded / t.amount * 100, 100) : 0;
-    var needed = Math.max(0, t.amount - funded);
+    var pct = required > 0 ? Math.min(funded / required * 100, 100) : 100;
+    var needed = Math.max(0, required - funded);
     return {pct:pct, label: needed > 0 ? fmt(needed)+' to go' : '✓ Fully funded', color:'var(--blue)', icon:'🔄'};
   }
   if (t.type === 'save') {
@@ -2189,7 +2227,8 @@ function targetProgress(env) {
     var saved = Math.max(0, avail);
     var pct = t.amount > 0 ? Math.min(saved / t.amount * 100, 100) : 0;
     var needed = Math.max(0, t.amount - saved);
-    return {pct:pct, label: needed > 0 ? fmt(needed)+' to goal' : 'Goal reached', color:'var(--green)', icon:'🎯'};
+    var pace=Math.max(0,required-assigned);
+    return {pct:pct, label: needed > 0 ? (pace>0?fmt(pace)+' needed this month · ':'')+fmt(needed)+' to goal' : 'Goal reached', color:'var(--green)', icon:'🎯'};
   }
   return null;
 }
@@ -2603,6 +2642,7 @@ function deleteGroup() {
 
 // ── TARGET MODAL ──
 var targetEnvId = null;
+var targetRepeatOn = false;
 function openTargetModal(envId) {
   targetEnvId = envId;
   var env = S.envelopes.find(function(e){return e.id===envId;});
@@ -2610,22 +2650,30 @@ function openTargetModal(envId) {
   var t = env && env.target ? env.target : null;
   document.getElementById('targetType').value = t ? t.type : 'spend';
   document.getElementById('targetAmount').value = t ? t.amount : '';
+  document.getElementById('targetCadence').value = t && t.cadence ? t.cadence : (t && t.type==='save' && t.byDate ? 'custom' : 'monthly');
   document.getElementById('targetDate').value = t && t.byDate ? t.byDate : '';
+  targetRepeatOn=!!(t&&t.repeat);renderTargetRepeat();
   updateTargetDateVisibility();
   openModal('targetModal');
 }
 function updateTargetDateVisibility() {
   var type = document.getElementById('targetType').value;
-  document.getElementById('targetDateField').style.display = type==='save' ? 'block' : 'none';
+  var cadence=document.getElementById('targetCadence').value;
+  document.getElementById('targetDateField').style.display = type==='save'||cadence==='yearly'||cadence==='custom' ? 'block' : 'none';
+  document.getElementById('targetRepeatField').style.display = cadence==='custom'?'none':'flex';
 }
+function renderTargetRepeat(){var el=document.getElementById('targetRepeatTog');if(el){el.className='tog'+(targetRepeatOn?' on':'');el.setAttribute('aria-checked',targetRepeatOn?'true':'false');}}
+function toggleTargetRepeat(){targetRepeatOn=!targetRepeatOn;renderTargetRepeat();}
 function saveTarget() {
   var env = S.envelopes.find(function(e){return e.id===targetEnvId;});
   if (!env) return;
   var type = document.getElementById('targetType').value;
   var amount = parseFloat(document.getElementById('targetAmount').value)||0;
+  var cadence = document.getElementById('targetCadence').value;
   var byDate = document.getElementById('targetDate').value;
+  if((type==='save'||cadence==='yearly'||cadence==='custom')&&!byDate){toast('Choose a target date');return;}
   if (!amount) { env.target = null; }
-  else { env.target = {type:type, amount:amount, byDate:byDate||null}; }
+  else { env.target = {type:type, amount:money(amount), cadence:cadence, byDate:byDate||null, repeat:cadence==='custom'?false:targetRepeatOn}; }
   saveS(); closeModal('targetModal'); renderEnvelopes(); renderTargetSummary();
   toast(amount ? '🎯 Target set!' : 'Target removed');
 }
@@ -4206,22 +4254,26 @@ function getUnderfunded() {
   var key=selectedMonthKey();
   var items = [];
   S.envelopes.forEach(function(env) {
-    var monthlyTarget = monthlyTargetAmount(env);
+    var targetRequired=targetAmountForMonth(env,key),scheduled=scheduledAmountForMonth(env.id,key),monthlyTarget=Math.max(targetRequired,scheduled);
     if (!monthlyTarget) return;
-    var funded = money(assignmentForMonth(env,key)+carryIntoMonth(env.id,key));
-    var needed = Math.max(0, monthlyTarget - funded);
-    if (needed > 0.005) items.push({env:env, needed:money(needed)});
+    var assigned=assignmentForMonth(env,key),funded=money(assigned+carryIntoMonth(env.id,key));
+    var pacedSavings=env.target&&env.target.type==='save';
+    var targetNeeded=Math.max(0,targetRequired-(pacedSavings?assigned:funded));
+    var scheduledNeeded=Math.max(0,scheduled-funded);
+    var needed=Math.max(targetNeeded,scheduledNeeded);
+    var due=firstScheduledDateForMonth(env.id,key)||(env.target&&env.target.byDate)||key+'-28';
+    if (needed > 0.005) items.push({env:env, needed:money(needed),required:monthlyTarget,scheduled:scheduled,due:due,source:scheduled>0?'Scheduled + target':'Target'});
   });
-  return items;
+  return items.sort(function(a,b){return String(a.due).localeCompare(String(b.due))||(b.scheduled>0)-(a.scheduled>0)||b.needed-a.needed;});
 }
 
 function renderTargetSummary() {
   var bar = document.getElementById('targetSummaryBar');
   if (!bar) return;
-  var targets = totalTargets();
+  var targets = totalTargets(selectedMonthKey());
   if (targets === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
-  var income = monthlyIncome();
+  var income = monthlyIncome(selectedMonthKey());
   var pct = income > 0 ? Math.min(targets / income * 100, 120) : 0;
   var over = targets > income && income > 0;
   var remaining = income - targets;
@@ -4265,7 +4317,7 @@ function renderUnderfunded() {
   list.innerHTML = items.map(function(item) {
     return '<div class="uf-item">' +
       '<span class="uf-name">'+item.env.emoji+' '+esc(item.env.name)+'</span>' +
-      '<span class="uf-needed">needs '+fmt(item.needed)+'</span>' +
+      '<span class="uf-needed">'+item.source+' · needs '+fmt(item.needed)+'</span>' +
     '</div>';
   }).join('');
 }
@@ -4295,18 +4347,9 @@ var editingSchedId = null;
 function nextOccurrence(sched) {
   var now = new Date(); now.setHours(0,0,0,0);
   var next = new Date(sched.nextDate + 'T12:00:00'); next.setHours(0,0,0,0);
+  var anchorDay=next.getDate();
   // If next is in the past, advance it
-  while (next < now) {
-    if (sched.freq === 'monthly') {
-      next.setMonth(next.getMonth() + 1);
-    } else if (sched.freq === 'weekly') {
-      next.setDate(next.getDate() + 7);
-    } else if (sched.freq === 'biweekly') {
-      next.setDate(next.getDate() + 14);
-    } else {
-      break;
-    }
-  }
+  while (next < now) advanceRecurringDate(next,sched.freq,anchorDay);
   return next;
 }
 
@@ -4904,7 +4947,9 @@ window.onload = async function() {
       </select>
     </div>
     <div class="field"><label>Amount ($)</label><input id="targetAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Funding Schedule</label><select id="targetCadence" onchange="updateTargetDateVisibility()"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="yearly">Yearly</option><option value="custom">Custom date</option></select></div>
     <div class="field" id="targetDateField" style="display:none"><label>Target Date</label><input id="targetDate" type="date"></div>
+    <div class="set-row" id="targetRepeatField"><div><div class="set-lbl">Repeat target</div><div class="set-sub">Start the target again after its period ends</div></div><div class="tog" id="targetRepeatTog" role="switch" aria-label="Repeat target" onclick="toggleTargetRepeat()"></div></div>
     <button class="btn-p" id="saveTargetBtn">Set Target</button>
     <button class="btn-s" id="cancelTargetBtn">Cancel</button>
     <button class="btn-d" id="clearTargetBtn">Remove Target</button>
