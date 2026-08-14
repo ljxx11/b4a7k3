@@ -224,6 +224,14 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .debt-field{background:var(--surf2);border-radius:var(--rsm);padding:10px}
 .debt-field-lbl{font-size:9px;color:var(--text3);font-weight:800;text-transform:uppercase}
 .debt-field-val{font-size:14px;font-weight:800;color:var(--text);margin-top:2px}
+.loan-plan{margin-top:10px;padding:11px;background:var(--surf2);border-radius:var(--rsm);border:1px solid var(--border)}
+.loan-plan-row{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--text3);margin-bottom:5px}
+.loan-plan-row:last-child{margin-bottom:0}.loan-plan-row b{color:var(--text);text-align:right}
+.loan-savings{margin-top:9px;padding:8px 10px;border-radius:9px;background:var(--green-dim);color:var(--green);font-size:11px;font-weight:800;line-height:1.5}
+.loan-warning{margin-top:9px;padding:8px 10px;border-radius:9px;background:var(--red-dim);color:var(--red);font-size:11px;font-weight:800;line-height:1.5}
+.loan-overview{background:linear-gradient(135deg,var(--blue-dim),var(--surf));border:1px solid rgba(168,189,208,.18);border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.loan-overview-title{font-size:11px;font-weight:800;color:var(--acc);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.loan-overview-copy{font-size:12px;color:var(--text2);line-height:1.55}
 
 /* HISTORY */
 .hist-label{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:12px 0 6px}
@@ -960,12 +968,13 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
   <!-- DEBT -->
   <div class="view" id="view-debt">
-    <div class="sh"><div><div class="sh-title">Debt Overview</div><div class="sh-sub">Credit cards plus loans and other balances</div></div><button class="sh-btn" id="addDebtBtn">+ Other Debt</button></div>
+    <div class="sh"><div><div class="sh-title">Debt & Loan Planner</div><div class="sh-sub">Compare minimum payments with a faster payoff plan</div></div><button class="sh-btn" id="addDebtBtn">+ Loan</button></div>
     <div class="stat-row">
       <div class="stat"><div class="stat-val" id="debtTot" style="color:var(--red)">$0</div><div class="stat-lbl">Total Owed</div></div>
       <div class="stat"><div class="stat-val" id="debtMinStat">$0</div><div class="stat-lbl">Required/Month</div></div>
     </div>
     <div class="debt-breakdown" id="debtBreakdown"></div>
+    <div class="loan-overview" id="loanOverview"><div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">Add a loan to calculate its payoff date and the effect of extra monthly payments.</div></div>
     <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(168,189,208,.18)">
       <div class="card-body" style="font-size:12px;color:var(--acc);font-weight:700;line-height:1.6">
         Credit-card balances are included automatically. Add loans or other debts here, then fund each required payment in its own envelope before optional spending.
@@ -1289,13 +1298,15 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 <div class="overlay" id="debtModal">
   <div class="sheet">
     <div class="drag"></div>
-    <div class="sheet-title">Add Loan or Other Debt</div>
+    <div class="sheet-title" id="debtModalTitle">Add Loan or Other Debt</div>
     <div class="field"><label>Name</label><input id="debtName" placeholder="e.g. Student Loan, Payment Plan"></div>
     <div class="field"><label>Balance ($)</label><input id="debtBal" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Interest Rate (%)</label><input id="debtRate" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Minimum Payment ($)</label><input id="debtMinInput" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Extra Monthly Payment ($)</label><input id="debtExtraInput" type="number" inputmode="decimal" placeholder="0.00"><div class="field-help">Used for the faster-payoff comparison. You can change it anytime.</div></div>
     <button class="btn-p" id="saveDebtBtn">Save</button>
     <button class="btn-s" id="cancelDebtBtn">Cancel</button>
+    <button class="btn-d" id="deleteDebtBtn" style="display:none">Remove Debt</button>
   </div>
 </div>
 
@@ -3303,6 +3314,18 @@ function cardRequiredPayment(card) {
   var planned=Number(card.minimum)||Number(env&&env.target&&env.target.amount)||40;
   return money(Math.min(balance,Math.max(0,planned)));
 }
+function loanProjection(balance,rate,payment){
+  balance=Math.max(0,Number(balance)||0);rate=Math.max(0,Number(rate)||0);payment=Math.max(0,Number(payment)||0);
+  if(!balance)return {months:0,interest:0,total:0,possible:true};
+  var monthlyRate=rate/1200,firstInterest=balance*monthlyRate;
+  if(payment<=0||payment<=firstInterest+0.000001)return {months:null,interest:null,total:null,possible:false};
+  var remaining=balance,interest=0,months=0;
+  while(remaining>0.005&&months<1200){var charge=remaining*monthlyRate;interest+=charge;remaining=Math.max(0,remaining+charge-payment);months++;}
+  if(months>=1200)return {months:null,interest:null,total:null,possible:false};
+  return {months:months,interest:money(interest),total:money(balance+interest),possible:true};
+}
+function payoffDate(months){var d=new Date();d.setDate(1);d.setMonth(d.getMonth()+Math.max(0,Number(months)||0));return d.toLocaleDateString('en-US',{month:'short',year:'numeric'});}
+function payoffDuration(months){if(months===null)return 'No payoff';var y=Math.floor(months/12),m=months%12;return (y?y+' yr'+(y===1?'':'s'):'')+(y&&m?' ':'')+(m?m+' mo':'')||'Now';}
 function renderDebts() {
   var otherBal=0,otherMin=0;
   S.debts.forEach(function(d){otherBal+=Number(d.balance)||0;otherMin+=Number(d.minPayment)||0;});
@@ -3315,22 +3338,31 @@ function renderDebts() {
   if(breakdown)breakdown.innerHTML=
     '<button class="debt-breakdown-card" type="button" onclick="go(\'cards\')"><div class="debt-breakdown-label">Credit Cards</div><div class="debt-breakdown-value" style="color:'+(cardBal>0?'var(--red)':'var(--text)')+'">'+fmt(cardBal)+'</div><div class="debt-breakdown-sub">'+S.creditCards.length+' card'+(S.creditCards.length===1?'':'s')+' · '+fmt(cardMin)+' required</div></button>'+
     '<div class="debt-breakdown-card"><div class="debt-breakdown-label">Loans & Other</div><div class="debt-breakdown-value" style="color:'+(otherBal>0?'var(--red)':'var(--text)')+'">'+fmt(otherBal)+'</div><div class="debt-breakdown-sub">'+S.debts.length+' balance'+(S.debts.length===1?'':'s')+' · '+fmt(otherMin)+' required</div></div>';
+  var overview=document.getElementById('loanOverview'),baseInterest=0,fastInterest=0,baseMonths=0,fastMonths=0,allPossible=true,hasExtra=false;
+  S.debts.forEach(function(d){var base=loanProjection(d.balance,d.rate,d.minPayment),fast=loanProjection(d.balance,d.rate,(Number(d.minPayment)||0)+(Number(d.extraPayment)||0));if(!base.possible||!fast.possible){allPossible=false;return;}baseInterest+=base.interest;fastInterest+=fast.interest;baseMonths=Math.max(baseMonths,base.months);fastMonths=Math.max(fastMonths,fast.months);if(Number(d.extraPayment)>0)hasExtra=true;});
+  if(overview){
+    if(!S.debts.length)overview.innerHTML='<div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">Add a loan to calculate its payoff date and the effect of extra monthly payments.</div>';
+    else if(!allPossible)overview.innerHTML='<div class="loan-overview-title">Plan needs attention</div><div class="loan-overview-copy">At least one minimum payment does not cover its monthly interest. Increase that payment to produce a payoff date.</div>';
+    else overview.innerHTML='<div class="loan-overview-title">'+(hasExtra?'Faster plan':'Minimum-payment plan')+'</div><div class="loan-overview-copy">'+(hasExtra?'<b>'+payoffDuration(Math.max(0,baseMonths-fastMonths))+'</b> sooner · <b>'+fmt(Math.max(0,baseInterest-fastInterest))+'</b> estimated interest saved. ':'')+'Loans finish by <b>'+payoffDate(hasExtra?fastMonths:baseMonths)+'</b> with about <b>'+fmt(hasExtra?fastInterest:baseInterest)+'</b> in remaining interest.</div>';
+  }
   var el=document.getElementById('debtList');
   if(!S.debts.length){
     el.innerHTML=cardBal>0?'<div class="guided-empty"><div class="guided-empty-icon">✓</div><div class="guided-empty-title">Your credit card is already included</div><div class="guided-empty-copy">Add only loans or other balances here. The total above already includes every card tracked in Ledger.</div></div>':'<div class="guided-empty"><div class="guided-empty-icon">🏦</div><div class="guided-empty-title">No debt is recorded</div><div class="guided-empty-copy">Credit cards will appear automatically. Use Other Debt for loans, payment plans, or balances outside the card system.</div></div>';
     return;
   }
   el.innerHTML=S.debts.map(function(d){
+    var minimum=loanProjection(d.balance,d.rate,d.minPayment),planned=loanProjection(d.balance,d.rate,(Number(d.minPayment)||0)+(Number(d.extraPayment)||0));
+    var planHtml=!minimum.possible?'<div class="loan-warning">The minimum payment does not cover the monthly interest, so this balance will not pay off.</div>':'<div class="loan-plan"><div class="loan-plan-row"><span>Minimum-payment payoff</span><b>'+payoffDate(minimum.months)+' · '+payoffDuration(minimum.months)+'</b></div><div class="loan-plan-row"><span>Remaining interest</span><b>'+fmt(minimum.interest)+'</b></div>'+(Number(d.extraPayment)>0&&planned.possible?'<div class="loan-plan-row"><span>With '+fmt(d.extraPayment)+'/mo extra</span><b>'+payoffDate(planned.months)+' · '+payoffDuration(planned.months)+'</b></div></div><div class="loan-savings">Saves about '+fmt(Math.max(0,minimum.interest-planned.interest))+' and '+payoffDuration(Math.max(0,minimum.months-planned.months))+'.</div>':'</div>');
     return '<div class="debt-card">'+
-      '<div class="debt-top"><div class="debt-name">'+esc(d.name)+'</div><button class="del-btn" aria-label="Remove '+esc(d.name)+'" onclick="delDebt(\''+d.id+'\')">×</button></div>'+
+      '<div class="debt-top"><div class="debt-name">'+esc(d.name)+'</div><button class="grp-menu-btn" aria-label="Edit '+esc(d.name)+'" onclick="openDebtModal(\''+d.id+'\')">⋯</button></div>'+
       '<div class="debt-bal">'+fmt(d.balance)+'</div>'+
       '<div class="debt-grid">'+
         '<div class="debt-field"><div class="debt-field-lbl">Interest Rate</div><div class="debt-field-val">'+(d.rate||0)+'%</div></div>'+
-        '<div class="debt-field"><div class="debt-field-lbl">Required Payment</div><div class="debt-field-val">'+fmt(d.minPayment||0)+'/mo</div></div>'+
-      '</div></div>';
+        '<div class="debt-field"><div class="debt-field-lbl">Planned Payment</div><div class="debt-field-val">'+fmt((Number(d.minPayment)||0)+(Number(d.extraPayment)||0))+'/mo</div></div>'+
+      '</div>'+planHtml+'</div>';
   }).join('');
 }
-function delDebt(id) { S.debts = S.debts.filter(function(d){return d.id!==id;}); saveS(); renderDebts(); toast('Debt removed'); }
+function delDebt(id) {var debt=S.debts.find(function(d){return d.id===id;});if(!debt||!confirm('Remove '+debt.name+' from the planner?'))return;S.debts = S.debts.filter(function(d){return d.id!==id;}); saveS();closeModal('debtModal');renderDebts();toast('Debt removed');}
 
 // ═══════════════════════════════════════════
 // HISTORY
@@ -3804,11 +3836,16 @@ function goalGroup(){
   group={id:uid(),name:'Future Goals',collapsed:false,order:max+1};S.groups.push(group);return group;
 }
 
-function openDebtModal() {
-  document.getElementById('debtName').value = '';
-  document.getElementById('debtBal').value = '';
-  document.getElementById('debtRate').value = '';
-  document.getElementById('debtMinInput').value = '';
+var editingDebtId=null;
+function openDebtModal(id) {
+  editingDebtId=id||null;var debt=id?S.debts.find(function(d){return d.id===id;}):null;
+  document.getElementById('debtModalTitle').textContent=debt?'Edit Loan or Debt':'Add Loan or Other Debt';
+  document.getElementById('debtName').value = debt?debt.name:'';
+  document.getElementById('debtBal').value = debt?debt.balance:'';
+  document.getElementById('debtRate').value = debt?debt.rate:'';
+  document.getElementById('debtMinInput').value = debt?debt.minPayment:'';
+  document.getElementById('debtExtraInput').value = debt?(debt.extraPayment||''):'';
+  document.getElementById('deleteDebtBtn').style.display=debt?'block':'none';
   openModal('debtModal');
 }
 
@@ -3976,9 +4013,12 @@ function saveDebt() {
   var balance = parseFloat(document.getElementById('debtBal').value)||0;
   var rate = parseFloat(document.getElementById('debtRate').value)||0;
   var minPayment = parseFloat(document.getElementById('debtMinInput').value)||0;
+  var extraPayment = parseFloat(document.getElementById('debtExtraInput').value)||0;
   if (!name) { toast('Enter a name'); return; }
-  S.debts.push({id:uid(), name:name, balance:balance, rate:rate, minPayment:minPayment});
-  saveS(); closeModal('debtModal'); renderDebts(); toast('Debt tracked');
+  if(balance<0||rate<0||minPayment<0||extraPayment<0){toast('Amounts cannot be negative');return;}
+  if(editingDebtId){var debt=S.debts.find(function(d){return d.id===editingDebtId;});if(debt){debt.name=name;debt.balance=money(balance);debt.rate=rate;debt.minPayment=money(minPayment);debt.extraPayment=money(extraPayment);}}
+  else S.debts.push({id:uid(),name:name,balance:money(balance),rate:rate,minPayment:money(minPayment),extraPayment:money(extraPayment)});
+  saveS(); closeModal('debtModal'); renderDebts(); toast(editingDebtId?'Payoff plan updated':'Debt tracked');
 }
 
 
@@ -4971,9 +5011,10 @@ window.onload = async function() {
   document.getElementById('goalModal').addEventListener('click', function(e){modalBg(e,'goalModal');});
 
   // Debt modal
-  document.getElementById('addDebtBtn').addEventListener('click', openDebtModal);
+  document.getElementById('addDebtBtn').addEventListener('click', function(){openDebtModal(null);});
   document.getElementById('saveDebtBtn').addEventListener('click', saveDebt);
   document.getElementById('cancelDebtBtn').addEventListener('click', function(){closeModal('debtModal');});
+  document.getElementById('deleteDebtBtn').addEventListener('click', function(){if(editingDebtId)delDebt(editingDebtId);});
   document.getElementById('debtModal').addEventListener('click', function(e){modalBg(e,'debtModal');});
 
   // Auto-assign
