@@ -380,6 +380,16 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .compare-month{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .compare-amt{font-family:'Playfair Display',serif;font-size:20px;color:var(--text)}
 .compare-delta{font-size:11px;font-weight:800;margin-top:4px}
+.trend-card{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:12px}
+.trend-bars{height:116px;display:flex;align-items:flex-end;gap:7px;padding-top:10px}
+.trend-col{flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;position:relative;padding-bottom:23px}
+.trend-bar{width:42%;min-width:5px;border-radius:5px 5px 2px 2px;transition:.3s;position:relative}
+.trend-label{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;color:var(--text3);font-weight:800;white-space:nowrap}
+.trend-value{font-size:10px;color:var(--text3);line-height:1.5;margin-top:8px;text-align:center}
+.trend-legend{display:flex;justify-content:center;gap:14px;font-size:10px;color:var(--text3);font-weight:800;margin-top:8px}
+.trend-dot{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:4px}
+.snapshot-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text3)}
+.snapshot-row:last-child{border-bottom:none}.snapshot-row b{color:var(--text)}
 
 /* ── INCOME EDIT ── */
 .inc-edit-btn{width:28px;height:28px;border-radius:50%;background:var(--surf2);color:var(--text3);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px}
@@ -1015,7 +1025,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
   <!-- REPORTS -->
   <div class="view" id="view-reports">
-    <div class="sh"><div class="sh-title">Spending Reports</div></div>
+    <div class="sh"><div><div class="sh-title">Financial Reports</div><div class="sh-sub">Income, spending, net worth, and debt over time</div></div></div>
     <div class="stat-row">
       <div class="stat" id="rptRangeBtn" onclick="cycleReportRange()" style="cursor:pointer">
         <div class="stat-val" id="rptRangeLabel">3 Months</div>
@@ -1026,6 +1036,12 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="stat-lbl">Total Spent</div>
       </div>
     </div>
+    <div class="sh" style="margin-top:4px"><div class="sh-title">Income vs Spending</div></div>
+    <div id="incomeExpenseTrend"></div>
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Net Worth Trend</div></div>
+    <div id="netWorthTrend"></div>
+    <div class="sh" style="margin-top:8px"><div class="sh-title">Debt Progress</div></div>
+    <div id="debtTrend"></div>
     <div class="sh" style="margin-top:4px"><div class="sh-title">By Envelope</div></div>
     <div id="reportsList"></div>
     <div class="sh" style="margin-top:8px"><div class="sh-title">Month vs Last Month</div></div>
@@ -1766,6 +1782,7 @@ async function updateStorageStatus() {
 
 function saveS() {
   try{
+    captureFinancialSnapshot();
     var json=JSON.stringify(S);
     localStorage.setItem('piggybank_v2',json);
     scheduleDurableSave(); scheduleAutomaticSnapshot('Automatic checkpoint');
@@ -1808,6 +1825,7 @@ async function loadS() {
   if(!S.debts) S.debts=[];
   if(!S.creditCards) S.creditCards=[];
   if(!S.scheduled) S.scheduled=[];
+  if(!S.financialSnapshots) S.financialSnapshots=[];
   if(S.weeklyMode===undefined) S.weeklyMode=false;
   if(S.incomeCollapsed===undefined) S.incomeCollapsed=false;
   if(S.darkMode===undefined) S.darkMode=true;
@@ -1844,6 +1862,7 @@ async function loadS() {
   if(!S.lastBackupDate)S.lastBackupDate=null;
   if(S.cashBalance===undefined)S.cashBalance=0;
   ensureRecordIds();
+  captureFinancialSnapshot();
   checkMonthRollover();
   if(ledgerDb){
     if(!ledgerLastState){ledgerLastState={};ledgerLastHash='';}
@@ -4091,6 +4110,7 @@ function normalizeRestoredState(data) {
   S=cloneLedger(data);
   LEDGER_COLLECTIONS.forEach(function(collection){if(!Array.isArray(S[collection]))S[collection]=[];});
   if(!S.custodialAccounts)S.custodialAccounts=[];if(!S.custodialTransactions)S.custodialTransactions=[];if(!S.transfers)S.transfers=[];if(S.custodialMigrationVersion===undefined)S.custodialMigrationVersion=0;
+  if(!Array.isArray(S.financialSnapshots))S.financialSnapshots=[];
   if(S.weeklyMode===undefined)S.weeklyMode=false;if(S.darkMode===undefined)S.darkMode=true;if(S.seasonalAccent===undefined)S.seasonalAccent=true;
   if(S.incomeCollapsed===undefined)S.incomeCollapsed=false;if(S.cashBalance===undefined)S.cashBalance=0;
   if(!S.currentMonth)S.currentMonth=currentMonthKey();S.currentMonth=normalizeMonthKey(S.currentMonth);
@@ -4668,6 +4688,37 @@ function saveSched() {
 // ═══════════════════════════════════════════
 var reportMonths = 3;
 
+function currentFinancialPosition(){
+  var assets=0;activeAccounts().forEach(function(a){assets+=accountBalance(a.id);});
+  var cards=0;S.creditCards.forEach(function(c){cards+=Math.max(0,creditCardRegisterBalance(c.id));});
+  var loans=0;S.debts.forEach(function(d){loans+=Math.max(0,Number(d.balance)||0);});
+  var custody=Math.max(0,custodialBalanceTotal()),receivable=owedToMeTotal(),owed=iOweTotal();
+  return {assets:money(assets),cards:money(cards),loans:money(loans),debt:money(cards+loans+owed),netWorth:money(assets-custody-cards-loans+receivable-owed)};
+}
+function captureFinancialSnapshot(){
+  if(!S||!Array.isArray(S.accounts))return;
+  if(!Array.isArray(S.financialSnapshots))S.financialSnapshots=[];
+  var date=new Date().toISOString().slice(0,10),position=currentFinancialPosition();
+  var snapshot={id:'financial_'+date,date:date,assets:position.assets,cards:position.cards,loans:position.loans,debt:position.debt,netWorth:position.netWorth};
+  var existing=S.financialSnapshots.findIndex(function(x){return x.date===date;});if(existing>=0)S.financialSnapshots[existing]=snapshot;else S.financialSnapshots.push(snapshot);
+  S.financialSnapshots=S.financialSnapshots.sort(function(a,b){return String(a.date).localeCompare(String(b.date));}).slice(-730);
+}
+function reportMonthKeys(count){var keys=[];for(var i=count-1;i>=0;i--)keys.push(addMonths(currentMonthKey(),-i));return keys;}
+function monthShort(key){var p=key.split('-');return new Date(Number(p[0]),Number(p[1])-1,1).toLocaleDateString('en-US',{month:'short'});}
+function renderIncomeExpenseTrend(){
+  var keys=reportMonthKeys(reportMonths),rows=keys.map(function(key){var income=0,spending=0;S.income.forEach(function(x){if(monthKeyFromDate(x.date)===key)income+=Number(x.amount)||0;});S.expenses.forEach(function(x){if(!x.isCCPayment&&monthKeyFromDate(x.date)===key)spending+=Number(x.amount)||0;});return {key:key,income:money(income),spending:money(spending)};}),max=1;
+  rows.forEach(function(x){max=Math.max(max,x.income,x.spending);});var totalIncome=rows.reduce(function(t,x){return t+x.income;},0),totalSpending=rows.reduce(function(t,x){return t+x.spending;},0),net=money(totalIncome-totalSpending);
+  document.getElementById('incomeExpenseTrend').innerHTML='<div class="trend-card"><div class="trend-bars">'+rows.map(function(x){return '<div class="trend-col"><div class="trend-bar" title="Income '+fmt(x.income)+'" style="height:'+Math.max(x.income/max*100,x.income?3:0)+'%;background:var(--green)"></div><div class="trend-bar" title="Spending '+fmt(x.spending)+'" style="height:'+Math.max(x.spending/max*100,x.spending?3:0)+'%;background:var(--red)"></div><div class="trend-label">'+monthShort(x.key)+'</div></div>';}).join('')+'</div><div class="trend-legend"><span><i class="trend-dot" style="background:var(--green)"></i>Income</span><span><i class="trend-dot" style="background:var(--red)"></i>Spending</span></div><div class="trend-value">'+fmt(totalIncome)+' income · '+fmt(totalSpending)+' spending · <b style="color:'+(net>=0?'var(--green)':'var(--red)')+'">'+(net>=0?'+':'-')+fmt(Math.abs(net))+' net</b></div></div>';
+}
+function latestSnapshotsByMonth(){var by={};(S.financialSnapshots||[]).forEach(function(x){by[monthKeyFromDate(x.date)]=x;});return Object.keys(by).sort().map(function(k){return by[k];});}
+function renderPositionTrends(){
+  captureFinancialSnapshot();var snapshots=latestSnapshotsByMonth().slice(-reportMonths),netEl=document.getElementById('netWorthTrend'),debtEl=document.getElementById('debtTrend');
+  function changeCopy(first,last,field,goodWhenDown){var delta=money((last[field]||0)-(first[field]||0)),good=goodWhenDown?delta<=0:delta>=0;return '<b style="color:'+(good?'var(--green)':'var(--red)')+'">'+(delta>=0?'+':'-')+fmt(Math.abs(delta))+'</b> since '+monthShort(monthKeyFromDate(first.date));}
+  if(snapshots.length<2){var current=snapshots[0]||{netWorth:0,debt:0};netEl.innerHTML='<div class="trend-card"><div class="snapshot-row"><span>Current net worth</span><b>'+((current.netWorth||0)<0?'-':'')+fmt(Math.abs(current.netWorth||0))+'</b></div><div class="trend-value">Trend tracking starts now and will build automatically as Ledger changes.</div></div>';debtEl.innerHTML='<div class="trend-card"><div class="snapshot-row"><span>Current tracked debt</span><b>'+fmt(current.debt||0)+'</b></div><div class="trend-value">Future monthly snapshots will show your debt progress.</div></div>';return;}
+  function lineChart(field,color){var values=snapshots.map(function(x){return Number(x[field])||0;}),min=Math.min.apply(null,values),max=Math.max.apply(null,values),range=Math.max(1,max-min);return '<div class="trend-bars">'+snapshots.map(function(x){var value=Number(x[field])||0,height=18+(value-min)/range*82;return '<div class="trend-col"><div class="trend-bar" title="'+fmt(Math.abs(value))+'" style="width:70%;height:'+height+'%;background:'+color+'"></div><div class="trend-label">'+monthShort(monthKeyFromDate(x.date))+'</div></div>';}).join('')+'</div>';}
+  var first=snapshots[0],last=snapshots[snapshots.length-1];netEl.innerHTML='<div class="trend-card">'+lineChart('netWorth','var(--blue)')+'<div class="trend-value">Current '+((last.netWorth||0)<0?'-':'')+fmt(Math.abs(last.netWorth||0))+' · '+changeCopy(first,last,'netWorth',false)+'</div></div>';debtEl.innerHTML='<div class="trend-card">'+lineChart('debt','var(--red)')+'<div class="trend-value">Current '+fmt(last.debt||0)+' · '+changeCopy(first,last,'debt',true)+'</div></div>';
+}
+
 function cycleReportRange() {
   reportMonths = reportMonths === 3 ? 6 : reportMonths === 6 ? 12 : 3;
   document.getElementById('rptRangeLabel').textContent = reportMonths+' Months';
@@ -4676,18 +4727,19 @@ function cycleReportRange() {
 
 function renderReports() {
   var now = new Date();
-  var cutoff = new Date(now.getFullYear(), now.getMonth()-reportMonths, 1);
+  var cutoff = new Date(now.getFullYear(), now.getMonth()-(reportMonths-1), 1);
   var filtered = S.expenses.filter(function(e){
-    return new Date(e.date+'T12:00:00') >= cutoff;
+    return !e.isCCPayment&&new Date(e.date+'T12:00:00') >= cutoff;
   });
   var total = 0;
-  filtered.forEach(function(e){total+=e.amount;});
+  filtered.forEach(function(e){total+=Number(e.amount)||0;});
   document.getElementById('rptTotal').textContent = fmtS(total);
+  renderIncomeExpenseTrend();renderPositionTrends();
 
   // By envelope
   var byEnv = {};
   filtered.forEach(function(e){
-    byEnv[e.envId] = (byEnv[e.envId]||0) + e.amount;
+    byEnv[e.envId] = (byEnv[e.envId]||0) + (Number(e.amount)||0);
   });
   var sorted = Object.keys(byEnv).sort(function(a,b){return byEnv[b]-byEnv[a];});
   var maxAmt = sorted.length ? byEnv[sorted[0]] : 1;
@@ -4737,7 +4789,7 @@ function renderMonthCompare() {
     var t = 0;
     S.expenses.forEach(function(e){
       var d = new Date(e.date+'T12:00:00');
-      if (d.getFullYear()===year && d.getMonth()===month) t+=e.amount;
+      if (d.getFullYear()===year && d.getMonth()===month&&!e.isCCPayment) t+=Number(e.amount)||0;
     });
     return t;
   }
