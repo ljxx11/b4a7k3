@@ -3389,8 +3389,7 @@ function renderHistory() {
   });
   var html = '';
   Object.keys(groups).sort().reverse().forEach(function(month) {
-    var d = new Date(month+'-01');
-    html += '<div class="hist-label">'+d.toLocaleDateString('en-US',{month:'long',year:'numeric'})+'</div>';
+    html += '<div class="hist-label">'+monthLabel(month)+'</div>';
     groups[month].forEach(function(e) {
       var env = S.envelopes.find(function(v){return v.id===e.envId;});
       var dt = new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
