@@ -954,7 +954,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div>
           <div class="custody-kicker">Money entrusted to you</div>
           <div class="custody-total" id="custodyTotal">$0.00</div>
-          <div class="custody-sub">Custodial funds remain physically in your bank or cash, but they are excluded from Ready to Assign because they do not belong to you.</div>
+          <div class="custody-sub">Excluded from your personal Ready to Assign.</div>
         </div>
       </div>
       <div class="custody-actions">
@@ -962,7 +962,6 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <button class="custody-btn" id="openTransferBtn">↔ Move Bank / Cash</button>
       </div>
     </div>
-    <div class="custody-rule">No envelope moves are needed. Record money received here, record its use here, and Ledger keeps your personal budget unchanged.</div>
     <div id="custodyAccounts"></div>
     <div class="transfer-card">
       <div class="transfer-card-head"><div><div class="transfer-card-title">Bank ↔ Cash Moves</div><div class="transfer-card-sub">Transfers change where money is held, never Ready to Assign.</div></div><button class="sh-btn" id="openTransferBtn2">+ Move</button></div>
@@ -985,11 +984,6 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     </div>
     <div class="debt-breakdown" id="debtBreakdown"></div>
     <div class="loan-overview" id="loanOverview"><div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">Payoff dates and extra-payment effects appear here.</div></div>
-    <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(168,189,208,.18)">
-      <div class="card-body" style="font-size:12px;color:var(--acc);font-weight:700;line-height:1.6">
-        Credit cards are included automatically. Loans and other balances appear below.
-      </div>
-    </div>
     <div class="sh" id="otherDebtHeading"><div class="sh-title">Loans & Other Debt</div></div>
     <div id="debtList"><div class="empty"><div class="ei">🏦</div><p>No loans or other debts tracked.</p></div></div>
   </div>
@@ -1003,7 +997,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     </div>
     <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(96,165,250,.2)">
       <div class="card-body" style="font-size:12px;color:var(--blue);font-weight:700;line-height:1.6">
-        💡 When you log a credit purchase, money automatically moves from your spending envelope into your card's payment envelope. Pay off the card and the payment envelope empties — no double-counting.
+        Funded card purchases automatically reserve money for payment.
       </div>
     </div>
     <div id="ccList"><div class="empty"><div class="ei">💳</div><p>No cards added.<br>Tap + to add a credit card.</p></div></div>
@@ -1012,13 +1006,8 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   <!-- SCHEDULED -->
   <div class="view" id="view-scheduled">
     <div class="sh"><div class="sh-title">Scheduled Transactions</div><button class="sh-btn" onclick="openSchedModal()">+ Add</button></div>
-    <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(96,165,250,.2)">
-      <div class="card-body" style="font-size:12px;color:var(--blue);font-weight:700;line-height:1.6">
-        📅 Recurring bills and reminders
-      </div>
-    </div>
-    <div class="sh"><div class="sh-title">Due Soon</div></div>
-    <div id="scheduledDue"><div class="empty"><p>Upcoming not measured.</p></div></div>
+    <div class="sh" id="scheduledDueHeading"><div class="sh-title">Due Soon</div></div>
+    <div id="scheduledDue"></div>
     <div class="sh" style="margin-top:8px"><div class="sh-title">All Scheduled</div></div>
     <div id="scheduledList"><div class="empty"><div class="ei">🔁</div><p>No scheduled transactions.</p></div></div>
   </div>
@@ -3122,7 +3111,7 @@ function compassLesson(rta,week,month,age,emergency){
   var overspent=S.envelopes.find(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
   if(rta<-.005)return {title:'Plan overassigned',copy:fmt(Math.abs(rta))+' must be removed from assignments.'};
   if(overspent)return {title:'Overspending',copy:overspent.name+' is '+fmt(Math.abs(envAvailable(overspent.id)))+' below zero.'};
-  if(rta>.005)return {title:'Money unassigned',copy:fmt(rta)+' is still Ready to Assign.'};
+  if(rta>.005)return {title:'Personal funds ready',copy:'Custodial money remains separate.'};
   if(!week.hasData)return {title:'Upcoming not measured',copy:'No recurring bills are scheduled.'};
   if(week.short>.005)return {title:'Next 7 days underfunded',copy:fmt(week.short)+' is still needed.'};
   var card=S.creditCards.find(function(c){return (Number(c.balance)||0)>0 && (Number(c.apr)||0)>0;});
@@ -3163,9 +3152,9 @@ function renderFinancialCompass(){
   var path=document.getElementById('independencePath');
   if(path){
     var steps=[];
-    steps.push({done:Math.abs(rta)<.005&&!overspent,name:'Plan integrity',note:Math.abs(rta)<.005&&!overspent?'Fully assigned · no overspending':rta>.005?fmt(rta)+' unassigned':'Overassigned or overspent'});
-    steps.push({done:week.hasData&&week.short<.005,name:'7-day coverage',note:week.hasData?(week.short<.005?'Scheduled bills funded':fmt(week.short)+' still needed'):'No recurring bills'});
-    steps.push({done:month.hasData&&month.pct>=100,name:'30-day coverage',note:month.hasData?month.pct+'% funded':'No recurring bills'});
+    steps.push({done:Math.abs(rta)<.005&&!overspent,name:'Plan integrity',note:Math.abs(rta)<.005&&!overspent?'Fully assigned · no overspending':rta>.005?'Assignments remain open':'Overassigned or overspent'});
+    steps.push({done:week.hasData&&week.short<.005,name:'7-day coverage',note:week.hasData?(week.short<.005?'Scheduled bills funded':fmt(week.short)+' still needed'):'Not measured'});
+    steps.push({done:month.hasData&&month.pct>=100,name:'30-day coverage',note:month.hasData?month.pct+'% funded':'Not measured'});
     steps.push({done:age.days>=30,name:'Money age',note:age.amount>0?age.days+' days':'Not enough history'});
     steps.push({done:emergency.found&&emergency.target>0&&emergency.pct>=100,name:'Emergency fund',note:!emergency.found?'No goal recorded':emergency.target>0?emergency.pct+'% complete · '+fmt(Math.max(0,emergency.target-emergency.saved))+' remaining':'No target amount'});
     var firstOpen=steps.findIndex(function(x){return !x.done;});
@@ -3189,8 +3178,8 @@ function renderReviewLanes(){
   if(spending)spending.textContent=fmt(totalSpent());
   if(spendingSub)spendingSub.textContent='Spent this month · '+fmt(totalAvailable())+' available';
   var future=document.getElementById('reviewFutureValue'),futureSub=document.getElementById('reviewFutureSub');
-  if(future)future.textContent=week.hasData?week.pct+'% funded':'Not measured';
-  if(futureSub)futureSub.textContent=week.hasData?(month.pct+'% of the next 30 days funded'):'No recurring bills';
+  if(future)future.textContent=week.hasData?week.pct+'% funded':'No schedule';
+  if(futureSub)futureSub.textContent=week.hasData?(month.pct+'% of the next 30 days funded'):'Upcoming commitments';
   var ledger=document.getElementById('reviewLedgerValue'),ledgerSub=document.getElementById('reviewLedgerSub');
   if(ledger)ledger.textContent=ledgerDb?'Protected':'Compatibility mode';
   if(ledgerSub)ledgerSub.textContent=ledgerCloud.lastSyncedAt?'Drive synced '+friendlyTime(ledgerCloud.lastSyncedAt):'Recovery points available on this device';
@@ -3317,8 +3306,8 @@ function renderGoals() {
   }
   el.innerHTML=items.map(function(g){
     var pct=g.target>0?Math.min(g.saved/g.target*100,100):0;
-    var source=g.source==='envelope'?'Backed by a savings envelope':'Tracking only · consider moving this into a savings envelope';
-    return '<div class="goal-card"><div class="goal-top"><div><div class="goal-name">'+esc(g.name)+'</div><div class="goal-pct">'+pct.toFixed(0)+'% complete</div><div class="goal-source">'+esc(source)+'</div></div>'+(g.source==='envelope'?'<button class="goal-open-btn" onclick="go(\'budget\')">Open budget</button>':'<button class="del-btn" onclick="delGoal(\''+g.id+'\')">×</button>')+'</div><div class="goal-track"><div class="goal-fill" style="width:'+pct+'%"></div></div><div class="goal-amounts"><span class="goal-saved">'+fmt(g.saved)+' saved</span><span>'+fmt(g.target)+' goal</span></div></div>';
+    var source=g.source==='envelope'?'':'Tracking only';
+    return '<div class="goal-card"><div class="goal-top"><div><div class="goal-name">'+esc(g.name)+'</div><div class="goal-pct">'+pct.toFixed(0)+'% complete</div>'+(source?'<div class="goal-source">'+esc(source)+'</div>':'')+'</div>'+(g.source==='envelope'?'<button class="goal-open-btn" onclick="go(\'budget\')">Open budget</button>':'<button class="del-btn" onclick="delGoal(\''+g.id+'\')">×</button>')+'</div><div class="goal-track"><div class="goal-fill" style="width:'+pct+'%"></div></div><div class="goal-amounts"><span class="goal-saved">'+fmt(g.saved)+' saved</span><span>'+fmt(g.target)+' goal</span></div></div>';
   }).join('');
 }
 
@@ -3361,13 +3350,14 @@ function renderDebts() {
   var overview=document.getElementById('loanOverview'),baseInterest=0,fastInterest=0,baseMonths=0,fastMonths=0,allPossible=true,hasExtra=false;
   S.debts.forEach(function(d){var base=loanProjection(d.balance,d.rate,d.minPayment),fast=loanProjection(d.balance,d.rate,(Number(d.minPayment)||0)+(Number(d.extraPayment)||0));if(!base.possible||!fast.possible){allPossible=false;return;}baseInterest+=base.interest;fastInterest+=fast.interest;baseMonths=Math.max(baseMonths,base.months);fastMonths=Math.max(fastMonths,fast.months);if(Number(d.extraPayment)>0)hasExtra=true;});
   if(overview){
-    if(!S.debts.length)overview.innerHTML='<div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">No loans tracked</div>';
+    if(!S.debts.length){overview.style.display='none';overview.innerHTML='';}
     else if(!allPossible)overview.innerHTML='<div class="loan-overview-title">Plan needs attention</div><div class="loan-overview-copy">At least one minimum payment does not cover its monthly interest. Increase that payment to produce a payoff date.</div>';
     else overview.innerHTML='<div class="loan-overview-title">'+(hasExtra?'Faster plan':'Minimum-payment plan')+'</div><div class="loan-overview-copy">'+(hasExtra?'<b>'+payoffDuration(Math.max(0,baseMonths-fastMonths))+'</b> sooner · <b>'+fmt(Math.max(0,baseInterest-fastInterest))+'</b> estimated interest saved. ':'')+'Loans finish by <b>'+payoffDate(hasExtra?fastMonths:baseMonths)+'</b> with about <b>'+fmt(hasExtra?fastInterest:baseInterest)+'</b> in remaining interest.</div>';
+    if(S.debts.length)overview.style.display='block';
   }
   var el=document.getElementById('debtList');
   if(!S.debts.length){
-    el.innerHTML=cardBal>0?'<div class="guided-empty"><div class="guided-empty-icon">✓</div><div class="guided-empty-title">Cards included above</div><div class="guided-empty-copy">No loans or other balances</div></div>':'<div class="guided-empty"><div class="guided-empty-icon">🏦</div><div class="guided-empty-title">No debt recorded</div></div>';
+    el.innerHTML=cardBal>0?'<div class="guided-empty"><div class="guided-empty-title">No loans or other balances</div></div>':'<div class="guided-empty"><div class="guided-empty-icon">🏦</div><div class="guided-empty-title">No debt recorded</div></div>';
     return;
   }
   el.innerHTML=S.debts.map(function(d){
@@ -3476,7 +3466,6 @@ function renderTodaySignals(rta,upcoming,state){
   var chips=[];
   if(upcoming.length){var urgent=upcoming.some(function(x){return x.days<=1;});chips.push('<span class="signal-chip '+(urgent?'warn':'')+'">'+upcoming.length+' due this week</span>');}
   else if(S.scheduled.length) chips.push('<span class="signal-chip good">Nothing due this week</span>');
-  else chips.push('<span class="signal-chip warn">Upcoming bills not set</span>');
   var debt=totalCCDebt();if(debt>0)chips.push('<span class="signal-chip '+(state.cardShort?'warn':'')+'">Card debt '+fmt(debt)+'</span>');
   if(state.overspent.length)chips.push('<span class="signal-chip bad">'+state.overspent.length+' overspent</span>');
   el.innerHTML=chips.slice(0,3).join('');
@@ -3529,7 +3518,6 @@ function renderTodayPriorities(upcoming){
   var el=document.getElementById('todayPriorities'); if(!el)return;
   var rows=[], rta=readyToAssign();
   if(rta<0) rows.push(priorityHtml('!','Overassigned','Reduce assignments by '+fmt(Math.abs(rta))+'.',fmt(Math.abs(rta))));
-  else if(rta>0.005) rows.push(priorityHtml('◎','Ready to Assign','Unassigned money.',fmt(rta)));
   upcoming.slice(0,2).forEach(function(x){
     var env=S.envelopes.find(function(e){return e.id===x.s.envId;}), av=env?envAvailable(env.id):0;
     var when=x.days<0?Math.abs(x.days)+' days overdue':x.days===0?'Due today':x.days===1?'Due tomorrow':'Due in '+x.days+' days';
@@ -4596,10 +4584,12 @@ function renderScheduled() {
   due.sort(function(a,b){return a.days-b.days;});
 
   var dueEl = document.getElementById('scheduledDue');
+  var dueHeading = document.getElementById('scheduledDueHeading');
+  if(dueHeading)dueHeading.style.display=S.scheduled.length?'flex':'none';
   if (!due.length) {
     dueEl.innerHTML = S.scheduled.length
       ? '<div class="empty" style="padding:12px 0"><p>Nothing due in the next 7 days.</p></div>'
-      : '<div class="empty" style="padding:12px 0"><p>Upcoming not measured.</p></div>';
+      : '';
   } else {
     dueEl.innerHTML = '';
     due.forEach(function(item){ dueEl.appendChild(makeSchedEl(item, true)); });
