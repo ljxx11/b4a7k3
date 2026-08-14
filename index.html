@@ -642,6 +642,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 .transfer-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.transfer-card-title{font-size:13px;font-weight:900;color:var(--text)}.transfer-card-sub{font-size:10px;color:var(--text3);margin-top:2px}
 .transfer-list{margin-top:8px}.transfer-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--border);font-size:11px}.transfer-row strong{color:var(--text)}.transfer-row span{color:var(--text3)}
 .custody-empty{padding:34px 18px;text-align:center;background:var(--surf);border:1px dashed var(--border);border-radius:var(--rlg);color:var(--text3);font-size:12px;line-height:1.6}
+.account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}.account-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:left;color:var(--text)}.account-card.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}.account-name{font-size:13px;font-weight:900}.account-type{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}.account-balance{font-size:20px;font-weight:900;margin-top:8px}.register-row{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--border)}.register-main{flex:1;min-width:0}.register-name{font-size:12px;font-weight:800}.register-meta{font-size:10px;color:var(--text3);margin-top:2px}.register-amount{font-size:12px;font-weight:900}.clear-btn{width:25px;height:25px;border-radius:50%;border:1px solid var(--border);color:var(--text3);background:var(--surf2);font-size:11px}.clear-btn.cleared{background:var(--green-dim);color:var(--green);border-color:var(--green)}
 .custody-empty strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}
 @media(max-width:520px){.custody-hero-top{display:block}.custody-total{font-size:38px}.custody-note{max-width:58vw}}
 
@@ -691,6 +692,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="tab-more" id="moreTab" onclick="toggleMoreMenu()">More ▾
       <div class="more-dropdown" id="moreDropdown">
         <div class="more-item" data-v="scheduled">🔁 Upcoming</div>
+        <div class="more-item" data-v="accounts">🏦 Accounts</div>
         <div class="more-item" data-v="cards">💳 Credit Cards</div>
         <div class="more-item" data-v="goals">🎯 Goals</div>
         <div class="more-item" data-v="owed">🤝 People & IOUs</div>
@@ -920,6 +922,14 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   </div>
 
   <!-- CUSTODIAL FUNDS -->
+  <div class="view" id="view-accounts">
+    <div class="sh"><div><div class="sh-title">Accounts</div><div class="sh-sub">Separate registers, cleared transactions, and reconciliation</div></div><div style="display:flex;gap:6px"><button class="sh-btn" onclick="openAccountTransferModal()">↔ Transfer</button><button class="sh-btn" onclick="openAccountModal()">+ Account</button></div></div>
+    <div class="account-grid" id="accountGrid"></div>
+    <div class="sh"><div><div class="sh-title" id="registerTitle">Register</div><div class="sh-sub" id="registerStatus"></div></div><button class="sh-btn" id="reconcileAccountBtn" onclick="openReconcileModal()">Reconcile</button></div>
+    <div class="card"><div class="card-body" id="accountRegister"><div class="empty"><p>Choose an account to view its register.</p></div></div></div>
+  </div>
+
+  <!-- CUSTODIAL FUNDS -->
   <div class="view" id="view-custody">
     <div class="custody-hero">
       <div class="custody-hero-top">
@@ -1123,6 +1133,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="field"><label>Source Name</label><input id="incName" placeholder="e.g. Paycheck, Side Hustle"></div>
     <div class="field"><label>Amount ($)</label><input id="incAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Date</label><input id="incDate" type="date"></div>
+    <div class="field"><label>Deposit Account</label><select id="incAccount"></select></div>
     <div class="tog-row">
       <div><div class="tog-lbl">💵 Cash Income</div><div class="tog-sub">This money is cash, not deposited to bank</div></div>
       <div class="tog" id="cashIncTog"></div>
@@ -1151,6 +1162,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="field"><label>Envelope</label><select id="expCat"></select></div>
     <div class="field"><label>Date</label><input id="expDate" type="date"></div>
     <div class="field"><label>Time (optional)</label><input id="expTime" type="time"></div>
+    <div class="field" id="expAccountField"><label>Payment Account</label><select id="expAccount"></select></div>
     <div class="field">
       <label>Payment Method</label>
       <select id="payMethod" style="-webkit-appearance:none">
@@ -1174,6 +1186,15 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <button class="btn-d" id="deleteExpBtn" style="display:none">Delete Expense</button>
   </div>
 </div>
+
+<!-- Add Account -->
+<div class="overlay" id="accountModal"><div class="sheet"><div class="drag"></div><div class="sheet-title">Add Account</div><div class="field"><label>Account Name</label><input id="accountName" placeholder="e.g. Savings"></div><div class="field"><label>Account Type</label><select id="accountType"><option value="checking">Checking</option><option value="savings">Savings</option><option value="cash">Cash</option></select></div><button class="btn-p" id="saveAccountBtn">Add Account</button><button class="btn-s" id="cancelAccountBtn">Cancel</button></div></div>
+
+<!-- Reconcile Account -->
+<div class="overlay" id="reconcileModal"><div class="sheet"><div class="drag"></div><div class="sheet-title">Reconcile — <span id="reconcileAccountName"></span></div><div class="field"><label>Statement Date</label><input id="reconcileDate" type="date"></div><div class="field"><label>Statement Balance ($)</label><input id="reconcileBalance" type="number" inputmode="decimal" placeholder="0.00"></div><div class="card" style="margin-bottom:10px"><div class="card-body"><div class="set-row"><div><div class="set-lbl">Cleared Balance</div><div class="set-sub">Transactions marked cleared through the statement date</div></div><strong id="reconcileCleared">$0.00</strong></div><div class="set-row"><div><div class="set-lbl">Difference</div><div class="set-sub" id="reconcileHint">Enter the statement balance</div></div><strong id="reconcileDifference">$0.00</strong></div></div></div><button class="btn-p" id="finishReconcileBtn">Finish Reconciliation</button><button class="btn-s" id="cancelReconcileBtn">Cancel</button></div></div>
+
+<!-- Account Transfer -->
+<div class="overlay" id="accountTransferModal"><div class="sheet"><div class="drag"></div><div class="sheet-title">Transfer Between Accounts</div><div class="field"><label>From</label><select id="accountTransferFrom"></select></div><div class="field"><label>To</label><select id="accountTransferTo"></select></div><div class="field"><label>Amount ($)</label><input id="accountTransferAmount" type="number" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Date</label><input id="accountTransferDate" type="date"></div><div class="field"><label>Note</label><input id="accountTransferNote" placeholder="Optional"></div><button class="btn-p" id="saveAccountTransferBtn">Record Transfer</button><button class="btn-s" id="cancelAccountTransferBtn">Cancel</button></div></div>
 
 <!-- Add Envelope -->
 <div class="overlay" id="envModal">
@@ -1285,6 +1306,8 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 var S = {
   income: [],
   expenses: [],
+  accounts: [],     // {id,name,type:'checking'|'savings'|'cash',closed,reconciledAt,reconciledBalance}
+  accountTransfers: [], // {id,fromAccountId,toAccountId,amount,date,note}
   groups: [],       // {id, name, collapsed, order}
   envelopes: [],    // {id, groupId, name, emoji, color, assignments:{YYYY-MM:amount}, openingCarry, order, target, isSavings}
   // target: {type:'spend'|'save'|'refill', amount, byDate(optional)}
@@ -1314,6 +1337,7 @@ var editingEnvId = null;
 var editingGroupId = null;
 var editingIncomeId = null;
 var editingExpId = null;
+var activeAccountId = null;
 var owedType = 'toMe';
 var currentView = 'today';
 var dragSrc = null;
@@ -1331,8 +1355,8 @@ var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 // existing installations can migrate safely and older backups stay readable.
 // ═══════════════════════════════════════════
 var LEDGER_DB_NAME = 'ledger_database';
-var LEDGER_DB_VERSION = 5;
-var LEDGER_SCHEMA_VERSION = 5;
+var LEDGER_DB_VERSION = 6;
+var LEDGER_SCHEMA_VERSION = 6;
 var LEDGER_SYNC_PROTOCOL = 2;
 var LEDGER_APP_VERSION = '3.0.0';
 var ledgerDevice = null;
@@ -1352,7 +1376,7 @@ var pendingRestore = null;
 var pendingCloudPackage = null;
 var previousModalFocus = null;
 
-var LEDGER_COLLECTIONS = ['income','expenses','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','transfers'];
+var LEDGER_COLLECTIONS = ['income','expenses','accounts','accountTransfers','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','transfers'];
 var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','selectedMonth','budgetStartMonth','rolloverDate','custodialMigrationVersion'];
 
 function openLedgerDB() {
@@ -1524,6 +1548,8 @@ function operationSummary(collection, operation, current, previous, changedSetti
   if(collection==='creditCards') return operation==='delete' ? 'Card removed · ' + name : (operation==='insert' ? 'Card added · ' + name : 'Card updated · ' + name);
   if(collection==='scheduled') return operation==='delete' ? 'Scheduled item removed · ' + name : (operation==='insert' ? 'Scheduled item added · ' + name : 'Scheduled item updated · ' + name);
   if(collection==='groups') return operation==='delete' ? 'Budget group removed · ' + name : (operation==='insert' ? 'Budget group created · ' + name : 'Budget group updated · ' + name);
+  if(collection==='accounts') return operation==='delete' ? 'Account removed · ' + name : (operation==='insert' ? 'Account added · ' + name : 'Account updated · ' + name);
+  if(collection==='accountTransfers') return operation==='delete' ? 'Account transfer removed' : (operation==='insert' ? 'Account transfer recorded' : 'Account transfer updated');
   if(collection==='owedToMe' || collection==='iOwe') return operation==='delete' ? 'Balance removed · ' + name : (operation==='insert' ? 'Balance tracked · ' + name : 'Balance updated · ' + name);
   if(collection==='custodialAccounts') return operation==='delete' ? 'Custodial fund removed · ' + name : (operation==='insert' ? 'Custodial fund added · ' + name : 'Custodial fund updated · ' + name);
   if(collection==='custodialTransactions') return operation==='delete' ? 'Custodial entry removed · ' + name : (operation==='insert' ? 'Custodial entry added · ' + name : 'Custodial entry updated · ' + name);
@@ -1757,6 +1783,8 @@ async function loadS() {
   }
   if(!S.income) S.income=[];
   if(!S.expenses) S.expenses=[];
+  if(!S.accounts) S.accounts=[];
+  if(!S.accountTransfers) S.accountTransfers=[];
   if(!S.groups) S.groups=[];
   if(!S.envelopes) S.envelopes=[];
   if(!S.owedToMe) S.owedToMe=[];
@@ -1787,6 +1815,7 @@ async function loadS() {
   S.budgetStartMonth=normalizeMonthKey(S.budgetStartMonth);
   if(!S.selectedMonth) S.selectedMonth=S.viewingNextMonth ? addMonths(S.currentMonth,1) : S.currentMonth;
   S.selectedMonth=normalizeMonthKey(S.selectedMonth);
+  migrateAccounts();
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.envelopes.forEach(function(e,i){
     if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;
@@ -1831,6 +1860,16 @@ function monthLabel(key) {
 function selectedMonthKey(){ return normalizeMonthKey(S.selectedMonth||currentMonthKey()); }
 function monthKeyFromDate(dateStr) {
   return String(dateStr||'').slice(0,7);
+}
+
+function migrateAccounts(){
+  if(!Array.isArray(S.accounts))S.accounts=[];if(!Array.isArray(S.accountTransfers))S.accountTransfers=[];
+  var checking=S.accounts.find(function(a){return a.type==='checking'&&!a.closed;});
+  var cash=S.accounts.find(function(a){return a.type==='cash'&&!a.closed;});
+  if(!checking){checking={id:makeLedgerId('account'),name:'Checking',type:'checking',closed:false,createdAt:new Date().toISOString()};S.accounts.push(checking);}
+  if(!cash){cash={id:makeLedgerId('account'),name:'Cash',type:'cash',closed:false,createdAt:new Date().toISOString()};S.accounts.push(cash);}
+  S.income.forEach(function(i){if(!i.accountId)i.accountId=i.isCash?cash.id:checking.id;if(i.cleared===undefined)i.cleared=false;});
+  S.expenses.forEach(function(e){if(!e.isCredit&&!e.accountId)e.accountId=e.payMethod==='cash'?cash.id:checking.id;if(e.cleared===undefined)e.cleared=false;});
 }
 
 function applyMonthRollover(newKey) {
@@ -1927,12 +1966,28 @@ function fmtS(n) {
 // COMPUTED
 // ═══════════════════════════════════════════
 function money(n) { return Math.round((Number(n)||0) * 100) / 100; }
+function activeAccounts(){return (S.accounts||[]).filter(function(a){return !a.closed;});}
+function defaultAccount(type){return activeAccounts().find(function(a){return a.type===type;})||activeAccounts()[0]||null;}
+function accountName(id){var a=(S.accounts||[]).find(function(x){return x.id===id;});return a?a.name:'Account';}
+function accountBalance(accountId,clearedOnly,throughDate){
+  var total=0,account=(S.accounts||[]).find(function(a){return a.id===accountId;});if(!account)return 0;
+  function included(x){return (!clearedOnly||x.cleared===true)&&(!throughDate||String(x.date||'')<=throughDate);}
+  S.income.forEach(function(i){if(i.accountId===accountId&&included(i))total+=Number(i.amount)||0;});
+  S.expenses.forEach(function(e){if(!e.isCredit&&e.accountId===accountId&&included(e))total-=Number(e.amount)||0;});
+  (S.accountTransfers||[]).forEach(function(t){if(!included(t))return;if(t.fromAccountId===accountId)total-=Number(t.amount)||0;if(t.toAccountId===accountId)total+=Number(t.amount)||0;});
+  var checking=defaultAccount('checking'),cash=defaultAccount('cash');
+  (S.custodialTransactions||[]).forEach(function(t){var target=t.location==='cash'?cash:checking;if(target&&target.id===accountId&&included(t))total+=custodialSignedAmount(t);});
+  (S.transfers||[]).forEach(function(t){if(!included(t))return;if(checking&&checking.id===accountId)total+=transferBankEffect(t);if(cash&&cash.id===accountId)total+=transferCashEffect(t);});
+  return money(total);
+}
+function accountOptions(selectedId,includeCash){return activeAccounts().filter(function(a){return includeCash!==false||a.type!=='cash';}).map(function(a){return '<option value="'+a.id+'"'+(a.id===selectedId?' selected':'')+'>'+esc(a.name)+' · '+a.type+'</option>';}).join('');}
 function custodialSignedAmount(t){return money((t&&t.direction==='out'?-1:1)*(Number(t&&t.amount)||0));}
 function custodyAccountBalance(accountId){var total=0;(S.custodialTransactions||[]).forEach(function(t){if(t.accountId===accountId)total+=custodialSignedAmount(t);});return money(total);}
 function custodialBalanceTotal(){var total=0;(S.custodialAccounts||[]).forEach(function(a){total+=custodyAccountBalance(a.id);});return money(total);}
 function transferBankEffect(t){var amount=Number(t&&t.amount)||0;return t&&t.direction==='bank-cash'?-amount:amount;}
 function transferCashEffect(t){var amount=Number(t&&t.amount)||0;return t&&t.direction==='bank-cash'?amount:-amount;}
 function bankBalance() {
+  if(S.accounts&&S.accounts.length){var sum=0;S.accounts.forEach(function(a){if(!a.closed&&a.type!=='cash')sum+=accountBalance(a.id);});return money(sum);}
   var total = 0;
   S.income.forEach(function(i) { if (!i.isCash) total += Number(i.amount)||0; });
   S.expenses.forEach(function(e) { if (!e.isCredit && e.payMethod !== 'cash') total -= Number(e.amount)||0; });
@@ -1945,6 +2000,7 @@ function cashIncomeTotal() {
   return money(total);
 }
 function cashBalance() {
+  if(S.accounts&&S.accounts.length){var sum=0;S.accounts.forEach(function(a){if(!a.closed&&a.type==='cash')sum+=accountBalance(a.id);});return money(sum);}
   var total = cashIncomeTotal();
   S.expenses.forEach(function(e) { if (e.payMethod === 'cash') total -= Number(e.amount)||0; });
   (S.custodialTransactions||[]).forEach(function(t){if(t.affectsCash!==false&&t.location==='cash')total+=custodialSignedAmount(t);});
@@ -2336,7 +2392,7 @@ function renderIncome() {
   el.innerHTML = '';
   sorted.forEach(function(i) {
     var label = i.isReimb ? '🔁 Reimbursement' : '💰 Income';
-    var sub = i.date + (i.isReimb && i.reimbEnvId ? ' → ' + envName(i.reimbEnvId) : '');
+    var sub = i.date + ' · ' + accountName(i.accountId) + (i.isReimb && i.reimbEnvId ? ' → ' + envName(i.reimbEnvId) : '');
     var div = document.createElement('div');
     div.className = 'inc-item';
     div.innerHTML =
@@ -2380,6 +2436,7 @@ function openEditIncomeModal(id) {
   document.getElementById('incName').value = inc.name;
   document.getElementById('incAmt').value = inc.amount;
   document.getElementById('incDate').value = inc.date;
+  document.getElementById('incAccount').innerHTML=accountOptions(inc.accountId,true);
   document.getElementById('incomeModalTitle').textContent = 'Edit Income';
   document.getElementById('saveIncBtn').textContent = 'Save Changes';
   document.getElementById('deleteIncBtn').style.display = 'block';
@@ -2746,7 +2803,8 @@ function recordCCPayment(cardId) {
   // Reduce card balance
   card.balance = Math.max(0, (card.balance||0)-amt);
   // Log as expense from payment envelope
-  S.expenses.push({id:uid(), desc:'CC Payment — '+card.name, amount:amt, envId:card.paymentEnvId, date:new Date().toISOString().slice(0,10), payMethod:'debit', isCredit:false, isCCPayment:true});
+  var paymentAccount=defaultAccount('checking');
+  S.expenses.push({id:uid(), desc:'CC Payment — '+card.name, amount:amt, envId:card.paymentEnvId, date:new Date().toISOString().slice(0,10), payMethod:'debit', accountId:paymentAccount&&paymentAccount.id,cleared:false,isCredit:false, isCCPayment:true});
   saveS(); renderEnvelopes(); renderCCTab(); renderExpenses(); toast('💳 Payment recorded!');
 }
 function renderCCTab() {
@@ -2858,7 +2916,7 @@ function renderExpenses() {
     div.innerHTML =
       '<div class="exp-ico" style="background:'+clr+'">'+(env?env.emoji:'📦')+'</div>'+
       '<div class="exp-body"><div class="exp-desc">'+esc(e.desc)+'</div>'+
-      '<div class="exp-meta">'+(env?esc(env.name):e.envId)+(tags?' · '+tags:'')+'</div></div>'+
+      '<div class="exp-meta">'+(env?esc(env.name):e.envId)+(tags?' · '+tags:'')+(e.accountId?' · '+esc(accountName(e.accountId)):'')+'</div></div>'+
       '<div class="exp-right"><div class="exp-amt">'+fmt(e.amount)+'</div><div class="exp-date">'+dt+'</div></div>'+
       '<button class="inc-edit-btn" id="eedit_'+e.id+'">✏️</button>'+
       '<button class="del-btn" id="edel_'+e.id+'">×</button>';
@@ -2903,6 +2961,9 @@ function openEditExpModal(id) {
   document.getElementById('expAmt').value = exp.amount;
   document.getElementById('expDate').value = exp.date;
   document.getElementById('expTime').value = exp.time || '00:00';
+  var pm=document.getElementById('payMethod');if(pm)pm.value=exp.payMethod||'debit';
+  var expAccount=document.getElementById('expAccount');if(expAccount)expAccount.innerHTML=accountOptions(exp.accountId,true);
+  var expAccountField=document.getElementById('expAccountField');if(expAccountField)expAccountField.style.display=creditOn?'none':'block';
   var sel = document.getElementById('expCat');
   var opts = '';
   sortedGroups().forEach(function(g){
@@ -3432,9 +3493,41 @@ function checkAffordability(){
 }
 
 // ═══════════════════════════════════════════
+// ACCOUNTS + RECONCILIATION
+// ═══════════════════════════════════════════
+function accountRegisterEntries(accountId){
+  var rows=[];
+  S.income.forEach(function(i){if(i.accountId===accountId)rows.push({kind:'income',record:i,id:i.id,name:i.name||'Income',date:i.date,amount:Number(i.amount)||0,cleared:!!i.cleared,reconciled:!!i.reconciled});});
+  S.expenses.forEach(function(e){if(!e.isCredit&&e.accountId===accountId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Expense',date:e.date,amount:-(Number(e.amount)||0),cleared:!!e.cleared,reconciled:!!e.reconciled});});
+  (S.accountTransfers||[]).forEach(function(t){if(t.fromAccountId===accountId||t.toAccountId===accountId)rows.push({kind:'transfer',record:t,id:t.id,name:t.note||('Transfer '+(t.toAccountId===accountId?'from '+accountName(t.fromAccountId):'to '+accountName(t.toAccountId))),date:t.date,amount:(t.toAccountId===accountId?1:-1)*(Number(t.amount)||0),cleared:!!t.cleared,reconciled:!!t.reconciled});});
+  var checking=defaultAccount('checking'),cash=defaultAccount('cash');
+  (S.transfers||[]).forEach(function(t){var applies=(checking&&checking.id===accountId)||(cash&&cash.id===accountId);if(applies)rows.push({kind:'legacyTransfer',record:t,id:t.id,name:t.desc||'Bank / cash move',date:t.date,amount:checking&&checking.id===accountId?transferBankEffect(t):transferCashEffect(t),cleared:!!t.cleared,reconciled:!!t.reconciled});});
+  (S.custodialTransactions||[]).forEach(function(t){var target=t.location==='cash'?cash:checking;if(target&&target.id===accountId)rows.push({kind:'custody',record:t,id:t.id,name:t.desc||'Custodial funds',date:t.date,amount:custodialSignedAmount(t),cleared:!!t.cleared,reconciled:!!t.reconciled});});
+  return rows.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+}
+function renderAccounts(){
+  var accounts=activeAccounts(),grid=document.getElementById('accountGrid'),register=document.getElementById('accountRegister');if(!grid||!register)return;
+  if(!activeAccountId||!accounts.some(function(a){return a.id===activeAccountId;}))activeAccountId=accounts[0]&&accounts[0].id;
+  grid.innerHTML=accounts.map(function(a){var bal=accountBalance(a.id),icon=a.type==='savings'?'◈':a.type==='cash'?'●':'▣';return '<button class="account-card'+(a.id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+a.id+'\')"><div class="account-name">'+icon+' '+esc(a.name)+'</div><div class="account-type">'+a.type+'</div><div class="account-balance" style="color:'+(bal<0?'var(--red)':'var(--text)')+'">'+(bal<0?'-':'')+fmt(Math.abs(bal))+'</div></button>';}).join('');
+  var account=accounts.find(function(a){return a.id===activeAccountId;});if(!account){register.innerHTML='<div class="empty"><p>Add an account to begin.</p></div>';return;}
+  document.getElementById('registerTitle').textContent=account.name+' Register';
+  document.getElementById('registerStatus').textContent=account.reconciledAt?'Reconciled through '+account.reconciledAt:'Not reconciled yet';
+  var rows=accountRegisterEntries(account.id);register.innerHTML=rows.length?rows.map(function(x){return '<div class="register-row"><button class="clear-btn'+(x.cleared?' cleared':'')+'" onclick="toggleTransactionCleared(\''+x.kind+'\',\''+x.id+'\')" aria-label="'+(x.cleared?'Cleared':'Uncleared')+'">'+(x.reconciled?'◆':x.cleared?'✓':'○')+'</button><div class="register-main"><div class="register-name">'+esc(x.name)+'</div><div class="register-meta">'+x.date+' · '+(x.reconciled?'Reconciled':x.cleared?'Cleared':'Uncleared')+'</div></div><div class="register-amount" style="color:'+(x.amount<0?'var(--red)':'var(--green)')+'">'+(x.amount<0?'-':'+')+fmt(Math.abs(x.amount))+'</div></div>';}).join(''):'<div class="empty"><p>No transactions in this account.</p></div>';
+}
+function selectAccount(id){activeAccountId=id;renderAccounts();}
+function toggleTransactionCleared(kind,id){var list=kind==='income'?S.income:kind==='expense'?S.expenses:kind==='legacyTransfer'?S.transfers:kind==='custody'?S.custodialTransactions:S.accountTransfers,record=list.find(function(x){return x.id===id;});if(!record)return;if(record.reconciled){toast('Reconciled transactions are locked');return;}record.cleared=!record.cleared;saveS();renderAccounts();}
+function openAccountModal(){document.getElementById('accountName').value='';document.getElementById('accountType').value='savings';openModal('accountModal');}
+function saveAccount(){var name=document.getElementById('accountName').value.trim(),type=document.getElementById('accountType').value;if(!name){toast('Enter an account name');return;}var account={id:makeLedgerId('account'),name:name,type:type,closed:false,createdAt:new Date().toISOString()};S.accounts.push(account);activeAccountId=account.id;saveS();closeModal('accountModal');renderAccounts();toast(name+' added');}
+function openAccountTransferModal(){var accounts=activeAccounts();if(accounts.length<2){toast('Add another account first');return;}document.getElementById('accountTransferFrom').innerHTML=accountOptions(activeAccountId,true);document.getElementById('accountTransferTo').innerHTML=accountOptions(accounts.find(function(a){return a.id!==activeAccountId;}).id,true);document.getElementById('accountTransferAmount').value='';document.getElementById('accountTransferDate').value=new Date().toISOString().slice(0,10);document.getElementById('accountTransferNote').value='';openModal('accountTransferModal');}
+function saveAccountTransfer(){var from=document.getElementById('accountTransferFrom').value,to=document.getElementById('accountTransferTo').value,amount=money(parseFloat(document.getElementById('accountTransferAmount').value)||0),date=document.getElementById('accountTransferDate').value,note=document.getElementById('accountTransferNote').value.trim();if(!from||!to||from===to){toast('Choose two different accounts');return;}if(amount<=0||!date){toast('Enter a valid amount and date');return;}if(amount>accountBalance(from)+.005){toast('That is more than '+accountName(from)+' contains');return;}S.accountTransfers.push({id:makeLedgerId('account_transfer'),fromAccountId:from,toAccountId:to,amount:amount,date:date,note:note||'Account transfer',cleared:false});saveS();closeModal('accountTransferModal');renderAccounts();toast('Transfer recorded');}
+function openReconcileModal(){var account=S.accounts.find(function(a){return a.id===activeAccountId;});if(!account){toast('Choose an account');return;}document.getElementById('reconcileAccountName').textContent=account.name;document.getElementById('reconcileDate').value=new Date().toISOString().slice(0,10);document.getElementById('reconcileBalance').value='';updateReconcileDifference();openModal('reconcileModal');}
+function updateReconcileDifference(){var date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value),cleared=accountBalance(activeAccountId,true,date),difference=isNaN(statement)?0:money(statement-cleared);document.getElementById('reconcileCleared').textContent=(cleared<0?'-':'')+fmt(Math.abs(cleared));document.getElementById('reconcileDifference').textContent=(difference<0?'-':'')+fmt(Math.abs(difference));document.getElementById('reconcileDifference').style.color=Math.abs(difference)<.005?'var(--green)':'var(--red)';document.getElementById('reconcileHint').textContent=isNaN(statement)?'Enter the statement balance':Math.abs(difference)<.005?'Balances match':'Clear or correct transactions until this reaches $0.00';}
+function finishReconcile(){var account=S.accounts.find(function(a){return a.id===activeAccountId;}),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the statement date and balance');return;}var cleared=accountBalance(account.id,true,date),difference=money(statement-cleared);if(Math.abs(difference)>=.005){toast('Difference must be $0.00 before finishing');return;}accountRegisterEntries(account.id).forEach(function(x){if(x.cleared&&String(x.date)<=date)x.record.reconciled=true;});account.reconciledAt=date;account.reconciledBalance=money(statement);saveS();closeModal('reconcileModal');renderAccounts();toast(account.name+' reconciled');}
+
+// ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-var MORE_VIEWS = ['cards','scheduled','reports','goals','owed','custody','debt','history','settings'];
+var MORE_VIEWS = ['accounts','cards','scheduled','reports','goals','owed','custody','debt','history','settings'];
 function go(v) {
   currentView = v;
   var hdr=document.querySelector('.hdr'); if(hdr){hdr.classList.toggle('today-mode',v==='today');hdr.classList.toggle('compact-mode',v!=='today'&&v!=='budget');}
@@ -3466,6 +3559,7 @@ function go(v) {
   if (v==='settings') renderRolloverSummary();
   if (v==='scheduled') renderScheduled();
   if (v==='reports') renderReports();
+  if (v==='accounts') renderAccounts();
   var expFab=document.getElementById('expFab'); if(expFab) expFab.style.display=['expenses','budget'].indexOf(v)>=0?'flex':'none';
 }
 function toggleMoreMenu() {
@@ -3543,6 +3637,7 @@ function openIncomeModal() {
   document.getElementById('incName').value = '';
   document.getElementById('incAmt').value = '';
   document.getElementById('incDate').value = new Date().toISOString().slice(0,10);
+  var incDefault=defaultAccount('checking');document.getElementById('incAccount').innerHTML=accountOptions(incDefault&&incDefault.id,true);
   // Populate reimb cat
   var sel = document.getElementById('reimbCat');
   var ropts = '';
@@ -3569,6 +3664,8 @@ function openExpModal() {
   document.getElementById('creditTog').className = 'tog';
   var pm = document.getElementById('payMethod');
   if (pm) pm.value = 'debit';
+  var expDefault=defaultAccount('checking'),expAccount=document.getElementById('expAccount');if(expAccount)expAccount.innerHTML=accountOptions(expDefault&&expDefault.id,true);
+  var expAccountField=document.getElementById('expAccountField');if(expAccountField)expAccountField.style.display='block';
   document.getElementById('expDesc').value = '';
   document.getElementById('expAmt').value = '';
   document.getElementById('expDate').value = new Date().toISOString().slice(0,10);
@@ -3678,6 +3775,9 @@ function saveIncome() {
   var name = document.getElementById('incName').value.trim();
   var amt = parseFloat(document.getElementById('incAmt').value);
   var date = document.getElementById('incDate').value;
+  var accountId=document.getElementById('incAccount').value;
+  var depositAccount=(S.accounts||[]).find(function(a){return a.id===accountId;});
+  cashIncOn=!!(depositAccount&&depositAccount.type==='cash');
   var isReimb = reimbOn;
   var reimbEnvId = isReimb ? document.getElementById('reimbCat').value : null;
   if (!name) { toast('Enter a name'); return; }
@@ -3687,7 +3787,7 @@ function saveIncome() {
   if (editingIncomeId) {
     // Edit existing
     var inc = S.income.find(function(i){return i.id===editingIncomeId;});
-    if (inc) { inc.name=name; inc.amount=amt; inc.date=date; inc.isCash=cashIncOn; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; }
+    if (inc) { inc.name=name; inc.amount=amt; inc.date=date; inc.accountId=accountId; inc.isCash=cashIncOn; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; inc.cleared=false; }
     editingIncomeId = null;
     toast('✓ Updated!');
   } else {
@@ -3696,7 +3796,7 @@ function saveIncome() {
       var env = S.envelopes.find(function(e){return e.id===reimbEnvId;});
       if (env) { var key=normalizeMonthKey(monthKeyFromDate(date));setAssignmentForMonth(env,key,assignmentForMonth(env,key)+amt); }
     }
-    S.income.push({id:uid(), name:name, amount:amt, date:date, isCash:cashIncOn, isReimb:isReimb, reimbEnvId:reimbEnvId});
+    S.income.push({id:uid(), name:name, amount:amt, date:date, accountId:accountId, isCash:cashIncOn, isReimb:isReimb, reimbEnvId:reimbEnvId,cleared:false});
     toast('💰 Income added!');
   }
   saveS(); closeModal('incomeModal'); renderIncome(); renderEnvelopes(); updateRTA();
@@ -3718,6 +3818,9 @@ function saveExp() {
   var payMethod = pm ? pm.value : 'debit';
   var isCredit = payMethod === 'credit';
   var ccId = isCredit ? document.getElementById('expCCSelect').value : null;
+  var accountId=isCredit?null:document.getElementById('expAccount').value;
+  var paymentAccount=(S.accounts||[]).find(function(a){return a.id===accountId;});
+  if(!isCredit)payMethod=paymentAccount&&paymentAccount.type==='cash'?'cash':'debit';
   if (!amt || amt <= 0) { toast('Enter a valid amount'); return; }
   if (!date) { toast('Pick a date'); return; }
   if (!envId) { toast('Pick an envelope'); return; }
@@ -3729,7 +3832,7 @@ function saveExp() {
       applyBackdatedExpenseEffect(exp,'remove');
       if(exp.isCredit && exp.ccId){var oldCard=S.creditCards.find(function(c){return c.id===exp.ccId;});if(oldCard)oldCard.balance=money(Math.max(0,(oldCard.balance||0)-(exp.amount||0)));}
       var beforeAvail = envAvailable(envId) + (exp.envId===envId ? (exp.amount||0) : 0);
-      exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.time=time; exp.datetime=datetime; exp.payMethod=payMethod; exp.isCredit=isCredit; exp.ccId=ccId||null;
+      exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.time=time; exp.datetime=datetime; exp.payMethod=payMethod; exp.accountId=accountId; exp.isCredit=isCredit; exp.ccId=ccId||null;exp.cleared=false;
       exp.fundedAmount=isCredit?money(Math.min(amt,Math.max(0,beforeAvail))):0;
       if(isCredit && ccId){var newCard=S.creditCards.find(function(c){return c.id===ccId;});if(newCard)newCard.balance=money((newCard.balance||0)+amt);}
       applyBackdatedExpenseEffect(exp,'add');
@@ -3751,7 +3854,7 @@ function saveExp() {
     if (!proceed) return;
   }
   // Log the expense
-  S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, time:time, datetime:datetime, payMethod:payMethod, isCredit:isCredit, ccId:ccId||null});
+  S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, time:time, datetime:datetime, payMethod:payMethod, accountId:accountId, isCredit:isCredit, ccId:ccId||null,cleared:false});
   // A funded credit purchase reduces the spending envelope and makes the same amount available for card payment.
   if (isCredit && ccId) {
     var card = S.creditCards.find(function(c){return c.id===ccId;});
@@ -3906,6 +4009,7 @@ function normalizeRestoredState(data) {
   if(!S.currentMonth)S.currentMonth=currentMonthKey();S.currentMonth=normalizeMonthKey(S.currentMonth);
   if(!S.budgetStartMonth)S.budgetStartMonth=S.currentMonth;S.budgetStartMonth=normalizeMonthKey(S.budgetStartMonth);
   if(!S.selectedMonth)S.selectedMonth=S.viewingNextMonth?addMonths(S.currentMonth,1):S.currentMonth;S.selectedMonth=normalizeMonthKey(S.selectedMonth);delete S.viewingNextMonth;
+  migrateAccounts();
   if(S.envelopes.length&&!S.groups.length)migrateToGroups();if(!S.groups.length)seedGroups();migrateCustodialFunds();
   S.groups.forEach(function(g,i){if(g.order===undefined)g.order=i;});
   S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}});
@@ -4621,7 +4725,7 @@ function renderBackupBanner() {
 
 function renderAll() {
   renderIncome(); renderEnvelopes(); renderExpenses(); renderSummary(); renderToday();
-  renderOwed(); renderCustody(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
+  renderOwed(); renderCustody(); renderAccounts(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
   renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary(); renderBackupBanner();
   updateRTA(); applyTheme(); renderRecentActivity(); scheduleLedgerHealthCheck();
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':''); document.getElementById('weekTog').setAttribute('aria-checked',S.weeklyMode?'true':'false');
@@ -4701,6 +4805,7 @@ window.onload = async function() {
   document.getElementById('cashIncTog').addEventListener('click', function(){
     cashIncOn = !cashIncOn;
     this.className = 'tog' + (cashIncOn?' on':'');
+    var target=defaultAccount(cashIncOn?'cash':'checking'),select=document.getElementById('incAccount');if(target&&select)select.value=target.id;
 
   });
   document.getElementById('reimbTog').addEventListener('click', function(){
@@ -4730,6 +4835,8 @@ window.onload = async function() {
     creditOn = isCredit;
     var ccField = document.getElementById('ccSelectField');
     if (ccField) ccField.style.display = isCredit ? 'block' : 'none';
+    var accountField=document.getElementById('expAccountField');if(accountField)accountField.style.display=isCredit?'none':'block';
+    if(!isCredit){var target=defaultAccount(this.value==='cash'?'cash':'checking'),accountSelect=document.getElementById('expAccount');if(target&&accountSelect)accountSelect.value=target.id;}
     if (isCredit) {
       var sel = document.getElementById('expCCSelect');
       if (sel) {
@@ -4743,6 +4850,19 @@ window.onload = async function() {
       }
     }
   });
+
+  // Accounts and reconciliation
+  document.getElementById('saveAccountBtn').addEventListener('click',saveAccount);
+  document.getElementById('cancelAccountBtn').addEventListener('click',function(){closeModal('accountModal');});
+  document.getElementById('accountModal').addEventListener('click',function(e){modalBg(e,'accountModal');});
+  document.getElementById('reconcileDate').addEventListener('input',updateReconcileDifference);
+  document.getElementById('reconcileBalance').addEventListener('input',updateReconcileDifference);
+  document.getElementById('finishReconcileBtn').addEventListener('click',finishReconcile);
+  document.getElementById('cancelReconcileBtn').addEventListener('click',function(){closeModal('reconcileModal');});
+  document.getElementById('reconcileModal').addEventListener('click',function(e){modalBg(e,'reconcileModal');});
+  document.getElementById('saveAccountTransferBtn').addEventListener('click',saveAccountTransfer);
+  document.getElementById('cancelAccountTransferBtn').addEventListener('click',function(){closeModal('accountTransferModal');});
+  document.getElementById('accountTransferModal').addEventListener('click',function(e){modalBg(e,'accountTransferModal');});
   // creditTog may not exist if replaced by payMethod dropdown
   var ctog = document.getElementById('creditTog');
   if (ctog) ctog.addEventListener('click', function(){
