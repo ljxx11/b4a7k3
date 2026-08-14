@@ -1,4 +1,4 @@
-const CACHE='ledger-v3.0.0-monthly-budget.7';
+const CACHE='ledger-v3.0.0-monthly-budget.8';
 const CORE=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{

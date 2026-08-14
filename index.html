@@ -579,7 +579,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 @media(max-width:360px){.compass-grid{grid-template-columns:1fr}.compass-metric{min-height:0}}
 
 
-/* ── CLEAR BOUNDARIES v2.2.1 ── */
+/* ── LEDGER v3.0.0 ── */
 :focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 button,input,select,summary{font:inherit}
 button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
@@ -740,8 +740,8 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
       <div class="today-focus-card" aria-live="polite" aria-atomic="true">
         <div class="today-focus-eyebrow">Today’s focus</div>
-        <div class="today-focus-title" id="todayFocusTitle">Getting your plan ready</div>
-        <div class="today-focus-copy" id="todayNote">Checking what deserves your attention.</div>
+        <div class="today-focus-title" id="todayFocusTitle">Reviewing your plan</div>
+        <div class="today-focus-copy" id="todayNote">One moment.</div>
         <div class="signal-row" id="todaySignals"></div>
       </div>
 
@@ -764,12 +764,12 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-head"><div class="dash-title">Today's priority</div><div class="dash-link">Highest impact first</div></div>
+        <div class="dash-card-head"><div class="dash-title">Priority</div><div class="dash-link">Now</div></div>
         <div id="todayPriorities"></div>
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-head"><div class="dash-title">Can I afford this?</div><div class="dash-link">Check the envelope</div></div>
+        <div class="dash-card-head"><div class="dash-title">Can I afford this?</div><div class="dash-link">Envelope check</div></div>
         <div class="afford-body">
           <div class="afford-grid">
             <input class="afford-input" id="affordAmount" type="number" inputmode="decimal" placeholder="$ Amount">
@@ -786,12 +786,12 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-head"><div class="dash-title">Goals moving forward</div><button class="dash-link" onclick="go('goals')">All goals</button></div>
+        <div class="dash-card-head"><div class="dash-title">Goals</div><button class="dash-link" onclick="go('goals')">View all</button></div>
         <div id="todayGoals"></div>
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-head"><div class="dash-title">Coming up</div><button class="dash-link" onclick="go('scheduled')">Schedule</button></div>
+        <div class="dash-card-head"><div class="dash-title">Upcoming</div><button class="dash-link" onclick="go('scheduled')">View all</button></div>
         <div id="todayUpcoming"></div>
       </div>
     </div>
@@ -805,11 +805,11 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <span id="backupReminderText">💾 Back up your data</span>
       <button class="backup-reminder-btn" id="backupReminderBtn">Back Up Now</button>
     </div>
-    <div class="learn-card" style="margin-bottom:10px">
-      <div class="learn-title">Start here with your real budget</div>
-      <div class="learn-body">1) Add your opening balances. 2) Add your credit cards. 3) Use Custodial Funds for money entrusted to you—it never enters Ready to Assign. 4) Give your own money deliberate jobs. 5) Fund bills first, then everyday needs, debt, and future goals.</div>
+    <div class="learn-card" id="budgetSetupCard" style="margin-bottom:10px">
+      <div class="learn-title">Budget setup</div>
+      <div class="learn-body">Balances, cards, custodial funds, then assignments.</div>
     </div>
-    <div class="next-month-banner" id="nextMonthBanner">✨ Future month — assign money here without changing another month</div>
+    <div class="next-month-banner" id="nextMonthBanner">✨ Future month · assignments stay in this month</div>
     <div class="target-summary-bar" id="targetSummaryBar" style="display:none">
       <div class="tsb-left">
         <div class="tsb-label">Monthly Targets Total</div>
@@ -836,7 +836,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <button class="sh-btn" id="addIncBtn" onclick="event.stopPropagation();openIncomeModal()">+ Add</button>
     </div>
     <div id="incomeSection">
-      <div class="card" style="margin-bottom:14px"><div class="card-body" id="incomeList"><div class="empty"><p>Add income to begin.</p></div></div></div>
+      <div class="card" style="margin-bottom:14px"><div class="card-body" id="incomeList"><div class="empty"><p>No income recorded.</p></div></div></div>
     </div>
     <div class="sh"><div class="sh-title">Envelopes</div></div>
     <div id="envList"></div>
@@ -855,15 +855,15 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <div class="stat"><div class="stat-val" id="expCnt">0</div><div class="stat-lbl">Transactions</div></div>
       <div class="stat"><div class="stat-val" id="expAvg">$0</div><div class="stat-lbl">Average</div></div>
     </div>
-    <div class="card"><div class="card-body" id="expList"><div class="empty"><div class="ei">📝</div><p>No expenses yet.<br>Tap + to log one.</p></div></div></div>
+    <div class="card"><div class="card-body" id="expList"><div class="empty"><div class="ei">📝</div><p>No expenses recorded.</p></div></div></div>
   </div>
 
   <!-- REVIEW / NORTH STAR -->
   <div class="view" id="view-summary">
     <div class="compass-hero">
       <div class="compass-kicker">Financial Compass</div>
-      <div class="compass-title" id="compassHeadline">You are getting oriented</div>
-      <div class="compass-copy" id="compassCopy">Ledger is checking whether your money has jobs, your near-term commitments are covered, and your buffer is growing.</div>
+      <div class="compass-title" id="compassHeadline">Reviewing your finances</div>
+      <div class="compass-copy" id="compassCopy">Plan, commitments, and progress.</div>
       <div class="compass-grid">
         <div class="compass-metric"><div class="compass-metric-label">Every dollar</div><div class="compass-metric-value" id="compassRta">—</div><div class="compass-metric-sub" id="compassRtaSub">Checking your plan</div></div>
         <div class="compass-metric"><div class="compass-metric-label">Next 7 days</div><div class="compass-metric-value" id="compassWeek">—</div><div class="compass-metric-sub" id="compassWeekSub">Scheduled bills funded</div><div class="compass-track"><div class="compass-fill" id="compassWeekFill" style="width:0%"></div></div></div>
@@ -880,13 +880,13 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     </div>
 
     <div class="lesson-card">
-      <div class="lesson-eyebrow">Learn as you go</div>
-      <div class="lesson-title" id="compassLessonTitle">Give every dollar a job</div>
-      <div class="lesson-copy" id="compassLessonCopy">Your money belongs in the budget. Money entrusted to you belongs in Custodial Funds, where it cannot distort Ready to Assign.</div>
+      <div class="lesson-eyebrow">Insight</div>
+      <div class="lesson-title" id="compassLessonTitle">Every dollar assigned</div>
+      <div class="lesson-copy" id="compassLessonCopy">Personal and custodial money remain separate.</div>
     </div>
 
     <div class="compass-section">
-      <div class="compass-section-head"><div><div class="compass-section-title">Path to independence</div><div class="compass-section-sub">Practical stability first. No arbitrary score.</div></div></div>
+      <div class="compass-section-head"><div><div class="compass-section-title">Financial foundation</div><div class="compass-section-sub">Stability and progress</div></div></div>
       <div class="compass-body" id="independencePath"></div>
     </div>
 
@@ -944,7 +944,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="sh"><div><div class="sh-title">Accounts</div><div class="sh-sub">Separate registers, cleared transactions, and reconciliation</div></div><div style="display:flex;gap:6px"><button class="sh-btn" onclick="openAccountTransferModal()">↔ Transfer</button><button class="sh-btn" onclick="openAccountModal()">+ Account</button></div></div>
     <div class="account-grid" id="accountGrid"></div>
     <div class="sh"><div><div class="sh-title" id="registerTitle">Register</div><div class="sh-sub" id="registerStatus"></div></div><button class="sh-btn" id="reconcileAccountBtn" onclick="openReconcileModal()">Reconcile</button></div>
-    <div class="card"><div class="card-body" id="accountRegister"><div class="empty"><p>Choose an account to view its register.</p></div></div></div>
+    <div class="card"><div class="card-body" id="accountRegister"><div class="empty"><p>No account selected.</p></div></div></div>
   </div>
 
   <!-- CUSTODIAL FUNDS -->
@@ -984,10 +984,10 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <div class="stat"><div class="stat-val" id="debtMinStat">$0</div><div class="stat-lbl">Required/Month</div></div>
     </div>
     <div class="debt-breakdown" id="debtBreakdown"></div>
-    <div class="loan-overview" id="loanOverview"><div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">Add a loan to calculate its payoff date and the effect of extra monthly payments.</div></div>
+    <div class="loan-overview" id="loanOverview"><div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">Payoff dates and extra-payment effects appear here.</div></div>
     <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(168,189,208,.18)">
       <div class="card-body" style="font-size:12px;color:var(--acc);font-weight:700;line-height:1.6">
-        Credit-card balances are included automatically. Add loans or other debts here, then fund each required payment in its own envelope before optional spending.
+        Credit cards are included automatically. Loans and other balances appear below.
       </div>
     </div>
     <div class="sh" id="otherDebtHeading"><div class="sh-title">Loans & Other Debt</div></div>
@@ -1014,13 +1014,13 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="sh"><div class="sh-title">Scheduled Transactions</div><button class="sh-btn" onclick="openSchedModal()">+ Add</button></div>
     <div class="card" style="margin-bottom:12px;background:var(--blue-dim);border-color:rgba(96,165,250,.2)">
       <div class="card-body" style="font-size:12px;color:var(--blue);font-weight:700;line-height:1.6">
-        📅 Add recurring bills here. They'll show as upcoming reminders and you can log them with one tap when they're due.
+        📅 Recurring bills and reminders
       </div>
     </div>
     <div class="sh"><div class="sh-title">Due Soon</div></div>
-    <div id="scheduledDue"><div class="empty"><p>Add recurring bills to measure the next 7 days.</p></div></div>
+    <div id="scheduledDue"><div class="empty"><p>Upcoming not measured.</p></div></div>
     <div class="sh" style="margin-top:8px"><div class="sh-title">All Scheduled</div></div>
-    <div id="scheduledList"><div class="empty"><div class="ei">🔁</div><p>No scheduled transactions.<br>Tap + to add a recurring bill.</p></div></div>
+    <div id="scheduledList"><div class="empty"><div class="ei">🔁</div><p>No scheduled transactions.</p></div></div>
   </div>
 
   <!-- REPORTS -->
@@ -1056,22 +1056,22 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
   <!-- SETTINGS -->
   <div class="view" id="view-settings">
-    <div class="sh"><div><div class="sh-title">Settings</div><div class="sh-sub">Powerful protection, organized into simple sections</div></div></div>
+    <div class="sh"><div><div class="sh-title">Settings</div></div></div>
 
     <details class="settings-section" open>
-      <summary><span><span class="settings-section-title">Appearance & Paychecks</span><span class="settings-section-sub">How Ledger looks and plans around your income rhythm</span></span><span class="settings-chevron">⌄</span></summary>
+      <summary><span><span class="settings-section-title">Appearance & Paychecks</span><span class="settings-section-sub">Display and planning options</span></span><span class="settings-chevron">⌄</span></summary>
       <div class="settings-section-body"><div class="card"><div class="card-body">
         <div class="set-row"><div><div class="set-lbl">Weekly Paycheck Mode</div><div class="set-sub">Shows per-paycheck envelope targets</div></div><div class="tog" id="weekTog" role="switch" aria-label="Weekly paycheck mode"></div></div>
-        <div class="set-row"><div><div class="set-lbl">Dark Mode</div><div class="set-sub">Switch between dark and light appearance</div></div><div class="tog" id="darkTog" role="switch" aria-label="Dark mode"></div></div>
-        <div class="set-row"><div><div class="set-lbl">Seasonal Accent</div><div class="set-sub" id="seasonStatus">A quiet accent that changes with the time of year</div></div><div class="tog" id="seasonTog" role="switch" aria-label="Seasonal accent"></div></div>
+        <div class="set-row"><div><div class="set-lbl">Dark Mode</div><div class="set-sub">Dark or light appearance</div></div><div class="tog" id="darkTog" role="switch" aria-label="Dark mode"></div></div>
+        <div class="set-row"><div><div class="set-lbl">Seasonal Accent</div><div class="set-sub" id="seasonStatus">Automatic seasonal color</div></div><div class="tog" id="seasonTog" role="switch" aria-label="Seasonal accent"></div></div>
       </div></div></div>
     </details>
 
     <details class="settings-section" open>
-      <summary><span><span class="settings-section-title">Protection & Sync</span><span class="settings-section-sub">Ledger health, device transfer, and your optional Drive copy</span></span><span class="settings-chevron">⌄</span></summary>
+      <summary><span><span class="settings-section-title">Protection & Sync</span><span class="settings-section-sub">Health, recovery, and Google Drive</span></span><span class="settings-chevron">⌄</span></summary>
       <div class="settings-section-body">
         <div class="atlas-health-hero">
-          <div class="atlas-health-hero-top"><div><div class="atlas-health-title" id="healthTitle">Checking Ledger…</div><div class="atlas-health-copy" id="healthCopy">Confirming that your data, recovery points, and change history agree.</div></div><div class="atlas-health-badge checking" id="ledgerHealthBadge">Checking</div></div>
+          <div class="atlas-health-hero-top"><div><div class="atlas-health-title" id="healthTitle">Checking Ledger…</div><div class="atlas-health-copy" id="healthCopy">Verifying data and recovery.</div></div><div class="atlas-health-badge checking" id="ledgerHealthBadge">Checking</div></div>
           <div class="atlas-health-grid">
             <div class="atlas-health-cell"><div class="atlas-health-cell-label">Data</div><div class="atlas-health-cell-value" id="healthData">Checking…</div></div>
             <div class="atlas-health-cell"><div class="atlas-health-cell-label">Recovery</div><div class="atlas-health-cell-value" id="healthRecovery">Checking…</div></div>
@@ -1083,13 +1083,13 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="card"><div class="card-body">
           <div class="set-row"><div><div class="set-lbl">This Device</div><div class="set-sub" id="deviceStatus">Creating a private device identity…</div></div><span class="set-status-icon">◉</span></div>
           <div class="set-row"><div><div class="set-lbl">Google Drive Protection</div><div class="set-sub" id="cloudStatus">Not connected. Tap Sync to add a protected Drive copy.</div></div><button class="sh-btn" id="cloudSyncBtn">Sync</button></div>
-          <div class="set-row"><div><div class="set-lbl">Move Ledger to a New Device</div><div class="set-sub">Creates one verified transfer file containing your full Ledger.</div></div><button class="sh-btn" id="transferExportBtn">Create</button></div>
-          <div class="set-row"><div><div class="set-lbl">Restore on This Device</div><div class="set-sub">Preview a transfer or backup before anything is replaced.</div></div><button class="sh-btn" id="transferImportBtn">Restore</button><input type="file" id="transferImportFile" accept=".json,application/json" style="display:none"></div>
+          <div class="set-row"><div><div class="set-lbl">Move Ledger to a New Device</div><div class="set-sub">Verified transfer file</div></div><button class="sh-btn" id="transferExportBtn">Create</button></div>
+          <div class="set-row"><div><div class="set-lbl">Restore on This Device</div><div class="set-sub">Preview before replacing data</div></div><button class="sh-btn" id="transferImportBtn">Restore</button><input type="file" id="transferImportFile" accept=".json,application/json" style="display:none"></div>
           <div class="set-row"><div><div class="set-lbl">Change History</div><div class="set-sub" id="revisionStatus">Preparing protected history…</div></div><span class="set-status-icon">✓</span></div>
           <button class="soft-link" id="techDetailsBtn" aria-expanded="false">Show technical details</button>
           <div class="tech-details" id="techDetails">
             <div class="set-row"><div><div class="set-lbl">Cloud Connection</div><div class="set-sub" id="syncReadinessStatus">Not connected yet. Your budget stays on this device.</div></div><span class="set-status-icon">○</span></div>
-            <div class="set-row"><div><div class="set-lbl">Sync Diagnostic</div><div class="set-sub">Creates a private technical file for troubleshooting. It does not change your budget.</div></div><button class="sh-btn" id="syncPackageBtn">Create</button></div>
+            <div class="set-row"><div><div class="set-lbl">Sync Diagnostic</div><div class="set-sub">Private troubleshooting file</div></div><button class="sh-btn" id="syncPackageBtn">Create</button></div>
           </div>
         </div></div>
         <div class="settings-subhead">Recent Activity</div>
@@ -1098,43 +1098,43 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     </details>
 
     <details class="settings-section">
-      <summary><span><span class="settings-section-title">Backup & Recovery</span><span class="settings-section-sub">Save points, phone backups, restore, and reset tools</span></span><span class="settings-chevron">⌄</span></summary>
+      <summary><span><span class="settings-section-title">Backup & Recovery</span><span class="settings-section-sub">Save, restore, and reset</span></span><span class="settings-chevron">⌄</span></summary>
       <div class="settings-section-body"><div class="card"><div class="card-body">
         <div class="set-row"><div><div class="set-lbl">Ledger Database</div><div class="set-sub" id="storageStatus">Preparing protected storage…</div></div><span style="font-size:18px">✓</span></div>
         <div class="set-row"><div><div class="set-lbl">Automatic Recovery</div><div class="set-sub" id="snapshotStatus">Checking recovery points…</div></div><button class="sh-btn" id="snapshotBtn">Save Point</button></div>
-        <div class="set-row"><div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake without replacing your separate backup.</div></div><button class="sh-btn" id="restoreSnapshotBtn">Restore</button></div>
-        <div class="set-row"><div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Downloads a verified backup file you control.</div></div><button class="sh-btn" id="exportBtn">Save</button></div>
-        <div class="set-row"><div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Previews and verifies a Ledger backup before restoring it.</div></div><button class="sh-btn" id="importBtn">Restore</button><input type="file" id="importFile" accept=".json,application/json" style="display:none"></div>
-        <div class="set-row"><div><div class="set-lbl">Reset This Month</div><div class="set-sub">Clear this month’s expenses while keeping envelopes and assignments.</div></div><button class="sh-btn danger-action" id="resetMonthBtn">Reset</button></div>
-        <div class="set-row"><div><div class="set-lbl">Clear All Data</div><div class="set-sub">Full factory reset. Use only when starting over.</div></div><button class="sh-btn danger-action" id="clearBtn">Clear</button></div>
+        <div class="set-row"><div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake</div></div><button class="sh-btn" id="restoreSnapshotBtn">Restore</button></div>
+        <div class="set-row"><div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Verified backup file</div></div><button class="sh-btn" id="exportBtn">Save</button></div>
+        <div class="set-row"><div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Preview and verify first</div></div><button class="sh-btn" id="importBtn">Restore</button><input type="file" id="importFile" accept=".json,application/json" style="display:none"></div>
+        <div class="set-row"><div><div class="set-lbl">Reset This Month</div><div class="set-sub">Keep envelopes and assignments</div></div><button class="sh-btn danger-action" id="resetMonthBtn">Reset</button></div>
+        <div class="set-row"><div><div class="set-lbl">Clear All Data</div><div class="set-sub">Factory reset</div></div><button class="sh-btn danger-action" id="clearBtn">Clear</button></div>
       </div></div></div>
     </details>
 
     <details class="settings-section">
-      <summary><span><span class="settings-section-title">Month Rollover</span><span class="settings-section-sub">Carry funded envelope balances forward and prepare the next month</span></span><span class="settings-chevron">⌄</span></summary>
+      <summary><span><span class="settings-section-title">Month Rollover</span><span class="settings-section-sub">Carry-forward details</span></span><span class="settings-chevron">⌄</span></summary>
       <div class="settings-section-body"><div class="card"><div class="card-body">
         <div class="set-row"><div><div class="set-lbl">Last Rollover</div><div class="set-sub" id="lastRolloverDate">Never — happens automatically at month end</div></div></div>
         <div class="set-row"><div><div class="set-lbl">Envelope Carry-Forward</div><div class="set-sub">Funded balances that remain available next month</div></div></div>
         <div id="savingsRolloverList" style="margin-top:4px"></div>
-        <div class="set-row"><div><div class="set-lbl">Simulate Rollover</div><div class="set-sub">Test the rollover now without waiting for month end</div></div><button class="sh-btn rollover-action" id="manualRolloverBtn">Roll Over</button></div>
+        <div class="set-row"><div><div class="set-lbl">Simulate Rollover</div><div class="set-sub">Preview month-end behavior</div></div><button class="sh-btn rollover-action" id="manualRolloverBtn">Roll Over</button></div>
       </div></div></div>
     </details>
 
     <details class="settings-section">
-      <summary><span><span class="settings-section-title">Guide & About</span><span class="settings-section-sub">The budgeting method, terminology, privacy, and version notes</span></span><span class="settings-chevron">⌄</span></summary>
+      <summary><span><span class="settings-section-title">Guide & About</span><span class="settings-section-sub">Method, privacy, and version</span></span><span class="settings-chevron">⌄</span></summary>
       <div class="settings-section-body">
         <div class="card"><div class="card-body">
-          <div class="guide-rule"><div class="guide-title">1. Read Budget Health</div><div class="guide-copy">Excellent means no action is waiting. Good means you are safe but still have a task. Caution deserves attention soon. Action required should be handled first.</div></div>
-          <div class="guide-rule"><div class="guide-title">2. Follow Today’s Priority</div><div class="guide-copy">Ledger places the highest-impact item first. Resolve red before yellow, then finish ordinary funding work.</div></div>
-          <div class="guide-rule"><div class="guide-title">3. Bring Ready to Assign to $0</div><div class="guide-copy">A positive amount is not extra spending money until you intentionally assign it. A negative amount means the plan exceeds the money available.</div></div>
-          <div class="guide-rule"><div class="guide-title">4. Log spending promptly</div><div class="guide-copy">Ledger can only be trustworthy when purchases, payments, and income are recorded.</div></div>
-          <div class="guide-rule"><div class="guide-title">5. Check the envelope before buying</div><div class="guide-copy">Your plan is the full budget. Each envelope holds the money for one job. Use Can I afford this? for a quick answer—the envelope balance, not the checking balance, controls the decision.</div></div>
+          <div class="guide-rule"><div class="guide-title">Budget health</div><div class="guide-copy">Red first, then yellow.</div></div>
+          <div class="guide-rule"><div class="guide-title">Today’s priority</div><div class="guide-copy">The highest-impact item appears first.</div></div>
+          <div class="guide-rule"><div class="guide-title">Ready to Assign</div><div class="guide-copy">Positive is unassigned; negative is overassigned.</div></div>
+          <div class="guide-rule"><div class="guide-title">Transactions</div><div class="guide-copy">Current records keep the plan accurate.</div></div>
+          <div class="guide-rule"><div class="guide-title">Envelope balance</div><div class="guide-copy">The spending decision—not the checking balance.</div></div>
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v2.2.1 — Clear Boundaries</div><div class="set-sub">A calm zero-based budgeting companion that helps you decide, understand, prepare, and recover.</div></div></div>
-          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Separated your budget, reimbursements, and custodial funds; added safe Bank ↔ Cash transfers; corrected month rollover so funded envelopes carry forward; and restored the circle app icon.</div></div></div>
-          <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">Your budget remains on this device unless you deliberately connect Google Drive or create a backup.</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v3.0.0 — Monthly Planning</div><div class="set-sub">Zero-based planning across months and accounts</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Monthly history, registers, reconciliation, card payments, loan planning, and reports</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">On-device unless Drive or backup is used</div></div></div>
         </div></div>
       </div>
     </details>
@@ -1713,9 +1713,9 @@ function updateSyncStatus() {
     var deviceEl=document.getElementById('deviceStatus');
     var revisionEl=document.getElementById('revisionStatus');
     var readinessEl=document.getElementById('syncReadinessStatus');
-    if(deviceEl) deviceEl.textContent='Device ' + shortDeviceId() + ' · kept separate from other devices';
-    if(revisionEl) revisionEl.textContent=ledgerRevision ? 'Revision ' + ledgerRevision + ' · meaningful changes recorded automatically' : 'Protected change history is ready';
-    if(readinessEl) readinessEl.textContent=ledgerCloud.enabled?(ledgerCloud.lastSyncedAt?'Drive protection available · last synced '+friendlyTime(ledgerCloud.lastSyncedAt):'Tap Sync to create your protected Drive copy'):'Not connected yet. Ledger remains fully usable on this device.';
+    if(deviceEl) deviceEl.textContent='Device ' + shortDeviceId() + ' · local copy';
+    if(revisionEl) revisionEl.textContent=ledgerRevision ? 'Revision ' + ledgerRevision + ' · changes recorded' : 'Change history ready';
+    if(readinessEl) readinessEl.textContent=ledgerCloud.enabled?(ledgerCloud.lastSyncedAt?'Protected · synced '+friendlyTime(ledgerCloud.lastSyncedAt):'Drive ready'):'Not connected';
   },0);
 }
 
@@ -2427,7 +2427,7 @@ function renderIncome() {
   if (chevron) chevron.textContent = S.incomeCollapsed ? '▶' : '▼';
 
   var el = document.getElementById('incomeList');
-  if (!S.income.length) { el.innerHTML = '<div class="empty"><p>Add income to begin.</p></div>'; updateRTA(); return; }
+  if (!S.income.length) { el.innerHTML = '<div class="empty"><p>No income recorded.</p></div>'; updateRTA(); return; }
 
   var sorted = S.income.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   el.innerHTML = '';
@@ -2503,7 +2503,7 @@ function renderEnvelopes() {
   var el = document.getElementById('envList');
   var groups = sortedGroups();
   if (!groups.length) {
-    el.innerHTML = '<div class="empty"><div class="ei">✉️</div><p>Add a group to start budgeting.</p></div>';
+    el.innerHTML = '<div class="empty"><div class="ei">✉️</div><p>No budget groups.</p></div>';
     updateRTA(); return;
   }
   el.innerHTML = groups.map(function(g) {
@@ -2880,7 +2880,7 @@ function saveCCPayment() {
 function renderCCTab() {
   var el = document.getElementById('ccList');
   if (!S.creditCards.length) {
-    el.innerHTML = '<div class="empty"><div class="ei">💳</div><p>No credit cards added.<br>Add one to track spending automatically.</p></div>';
+    el.innerHTML = '<div class="empty"><div class="ei">💳</div><p>No credit cards.</p></div>';
     document.getElementById('ccTotalDebt').textContent = '$0';
     return;
   }
@@ -3120,39 +3120,39 @@ function setCompassMetric(id,value,sub,level,pct){
 }
 function compassLesson(rta,week,month,age,emergency){
   var overspent=S.envelopes.find(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
-  if(rta<-.005)return {title:'A plan cannot spend the same dollar twice',copy:'Your assignments exceed the money available by '+fmt(Math.abs(rta))+'. Move money out of a lower-priority envelope before making new spending decisions.'};
-  if(overspent)return {title:'Cover overspending deliberately',copy:overspent.name+' is below zero. Moving money from another envelope is not failure—it is an honest update to the plan.'};
-  if(rta>.005)return {title:'Unassigned money is still a decision',copy:fmt(rta)+' is available but has no job yet. '+(week.hasData?'Fund near-term bills first, then choose debt, goals, or next month on purpose.':'Add recurring bills to identify near-term commitments, then choose debt, goals, or next month on purpose.')};
-  if(!week.hasData)return {title:'Planning ahead starts with what repeats',copy:'Add rent, phone, minimum payments, and other recurring bills under Upcoming. Ledger can only measure future coverage from commitments you have recorded.'};
-  if(week.short>.005)return {title:'Near-term certainty creates breathing room',copy:'Scheduled bills in the next seven days are short by '+fmt(week.short)+'. Funding them before optional spending protects the rest of your plan.'};
+  if(rta<-.005)return {title:'Plan overassigned',copy:fmt(Math.abs(rta))+' must be removed from assignments.'};
+  if(overspent)return {title:'Overspending',copy:overspent.name+' is '+fmt(Math.abs(envAvailable(overspent.id)))+' below zero.'};
+  if(rta>.005)return {title:'Money unassigned',copy:fmt(rta)+' is still Ready to Assign.'};
+  if(!week.hasData)return {title:'Upcoming not measured',copy:'No recurring bills are scheduled.'};
+  if(week.short>.005)return {title:'Next 7 days underfunded',copy:fmt(week.short)+' is still needed.'};
   var card=S.creditCards.find(function(c){return (Number(c.balance)||0)>0 && (Number(c.apr)||0)>0;});
-  if(card){var daily=(Number(card.balance)||0)*(Number(card.apr)||0)/100/365;return {title:'High-interest debt charges for time',copy:card.name+' is costing roughly '+fmt(daily)+' per day at the current balance. A funded minimum prevents damage; extra principal reduces tomorrow’s interest.'};}
-  if(month.pct<100)return {title:'Planning ahead turns income into time',copy:'Your next 30 days of scheduled bills are '+month.pct+'% funded. Each future bill you fund now gives your next paycheck more freedom.'};
-  if(age.days<30)return {title:'Age money by spending older dollars',copy:'A 30-day buffer means today’s income is not needed for today’s expenses. Keep current bills funded, then assign extra money toward next month instead of expanding spending.'};
-  if(!emergency.found)return {title:'Independence needs a shock absorber',copy:'Add an emergency-fund goal when you are ready. It keeps an unexpected expense from becoming new high-interest debt.'};
-  if(emergency.pct<100)return {title:'Consistency matters more than dramatic deposits',copy:emergency.name+' is '+emergency.pct+'% complete. A repeatable contribution builds independence more reliably than waiting for a perfect month.'};
-  return {title:'You are buying future choices',copy:'Your plan is current, scheduled commitments are covered, and your buffer is established. Keep logging spending accurately and direct new money toward the life you want.'};
+  if(card){var daily=(Number(card.balance)||0)*(Number(card.apr)||0)/100/365;return {title:'Card interest',copy:card.name+' costs about '+fmt(daily)+' per day.'};}
+  if(month.pct<100)return {title:'30-day coverage',copy:month.pct+'% of scheduled bills is funded.'};
+  if(age.days<30)return {title:'Money age',copy:age.days+' of 30 buffer days reached.'};
+  if(!emergency.found)return {title:'Emergency fund',copy:'No emergency-fund goal is recorded.'};
+  if(emergency.pct<100)return {title:emergency.name,copy:emergency.pct+'% complete.'};
+  return {title:'Plan on track',copy:'Commitments and buffer are covered.'};
 }
 function renderFinancialCompass(){
   var rta=readyToAssign(),week=planCoverage(7),month=planCoverage(30),age=moneyAgeDetails(),emergency=emergencyFundProgress();
   var headline=document.getElementById('compassHeadline'),copy=document.getElementById('compassCopy');
   var overspent=S.envelopes.some(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
   if(headline&&copy){
-    if(rta<-.005||overspent){headline.textContent='Start by restoring the plan';copy.textContent='One clear correction now will make the rest of Ledger trustworthy again.';}
-    else if(rta>.005){headline.textContent='Your money is waiting for direction';copy.textContent=week.hasData?'Finish the plan by assigning every available dollar intentionally.':'Assign every available dollar intentionally, and add recurring bills so Ledger can measure what comes next.';}
-    else if(!week.hasData){headline.textContent='Complete your planning picture';copy.textContent='Your assignments are visible. Add recurring bills so Ledger can measure how far ahead you are.';}
-    else if(week.short>.005){headline.textContent='Protect the next seven days';copy.textContent='Your plan balances, but a near-term scheduled bill still needs funding.';}
-    else if(month.pct<100){headline.textContent='You are stable and building ahead';copy.textContent='This month is organized. The next step is creating more distance between earning and spending.';}
-    else if(age.days<30){headline.textContent='Your buffer is taking shape';copy.textContent='Scheduled commitments are covered. Keep directing extra money toward future months.';}
-    else {headline.textContent='You are operating from a position of control';copy.textContent='Your plan is current, commitments are covered, and older money is doing today’s work.';}
+    if(rta<-.005||overspent){headline.textContent='Plan needs attention';copy.textContent='Overassigned or overspent.';}
+    else if(rta>.005){headline.textContent='Money is unassigned';copy.textContent=fmt(rta)+' Ready to Assign.';}
+    else if(!week.hasData){headline.textContent='Upcoming not measured';copy.textContent='No recurring bills recorded.';}
+    else if(week.short>.005){headline.textContent='Next 7 days underfunded';copy.textContent=fmt(week.short)+' still needed.';}
+    else if(month.pct<100){headline.textContent='Current month is stable';copy.textContent=month.pct+'% of the next 30 days funded.';}
+    else if(age.days<30){headline.textContent='Building your buffer';copy.textContent=age.days+' days of money age.';}
+    else {headline.textContent='Plan on track';copy.textContent='Assignments and commitments are covered.';}
   }
   var rtaLevel=rta<-.005?'bad':rta>.005?'warn':'good';
   var rtaValue=rta<-.005?fmt(Math.abs(rta))+' over':rta>.005?fmt(rta)+' waiting':'Complete';
-  setCompassMetric('compassRta',rtaValue,rta<-.005?'Reduce assignments':rta>.005?'Give it a job':'Every dollar is assigned',rtaLevel,rta<-.005?0:rta>.005?70:100);
+  setCompassMetric('compassRta',rtaValue,rta<-.005?'Overassigned':rta>.005?'Unassigned':'Fully assigned',rtaLevel,rta<-.005?0:rta>.005?70:100);
   var weekValue=week.hasData?week.pct+'%':'Not set';
-  setCompassMetric('compassWeek',weekValue,week.hasData?(week.short>.005?fmt(week.short)+' still needed':fmt(week.total)+' fully funded'):'Add recurring bills to measure',''+(week.hasData?(week.short>.005?'warn':'good'):''),week.hasData?week.pct:0);
+  setCompassMetric('compassWeek',weekValue,week.hasData?(week.short>.005?fmt(week.short)+' still needed':fmt(week.total)+' fully funded'):'No recurring bills',''+(week.hasData?(week.short>.005?'warn':'good'):''),week.hasData?week.pct:0);
   var monthValue=month.hasData?month.pct+'%':'Not set';
-  setCompassMetric('compassMonth',monthValue,month.hasData?(month.short>.005?fmt(month.short)+' left to fund':fmt(month.total)+' fully funded'):'Add recurring bills to measure',month.hasData?(month.pct<75?'bad':month.pct<100?'warn':'good'):'',month.hasData?month.pct:0);
+  setCompassMetric('compassMonth',monthValue,month.hasData?(month.short>.005?fmt(month.short)+' left to fund':fmt(month.total)+' fully funded'):'No recurring bills',month.hasData?(month.pct<75?'bad':month.pct<100?'warn':'good'):'',month.hasData?month.pct:0);
   var ageValue=age.amount>0?age.days+' day'+(age.days===1?'':'s'):'Building';
   var ageSub=age.basis==='recent spending'?'Based on '+age.sampleCount+' recent cash outflow'+(age.sampleCount===1?'':'s'):age.basis==='money on hand'?'Average age of money still on hand':'Add income and spending to begin';
   setCompassMetric('compassAge',ageValue,ageSub,age.days>=30?'good':age.days>=14?'warn':'',Math.min(100,age.days/30*100));
@@ -3163,18 +3163,18 @@ function renderFinancialCompass(){
   var path=document.getElementById('independencePath');
   if(path){
     var steps=[];
-    steps.push({done:Math.abs(rta)<.005&&!overspent,name:'Keep the plan honest',note:Math.abs(rta)<.005&&!overspent?'Every available dollar has one job and no envelope is overspent.':rta>.005?fmt(rta)+' still needs a job.':'Resolve overassignment or overspending first.'});
-    steps.push({done:week.hasData&&week.short<.005,name:'Protect the next seven days',note:week.hasData?(week.short<.005?'Near-term scheduled bills are funded.':fmt(week.short)+' still needs funding.'):'Add recurring bills so Ledger can measure this.'});
-    steps.push({done:month.hasData&&month.pct>=100,name:'Build a 30-day runway',note:month.hasData?(month.pct+'% of scheduled bills in the next 30 days are funded.'):'Add recurring bills so Ledger can measure the runway.'});
-    steps.push({done:age.days>=30,name:'Age your money to 30 days',note:age.days>=30?'Older income is covering current spending.':age.amount>0?'Current estimate: '+age.days+' days. Keep funding future months.':'Ledger needs more transaction history to measure this.'});
-    steps.push({done:emergency.found&&emergency.target>0&&emergency.pct>=100,name:'Build an emergency fund',note:!emergency.found?'Add a clearly named Emergency Fund goal.':emergency.target>0?emergency.pct+'% complete · '+fmt(Math.max(0,emergency.target-emergency.saved))+' remaining.':'Set a target amount for '+emergency.name+'.'});
+    steps.push({done:Math.abs(rta)<.005&&!overspent,name:'Plan integrity',note:Math.abs(rta)<.005&&!overspent?'Fully assigned · no overspending':rta>.005?fmt(rta)+' unassigned':'Overassigned or overspent'});
+    steps.push({done:week.hasData&&week.short<.005,name:'7-day coverage',note:week.hasData?(week.short<.005?'Scheduled bills funded':fmt(week.short)+' still needed'):'No recurring bills'});
+    steps.push({done:month.hasData&&month.pct>=100,name:'30-day coverage',note:month.hasData?month.pct+'% funded':'No recurring bills'});
+    steps.push({done:age.days>=30,name:'Money age',note:age.amount>0?age.days+' days':'Not enough history'});
+    steps.push({done:emergency.found&&emergency.target>0&&emergency.pct>=100,name:'Emergency fund',note:!emergency.found?'No goal recorded':emergency.target>0?emergency.pct+'% complete · '+fmt(Math.max(0,emergency.target-emergency.saved))+' remaining':'No target amount'});
     var firstOpen=steps.findIndex(function(x){return !x.done;});
     path.innerHTML=steps.map(function(x,i){var cls=x.done?'done':i===firstOpen?'next':'';return '<div class="path-row"><div class="path-mark '+cls+'">'+(x.done?'✓':i===firstOpen?'→':'○')+'</div><div class="path-copy"><div class="path-name">'+esc(x.name)+'</div><div class="path-note">'+esc(x.note)+'</div></div></div>';}).join('');
   }
 
   var goals=document.getElementById('compassGoals'),items=compassGoalItems();
   if(goals){
-    if(!items.length)goals.innerHTML='<div class="compass-empty">Create a savings goal for Dental, Emergency Fund, Christmas, or another priority you want your money to support.</div>';
+    if(!items.length)goals.innerHTML='<div class="compass-empty">No savings goals.</div>';
     else goals.innerHTML=items.slice(0,4).map(function(g){var pct=g.target>0?Math.min(100,Math.round(g.saved/g.target*100)):0,remaining=Math.max(0,g.target-g.saved);return '<div class="goal-compass-row"><div class="goal-compass-top"><div class="goal-compass-name">'+esc(g.name)+'</div><div class="goal-compass-number">'+fmt(g.saved)+' / '+fmt(g.target)+'</div></div><div class="compass-track"><div class="compass-fill" style="width:'+pct+'%"></div></div><div class="goal-compass-meta">'+(g.source==='envelope'?'Savings envelope · ':'Tracked goal · ')+(g.target>0?pct+'% complete · '+fmt(remaining)+' remaining':'Set a target to measure progress')+'</div></div>';}).join('');
   }
 }
@@ -3189,8 +3189,8 @@ function renderReviewLanes(){
   if(spending)spending.textContent=fmt(totalSpent());
   if(spendingSub)spendingSub.textContent='Spent this month · '+fmt(totalAvailable())+' available';
   var future=document.getElementById('reviewFutureValue'),futureSub=document.getElementById('reviewFutureSub');
-  if(future)future.textContent=week.hasData?week.pct+'% funded':'Add recurring bills';
-  if(futureSub)futureSub.textContent=week.hasData?(month.pct+'% of the next 30 days funded'):'Ledger needs your repeating commitments';
+  if(future)future.textContent=week.hasData?week.pct+'% funded':'Not measured';
+  if(futureSub)futureSub.textContent=week.hasData?(month.pct+'% of the next 30 days funded'):'No recurring bills';
   var ledger=document.getElementById('reviewLedgerValue'),ledgerSub=document.getElementById('reviewLedgerSub');
   if(ledger)ledger.textContent=ledgerDb?'Protected':'Compatibility mode';
   if(ledgerSub)ledgerSub.textContent=ledgerCloud.lastSyncedAt?'Drive synced '+friendlyTime(ledgerCloud.lastSyncedAt):'Recovery points available on this device';
@@ -3282,7 +3282,7 @@ function sortedCustodyTransactions(accountId){return (S.custodialTransactions||[
 function renderCustody(){
   var totalEl=document.getElementById('custodyTotal');if(totalEl)totalEl.textContent=fmt(custodialBalanceTotal());
   var host=document.getElementById('custodyAccounts');if(!host)return;
-  if(!(S.custodialAccounts||[]).length){host.innerHTML='<div class="custody-empty"><strong>No custodial funds yet</strong>Add a person or fund when money is entrusted to you. It will stay outside your personal budget.</div>';}
+  if(!(S.custodialAccounts||[]).length){host.innerHTML='<div class="custody-empty"><strong>No custodial funds</strong>Entrusted money stays outside your personal budget.</div>';}
   else host.innerHTML=S.custodialAccounts.map(function(a){
     var bal=custodyAccountBalance(a.id),txns=sortedCustodyTransactions(a.id);
     var history=txns.length?txns.map(function(t){var incoming=t.direction!=='out';var action=t.embeddedInOpening?'<span style="font-size:9px;color:var(--text3);font-weight:800">Protected</span>':'<button class="custody-row-delete" onclick="deleteCustodyTransaction(\''+t.id+'\')" aria-label="Delete custodial entry">×</button>';return '<div class="custody-row"><div class="custody-row-sign '+(incoming?'in':'out')+'">'+(incoming?'+':'−')+'</div><div class="custody-row-copy"><div class="custody-row-title">'+esc(t.desc|| (incoming?'Money received':'Money used'))+'</div><div class="custody-row-sub">'+esc(t.date||'')+' · '+esc(t.affectsCash===false?'Already in Ledger':custodyLocationLabel(t.location))+'</div></div><div class="custody-row-amount '+(incoming?'in':'out')+'">'+(incoming?'+':'−')+fmt(t.amount||0)+'</div>'+action+'</div>';}).join(''):'<div class="activity-empty" style="padding:14px 0">No activity yet.</div>';
@@ -3312,7 +3312,7 @@ function renderTransfers(){var el=document.getElementById('transferList');if(!el
 function renderGoals() {
   var el=document.getElementById('goalList'), items=compassGoalItems();
   if(!items.length){
-    el.innerHTML='<div class="guided-empty"><div class="guided-empty-icon">🎯</div><div class="guided-empty-title">Save with a clear purpose</div><div class="guided-empty-copy">A Ledger goal is a savings envelope, so the progress shown here is backed by real money in your plan.</div><div class="guided-actions"><button class="guided-action" onclick="quickGoal(\'Emergency Fund\',7000)">Emergency Fund</button><button class="guided-action" onclick="quickGoal(\'Dental Work\',5000)">Dental Work</button><button class="guided-action" onclick="quickGoal(\'Christmas\',300)">Christmas</button></div></div>';
+    el.innerHTML='<div class="guided-empty"><div class="guided-empty-icon">🎯</div><div class="guided-empty-title">No savings goals</div><div class="guided-empty-copy">Optional presets</div><div class="guided-actions"><button class="guided-action" onclick="quickGoal(\'Emergency Fund\',7000)">Emergency Fund</button><button class="guided-action" onclick="quickGoal(\'Dental Work\',5000)">Dental Work</button><button class="guided-action" onclick="quickGoal(\'Christmas\',300)">Christmas</button></div></div>';
     return;
   }
   el.innerHTML=items.map(function(g){
@@ -3361,13 +3361,13 @@ function renderDebts() {
   var overview=document.getElementById('loanOverview'),baseInterest=0,fastInterest=0,baseMonths=0,fastMonths=0,allPossible=true,hasExtra=false;
   S.debts.forEach(function(d){var base=loanProjection(d.balance,d.rate,d.minPayment),fast=loanProjection(d.balance,d.rate,(Number(d.minPayment)||0)+(Number(d.extraPayment)||0));if(!base.possible||!fast.possible){allPossible=false;return;}baseInterest+=base.interest;fastInterest+=fast.interest;baseMonths=Math.max(baseMonths,base.months);fastMonths=Math.max(fastMonths,fast.months);if(Number(d.extraPayment)>0)hasExtra=true;});
   if(overview){
-    if(!S.debts.length)overview.innerHTML='<div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">Add a loan to calculate its payoff date and the effect of extra monthly payments.</div>';
+    if(!S.debts.length)overview.innerHTML='<div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">No loans tracked</div>';
     else if(!allPossible)overview.innerHTML='<div class="loan-overview-title">Plan needs attention</div><div class="loan-overview-copy">At least one minimum payment does not cover its monthly interest. Increase that payment to produce a payoff date.</div>';
     else overview.innerHTML='<div class="loan-overview-title">'+(hasExtra?'Faster plan':'Minimum-payment plan')+'</div><div class="loan-overview-copy">'+(hasExtra?'<b>'+payoffDuration(Math.max(0,baseMonths-fastMonths))+'</b> sooner · <b>'+fmt(Math.max(0,baseInterest-fastInterest))+'</b> estimated interest saved. ':'')+'Loans finish by <b>'+payoffDate(hasExtra?fastMonths:baseMonths)+'</b> with about <b>'+fmt(hasExtra?fastInterest:baseInterest)+'</b> in remaining interest.</div>';
   }
   var el=document.getElementById('debtList');
   if(!S.debts.length){
-    el.innerHTML=cardBal>0?'<div class="guided-empty"><div class="guided-empty-icon">✓</div><div class="guided-empty-title">Your credit card is already included</div><div class="guided-empty-copy">Add only loans or other balances here. The total above already includes every card tracked in Ledger.</div></div>':'<div class="guided-empty"><div class="guided-empty-icon">🏦</div><div class="guided-empty-title">No debt is recorded</div><div class="guided-empty-copy">Credit cards will appear automatically. Use Other Debt for loans, payment plans, or balances outside the card system.</div></div>';
+    el.innerHTML=cardBal>0?'<div class="guided-empty"><div class="guided-empty-icon">✓</div><div class="guided-empty-title">Cards included above</div><div class="guided-empty-copy">No loans or other balances</div></div>':'<div class="guided-empty"><div class="guided-empty-icon">🏦</div><div class="guided-empty-title">No debt recorded</div></div>';
     return;
   }
   el.innerHTML=S.debts.map(function(d){
@@ -3390,7 +3390,7 @@ function delDebt(id) {var debt=S.debts.find(function(d){return d.id===id;});if(!
 function renderHistory() {
   var el = document.getElementById('histList');
   var all = S.expenses.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-  if (!all.length) { el.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">📅</div><div class="guided-empty-title">Your history begins with the next transaction</div><div class="guided-empty-copy">Consistent records turn today’s decisions into a useful financial story over time.</div><div class="guided-actions"><button class="guided-action" onclick="openExpModal()">Log an expense</button></div></div>'; return; }
+  if (!all.length) { el.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">📅</div><div class="guided-empty-title">No transaction history</div><div class="guided-actions"><button class="guided-action" onclick="openExpModal()">Log expense</button></div></div>'; return; }
   var groups = {};
   all.forEach(function(e) {
     var key = e.date.slice(0,7);
@@ -3492,14 +3492,13 @@ function renderToday() {
   var state=renderBudgetHealth(rta,upcoming);
   renderTodaySignals(rta,upcoming,state);
   var title=document.getElementById('todayFocusTitle'), note=document.getElementById('todayNote');
-  var focusTitle=S.scheduled.length?'Your plan is steady':'Complete your planning picture', focusCopy=S.scheduled.length?'Nothing needs your attention right now. Keep logging transactions so Ledger stays accurate.':'Add recurring bills so Ledger can confirm what needs attention during the next seven and thirty days.';
-  if(rta<0){focusTitle='Restore the plan first';focusCopy='Your plan is overassigned by '+fmt(Math.abs(rta))+'. Move money out of a lower-priority envelope before spending or assigning more.';}
-  else if(state.overspent.length){focusTitle='Cover one overspent envelope';focusCopy=state.overspent[0].name+' is overspent by '+fmt(Math.abs(envAvailable(state.overspent[0].id)))+'. Move money from a lower-priority envelope so the plan becomes trustworthy again.';}
-  else if(state.shortNear.length){var x=state.shortNear[0];focusTitle='Protect the next bill';focusCopy=x.s.desc+' is due '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+' and is not fully funded.';}
-  else if(state.cardShort){focusTitle='Fund the card minimum';focusCopy='Your credit-card minimum is not fully funded. Handle that before optional spending.';}
-  else if(rta>0.005 && state.under.length){focusTitle='Finish giving your money jobs';focusCopy=fmt(rta)+' is waiting for direction. Start with '+state.under[0].env.name+', then choose debt, a goal, or next month.';}
-  else if(rta>0.005){focusTitle='Your regular targets are funded';focusCopy=S.scheduled.length?'The remaining '+fmt(rta)+' is waiting for a deliberate purpose: debt, a goal, or next month.':fmt(rta)+' remains unassigned. Add recurring bills to confirm the next seven days, then choose debt, goals, or next month.';}
-  else if(state.under.length){focusTitle='Complete one monthly target';focusCopy=state.under[0].env.name+' still needs '+fmt(state.under[0].needed)+'. Your plan is stable, but not finished.';}
+  var focusTitle=S.scheduled.length?'Plan steady':'Upcoming not measured', focusCopy=S.scheduled.length?'No immediate action.':'No recurring bills recorded.';
+  if(rta<0){focusTitle='Plan overassigned';focusCopy=fmt(Math.abs(rta))+' over.';}
+  else if(state.overspent.length){focusTitle='Envelope overspent';focusCopy=state.overspent[0].name+' · '+fmt(Math.abs(envAvailable(state.overspent[0].id)))+' over.';}
+  else if(state.shortNear.length){var x=state.shortNear[0];focusTitle='Upcoming bill underfunded';focusCopy=x.s.desc+' · '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+'.';}
+  else if(state.cardShort){focusTitle='Card payment short';focusCopy='Minimum payment is not fully funded.';}
+  else if(rta>0.005){focusTitle='Money is unassigned';focusCopy=fmt(rta)+' Ready to Assign.';}
+  else if(state.under.length){focusTitle='Target underfunded';focusCopy=state.under[0].env.name+' · '+fmt(state.under[0].needed)+' needed.';}
   if(title) title.textContent=focusTitle;
   if(note) note.textContent=focusCopy;
 
@@ -3518,31 +3517,31 @@ function renderDailyPlan(rta,upcoming){
   var uv=document.getElementById('planUpcomingValue'),us=document.getElementById('planUpcomingSub');
   if(upcoming.length){var first=upcoming[0];if(uv)uv.textContent=first.days<=0?'Today':first.days===1?'Tomorrow':'In '+first.days+' days';if(us)us.textContent=first.s.desc+' · '+fmt(first.s.amount);}
   else if(S.scheduled.length){if(uv)uv.textContent='Clear';if(us)us.textContent='Nothing due this week';}
-  else {if(uv)uv.textContent='Not measured';if(us)us.textContent='Add recurring bills';}
+  else {if(uv)uv.textContent='Not measured';if(us)us.textContent='No recurring bills';}
   var goals=compassGoalItems(), goal=goals.find(function(g){return /emergency|dental/i.test(g.name);})||goals[0];
   var pv=document.getElementById('planProgressValue'),ps=document.getElementById('planProgressSub');
   if(goal){var pct=goal.target>0?Math.min(100,Math.round(goal.saved/goal.target*100)):0;if(pv)pv.textContent=pct+'%';if(ps)ps.textContent=goal.name+' · '+fmt(goal.saved);}
-  else {if(pv)pv.textContent='Start';if(ps)ps.textContent='Create a savings goal';}
+  else {if(pv)pv.textContent='Not set';if(ps)ps.textContent='No savings goals';}
 }
 
 function priorityHtml(icon,name,note,amount){return '<div class="priority-row"><div class="priority-icon">'+icon+'</div><div class="priority-copy"><div class="priority-name">'+esc(name)+'</div><div class="priority-note">'+esc(note)+'</div></div>'+(amount?'<div class="priority-amt">'+esc(amount)+'</div>':'')+'</div>';}
 function renderTodayPriorities(upcoming){
   var el=document.getElementById('todayPriorities'); if(!el)return;
   var rows=[], rta=readyToAssign();
-  if(rta<0) rows.push(priorityHtml('!','Fix overassignment','Move money out of a lower priority envelope.',fmt(Math.abs(rta))));
-  else if(rta>0.005) rows.push(priorityHtml('◎','Assign available money','Giving every dollar a job makes the plan easier to protect.',fmt(rta)));
+  if(rta<0) rows.push(priorityHtml('!','Overassigned','Reduce assignments by '+fmt(Math.abs(rta))+'.',fmt(Math.abs(rta))));
+  else if(rta>0.005) rows.push(priorityHtml('◎','Ready to Assign','Unassigned money.',fmt(rta)));
   upcoming.slice(0,2).forEach(function(x){
     var env=S.envelopes.find(function(e){return e.id===x.s.envId;}), av=env?envAvailable(env.id):0;
     var when=x.days<0?Math.abs(x.days)+' days overdue':x.days===0?'Due today':x.days===1?'Due tomorrow':'Due in '+x.days+' days';
     rows.push(priorityHtml(env?env.emoji:'↗',x.s.desc,when+(av+0.005<x.s.amount?' · envelope is short':' · funded'),fmt(x.s.amount)));
   });
   var card=S.creditCards.find(function(c){return (c.balance||0)>0;});
-  if(card){var pe=ccPaymentEnv(card.id), ready=pe?envAvailable(pe.id):0, daily=card.apr?(card.balance||0)*(card.apr/100)/365:0, required=cardRequiredPayment(card);if(ready+0.005<required) rows.push(priorityHtml('◇','Fund your card payment','The required payment is '+fmt(required)+'. High-interest debt should not be invisible.',fmt(ready)+' ready'));else rows.push(priorityHtml('◇','Card payment is ready',(daily>0?'Interest is about '+fmt(daily)+' per day. ':'')+'Current balance: '+fmt(card.balance||0)+'.',fmt(ready)+' ready'));}
+  if(card){var pe=ccPaymentEnv(card.id), ready=pe?envAvailable(pe.id):0, daily=card.apr?(card.balance||0)*(card.apr/100)/365:0, required=cardRequiredPayment(card);if(ready+0.005<required) rows.push(priorityHtml('◇','Card payment short',fmt(required-ready)+' still needed.',fmt(ready)+' ready'));else rows.push(priorityHtml('◇','Card payment ready',(daily>0?fmt(daily)+'/day interest · ':'')+fmt(card.balance||0)+' balance',fmt(ready)+' ready'));}
   var under=regularUnderfunded();
-  under.slice(0,Math.max(0,4-rows.length)).forEach(function(x){rows.push(priorityHtml(x.env.emoji||'○',x.env.name,'Target still needs funding.',fmt(x.needed)));});
+  under.slice(0,Math.max(0,4-rows.length)).forEach(function(x){rows.push(priorityHtml(x.env.emoji||'○',x.env.name,'Underfunded.',fmt(x.needed)));});
   if(!rows.length){
-    if(!S.scheduled.length) rows.push(priorityHtml('↗','Set up upcoming bills','Add recurring commitments so Ledger can confirm the next seven and thirty days.',''));
-    else rows.push(priorityHtml('✓','Nothing needs attention','Your plan is current. Log purchases as they happen.',''));
+    if(!S.scheduled.length) rows.push(priorityHtml('↗','Upcoming not measured','No recurring bills recorded.',''));
+    else rows.push(priorityHtml('✓','All clear','No immediate action.',''));
   }
   el.innerHTML=rows.slice(0,3).join('');
 }
@@ -3550,7 +3549,7 @@ function renderTodaySpending(){
   var el=document.getElementById('todaySpending'); if(!el)return;
   var wanted=[['grocer'],['eating','restaurant'],['transport'],['household','personal'],['shoe','clothing']];
   var envs=[]; wanted.forEach(function(words){var e=findEnvByWords(words);if(e&&envs.indexOf(e)<0)envs.push(e);});
-  if(!envs.length){el.innerHTML='<div class="priority-empty">Create everyday spending envelopes to see them here.</div>';return;}
+  if(!envs.length){el.innerHTML='<div class="priority-empty">No everyday spending envelopes.</div>';return;}
   el.innerHTML=envs.slice(0,5).map(function(e){var spent=monthExpensesForEnv(e.id), limit=e.target&&e.target.amount?e.target.amount:Math.max(0,assignmentForMonth(e,currentMonthKey())+carryIntoMonth(e.id,currentMonthKey()));var pct=limit>0?Math.min(spent/limit*100,100):0;return '<div class="snapshot-row"><div class="snapshot-top"><div class="snapshot-name">'+(e.emoji||'')+' '+esc(e.name)+'</div><div class="snapshot-num">'+fmt(spent)+' / '+fmt(limit)+'</div></div><div class="snapshot-track"><div class="snapshot-fill'+(limit>0&&spent>limit?' over':'')+'" style="width:'+pct+'%"></div></div></div>';}).join('');
 }
 function renderTodayGoals(){
@@ -3558,14 +3557,14 @@ function renderTodayGoals(){
   var items=[];
   S.goals.forEach(function(g){items.push({name:g.name||'Goal',saved:g.saved||0,target:g.target||0});});
   S.envelopes.forEach(function(e){if(e.isSavings&&e.target&&e.target.type==='save'&&!items.some(function(x){return x.name===e.name;}))items.push({name:e.name,saved:Math.max(0,envAvailable(e.id)),target:e.target.amount||0});});
-  if(!items.length){el.innerHTML='<div class="priority-empty">Add Dental, Emergency Fund, or Christmas goals to track progress here.</div>';return;}
+  if(!items.length){el.innerHTML='<div class="priority-empty">No savings goals.</div>';return;}
   items.sort(function(a,b){return (b.target?b.saved/b.target:0)-(a.target?a.saved/a.target:0);});
   el.innerHTML=items.slice(0,3).map(function(g){var pct=g.target?Math.min(g.saved/g.target*100,100):0,remaining=Math.max(0,g.target-g.saved),meta=g.target?(Math.round(pct)+'% complete · '+fmt(remaining)+' remaining'):'No target set';return '<div class="goal-mini"><div class="goal-mini-top"><div class="goal-mini-name">'+esc(g.name)+'</div><div class="goal-mini-amount">'+fmt(g.saved)+' / '+fmt(g.target)+'</div></div><div class="goal-mini-track"><div class="goal-mini-fill" style="width:'+pct+'%"></div></div><div class="goal-mini-meta">'+meta+'</div></div>';}).join('');
 }
 function renderTodayUpcoming(upcoming){
   var el=document.getElementById('todayUpcoming'); if(!el)return;
   if(!upcoming.length){
-    el.innerHTML=S.scheduled.length?'<div class="priority-empty">✓ Nothing needs your attention for the next seven days.</div>':'<div class="priority-empty">Add recurring bills to confirm what needs attention during the next seven days.</div>';
+    el.innerHTML=S.scheduled.length?'<div class="priority-empty">✓ Nothing due in 7 days.</div>':'<div class="priority-empty">No recurring bills.</div>';
     return;
   }
   el.innerHTML=upcoming.slice(0,4).map(function(x){var env=S.envelopes.find(function(e){return e.id===x.s.envId;});var when=x.days<0?Math.abs(x.days)+'d overdue':x.days===0?'Today':x.days===1?'Tomorrow':'In '+x.days+' days';return priorityHtml(env?env.emoji:'↗',x.s.desc,when,fmt(x.s.amount));}).join('');
@@ -3581,12 +3580,12 @@ function populateAffordEnvelopes(){
 function checkAffordability(){
   var amount=parseFloat(document.getElementById('affordAmount').value)||0, id=document.getElementById('affordEnvelope').value, out=document.getElementById('affordResult');
   var env=S.envelopes.find(function(e){return e.id===id;});
-  if(!amount||amount<=0||!env){out.className='afford-result bad';out.textContent='Enter an amount and choose an envelope.';return;}
+  if(!amount||amount<=0||!env){out.className='afford-result bad';out.textContent='Amount and envelope required.';return;}
   var avail=envAvailable(env.id), after=avail-amount;
-  if(after>=0){out.className='afford-result good';out.textContent='Yes—from '+env.name+'. You would have '+fmt(after)+' left in that envelope.';return;}
+  if(after>=0){out.className='afford-result good';out.textContent='Yes · '+fmt(after)+' remains in '+env.name+'.';return;}
   var shortage=Math.abs(after), donors=S.envelopes.filter(function(e){return e.id!==env.id&&!e.isCCPayment&&envAvailable(e.id)>shortage;}).sort(function(a,b){return envAvailable(b.id)-envAvailable(a.id);});
-  if(donors.length){out.className='afford-result warn';out.textContent='Not from '+env.name+' as planned. You are short '+fmt(shortage)+'. You could deliberately move money from '+donors.slice(0,2).map(function(e){return e.name;}).join(' or ')+'.';}
-  else {out.className='afford-result bad';out.textContent='Not safely right now. '+env.name+' is short '+fmt(shortage)+', and no other single envelope can cover it.';}
+  if(donors.length){out.className='afford-result warn';out.textContent=fmt(shortage)+' short · available from '+donors.slice(0,2).map(function(e){return e.name;}).join(' or ')+'.';}
+  else {out.className='afford-result bad';out.textContent='No · '+env.name+' is '+fmt(shortage)+' short.';}
 }
 
 // ═══════════════════════════════════════════
@@ -3608,7 +3607,7 @@ function renderAccounts(){
   var assetHtml=accounts.map(function(a){var bal=accountBalance(a.id),icon=a.type==='savings'?'◈':a.type==='cash'?'●':'▣';return '<button class="account-card'+(a.id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+a.id+'\')"><div class="account-name">'+icon+' '+esc(a.name)+'</div><div class="account-type">'+a.type+'</div><div class="account-balance" style="color:'+(bal<0?'var(--red)':'var(--text)')+'">'+(bal<0?'-':'')+fmt(Math.abs(bal))+'</div></button>';}).join('');
   var cardHtml=cards.map(function(c){var id='cc:'+c.id,bal=creditCardRegisterBalance(c.id);return '<button class="account-card'+(id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+id+'\')"><div class="account-name">◇ '+esc(c.name)+'</div><div class="account-type">Credit card'+(c.lastFour?' · '+esc(c.lastFour):'')+'</div><div class="account-balance" style="color:'+(bal>0?'var(--red)':'var(--green)')+'">'+fmt(Math.abs(bal))+(bal<0?' credit':' owed')+'</div></button>';}).join('');
   grid.innerHTML=assetHtml+cardHtml;
-  var isCard=String(activeAccountId||'').indexOf('cc:')===0,record=isCard?cards.find(function(c){return c.id===activeAccountId.slice(3);}):accounts.find(function(a){return a.id===activeAccountId;});if(!record){register.innerHTML='<div class="empty"><p>Add an account to begin.</p></div>';return;}
+  var isCard=String(activeAccountId||'').indexOf('cc:')===0,record=isCard?cards.find(function(c){return c.id===activeAccountId.slice(3);}):accounts.find(function(a){return a.id===activeAccountId;});if(!record){register.innerHTML='<div class="empty"><p>No account selected.</p></div>';return;}
   document.getElementById('registerTitle').textContent=record.name+' Register';document.getElementById('registerStatus').textContent=record.reconciledAt?'Reconciled through '+record.reconciledAt:'Not reconciled yet';
   var rows=selectedRegisterEntries();register.innerHTML=rows.length?rows.map(function(x){var positiveColor=isCard?(x.amount>0?'var(--red)':'var(--green)'):(x.amount<0?'var(--red)':'var(--green)');return '<div class="register-row"><button class="clear-btn'+(x.cleared?' cleared':'')+'" onclick="toggleTransactionCleared(\''+x.kind+'\',\''+x.id+'\')" aria-label="'+(x.cleared?'Cleared':'Uncleared')+'">'+(x.reconciled?'◆':x.cleared?'✓':'○')+'</button><div class="register-main"><div class="register-name">'+esc(x.name)+'</div><div class="register-meta">'+x.date+' · '+(x.reconciled?'Reconciled':x.cleared?'Cleared':'Uncleared')+'</div></div><div class="register-amount" style="color:'+positiveColor+'">'+(x.amount<0?'-':'+')+fmt(Math.abs(x.amount))+'</div></div>';}).join(''):'<div class="empty"><p>No transactions in this account.</p></div>';
 }
@@ -4063,7 +4062,7 @@ function applyTheme() {
   var dt=document.getElementById('darkTog'); if(dt){dt.className='tog'+(S.darkMode?' on':'');dt.setAttribute('aria-checked',S.darkMode?'true':'false');}
   var st=document.getElementById('seasonTog'); if(st){st.className='tog'+(S.seasonalAccent!==false?' on':'');st.setAttribute('aria-checked',S.seasonalAccent!==false?'true':'false');}
   var ss=document.getElementById('seasonStatus');
-  if(ss) ss.textContent=S.seasonalAccent===false ? 'Uses Ledger’s standard accent all year' : seasonName(currentSeason())+' accent active · muted and automatic';
+  if(ss) ss.textContent=S.seasonalAccent===false ? 'Standard accent' : seasonName(currentSeason())+' accent · automatic';
 }
 
 function toggleWeekMode() {
@@ -4190,7 +4189,7 @@ async function loadCloudMetadata(){
 function saveCloudMetadata(){if(!ledgerDb)return Promise.resolve();return dbPut('metadata',{key:'cloud',value:{fileId:ledgerCloud.fileId||null,lastSyncedHash:ledgerCloud.lastSyncedHash||'',lastSyncedAt:ledgerCloud.lastSyncedAt||null,lastSyncedState:ledgerCloud.lastSyncedState?cloneLedger(ledgerCloud.lastSyncedState):null,enabled:!!ledgerCloud.enabled}});}
 function updateCloudStatus(){
   var status=document.getElementById('cloudStatus'),ready=document.getElementById('syncReadinessStatus'),btn=document.getElementById('cloudSyncBtn');
-  var text=!ledgerCloud.enabled?'Not connected. Tap Sync to add a protected Drive copy.':gdriveToken&&ledgerCloud.connected?(ledgerCloud.lastSyncedAt?'Protected · automatic while Ledger is open · current '+new Date(ledgerCloud.lastSyncedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'Connected · automatic while Ledger is open'):ledgerCloud.lastSyncedAt?'Drive copy protected · tap Sync after reopening':'Tap Sync to create your protected Drive copy';
+  var text=!ledgerCloud.enabled?'Not connected':gdriveToken&&ledgerCloud.connected?(ledgerCloud.lastSyncedAt?'Protected · current '+new Date(ledgerCloud.lastSyncedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'Connected'):ledgerCloud.lastSyncedAt?'Protected · reconnect to sync':'Drive ready';
   if(status)status.textContent=text;if(ready)ready.textContent=text;if(btn&&!cloudSyncBusy){btn.disabled=false;btn.textContent='Sync';}
   if(typeof renderReviewLanes==='function')renderReviewLanes();
 }
@@ -4439,7 +4438,7 @@ async function runLedgerHealthCheck(showToast) {
     var syncEl=document.getElementById('healthSync'); if(syncEl)syncEl.textContent=ledgerCloud.enabled?(ledgerCloud.lastSyncedAt?'Drive protection verified':'Drive connection ready'):(deviceOkay?'Device identity ready':'Still preparing');
     var okay=dataOkay&&deviceOkay;
     if(title)title.textContent=okay?'Ledger is healthy':'Ledger needs a closer look';
-    if(copy)copy.textContent=okay?'Your database, recovery system, and change history are working together.':'Your budget is still available, but one protection check did not pass.';
+    if(copy)copy.textContent=okay?'All protection systems are working.':'One protection check needs attention.';
     setHealthBadge(okay?'good':'warn',okay?'Healthy':'Review');
     var checked=new Date().toISOString(); await dbPut('metadata',{key:'health',value:{checkedAt:checked,healthy:okay,revision:ledgerRevision,stateHash:ledgerLastHash}});
     var checkedEl=document.getElementById('healthCheckedAt'); if(checkedEl)checkedEl.textContent='Last checked '+new Date(checked).toLocaleString();
@@ -4448,7 +4447,7 @@ async function runLedgerHealthCheck(showToast) {
   }catch(e){
     console.error('Health check failed:',e);
     if(title)title.textContent='Ledger could not finish the check';
-    if(copy)copy.textContent='Your budget remains available. Close and reopen Ledger, then run the check again.';
+    if(copy)copy.textContent='Budget available · check incomplete.';
     setHealthBadge('bad','Check failed');
     if(showToast)toast('Health check could not finish');
     return false;
@@ -4600,7 +4599,7 @@ function renderScheduled() {
   if (!due.length) {
     dueEl.innerHTML = S.scheduled.length
       ? '<div class="empty" style="padding:12px 0"><p>Nothing due in the next 7 days.</p></div>'
-      : '<div class="empty" style="padding:12px 0"><p>Add recurring bills to measure the next 7 days.</p></div>';
+      : '<div class="empty" style="padding:12px 0"><p>Upcoming not measured.</p></div>';
   } else {
     dueEl.innerHTML = '';
     due.forEach(function(item){ dueEl.appendChild(makeSchedEl(item, true)); });
@@ -4608,7 +4607,7 @@ function renderScheduled() {
 
   var listEl = document.getElementById('scheduledList');
   if (!all.length) {
-    listEl.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">🔁</div><div class="guided-empty-title">Teach Ledger what repeats</div><div class="guided-empty-copy">Add recurring commitments so Today and Review can protect the next seven and thirty days.</div><div class="guided-actions"><button class="guided-action" onclick="quickSchedule(\'Rent\',[\'rent\'])">Rent</button><button class="guided-action" onclick="quickSchedule(\'Phone\',[\'phone\'])">Phone</button><button class="guided-action" onclick="quickSchedule(\'Credit Card Payment\',[\'credit card\',\'payment\'])">Card payment</button></div></div>';
+    listEl.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">🔁</div><div class="guided-empty-title">No recurring bills</div><div class="guided-empty-copy">Optional presets</div><div class="guided-actions"><button class="guided-action" onclick="quickSchedule(\'Rent\',[\'rent\'])">Rent</button><button class="guided-action" onclick="quickSchedule(\'Phone\',[\'phone\'])">Phone</button><button class="guided-action" onclick="quickSchedule(\'Credit Card Payment\',[\'credit card\',\'payment\'])">Card payment</button></div></div>';
   } else {
     listEl.innerHTML = '';
     all.forEach(function(item){ listEl.appendChild(makeSchedEl(item, false)); });
@@ -4764,7 +4763,7 @@ function renderReports() {
 
   var listEl = document.getElementById('reportsList');
   if (!sorted.length) {
-    listEl.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">📝</div><div class="guided-empty-title">No spending recorded in this range</div><div class="guided-empty-copy">Log purchases as they happen so reports can teach you where your plan and your habits differ.</div><div class="guided-actions"><button class="guided-action" onclick="openExpModal()">Log an expense</button></div></div>';
+    listEl.innerHTML = '<div class="guided-empty"><div class="guided-empty-icon">📝</div><div class="guided-empty-title">No spending in this range</div><div class="guided-actions"><button class="guided-action" onclick="openExpModal()">Log expense</button></div></div>';
   } else {
     listEl.innerHTML = '';
     sorted.forEach(function(envId) {
@@ -4886,6 +4885,7 @@ function renderAll() {
   renderOwed(); renderCustody(); renderAccounts(); renderGoals(); renderDebts(); renderHistory(); renderCCTab();
   renderUnderfunded(); renderScheduled(); renderRolloverSummary(); renderTargetSummary(); renderBackupBanner();
   updateRTA(); applyTheme(); renderRecentActivity(); scheduleLedgerHealthCheck();
+  var setup=document.getElementById('budgetSetupCard');if(setup)setup.style.display=(S.income.length||S.expenses.length||S.creditCards.length||S.scheduled.length||S.goals.length||S.debts.length)?'none':'block';
   document.getElementById('weekTog').className = 'tog' + (S.weeklyMode?' on':''); document.getElementById('weekTog').setAttribute('aria-checked',S.weeklyMode?'true':'false');
   document.getElementById('darkTog').className = 'tog' + (S.darkMode?' on':''); document.getElementById('darkTog').setAttribute('aria-checked',S.darkMode?'true':'false');
   var st=document.getElementById('seasonTog'); if(st) st.className='tog'+(S.seasonalAccent!==false?' on':'');
