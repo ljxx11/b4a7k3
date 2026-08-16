@@ -3092,6 +3092,13 @@ function openEditExpModal(id) {
   document.getElementById('expDate').value = exp.date;
   document.getElementById('expTime').value = exp.time || '00:00';
   var pm=document.getElementById('payMethod');if(pm)pm.value=exp.payMethod||'debit';
+  var cardSel=document.getElementById('expCCSelect');
+  if(cardSel){
+    cardSel.innerHTML=S.creditCards.length?S.creditCards.map(function(c){
+      return '<option value="'+c.id+'">'+esc(c.name)+(c.lastFour?' (•••• '+c.lastFour+')':'')+'</option>';
+    }).join(''):'<option value="">No cards added yet</option>';
+    if(exp.ccId)cardSel.value=exp.ccId;
+  }
   var expAccount=document.getElementById('expAccount');if(expAccount)expAccount.innerHTML=accountOptions(exp.accountId,true);
   var expAccountField=document.getElementById('expAccountField');if(expAccountField)expAccountField.style.display=creditOn?'none':'block';
   var sel = document.getElementById('expCat');

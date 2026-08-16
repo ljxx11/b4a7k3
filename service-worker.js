@@ -1,4 +1,4 @@
-const CACHE='ledger-v3.1.0-card-refunds.1';
+const CACHE='ledger-v3.1.0-card-refunds.2';
 const CORE=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{
