@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="3.0.0">
-<title>Ledger — Monthly Planning v3.0.0</title>
+<meta name="ledger-version" content="3.1.0">
+<title>Ledger — Monthly Planning v3.1.0</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -672,7 +672,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.0.0</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.1.0</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -943,7 +943,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   <div class="view" id="view-accounts">
     <div class="sh"><div><div class="sh-title">Accounts</div><div class="sh-sub">Separate registers, cleared transactions, and reconciliation</div></div><div style="display:flex;gap:6px"><button class="sh-btn" onclick="openAccountTransferModal()">↔ Transfer</button><button class="sh-btn" onclick="openAccountModal()">+ Account</button></div></div>
     <div class="account-grid" id="accountGrid"></div>
-    <div class="sh"><div><div class="sh-title" id="registerTitle">Register</div><div class="sh-sub" id="registerStatus"></div></div><button class="sh-btn" id="reconcileAccountBtn" onclick="openReconcileModal()">Reconcile</button></div>
+    <div class="sh"><div><div class="sh-title" id="registerTitle">Register</div><div class="sh-sub" id="registerStatus"></div></div><div style="display:flex;gap:6px"><button class="sh-btn" id="cardRefundAccountBtn" style="display:none" onclick="openRefundForSelectedCard()">↩ Refund</button><button class="sh-btn" id="reconcileAccountBtn" onclick="openReconcileModal()">Reconcile</button></div></div>
     <div class="card"><div class="card-body" id="accountRegister"><div class="empty"><p>No account selected.</p></div></div></div>
   </div>
 
@@ -1121,8 +1121,8 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v3.0.0 — Monthly Planning</div><div class="set-sub">Zero-based planning across months and accounts</div></div></div>
-          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Monthly history, registers, reconciliation, card payments, loan planning, and reports</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v3.1.0 — Monthly Planning</div><div class="set-sub">Zero-based planning across months and accounts</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Credit-card refunds can now restore an envelope or return reserved money to Ready to Assign</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">On-device unless Drive or backup is used</div></div></div>
         </div></div>
       </div>
@@ -1353,6 +1353,7 @@ var editingEnvId = null;
 var editingGroupId = null;
 var editingIncomeId = null;
 var editingExpId = null;
+var editingCardCreditId = null;
 var activeAccountId = null;
 var owedType = 'toMe';
 var currentView = 'today';
@@ -1372,9 +1373,9 @@ var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 // ═══════════════════════════════════════════
 var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 6;
-var LEDGER_SCHEMA_VERSION = 6;
+var LEDGER_SCHEMA_VERSION = 7;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '3.0.0';
+var LEDGER_APP_VERSION = '3.1.0';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1548,7 +1549,10 @@ function recordsById(items) {
 function operationSummary(collection, operation, current, previous, changedSettings) {
   var item=current||previous||{};
   var name=item.name||item.desc||item.who||item.note||'item';
-  if(collection==='expenses') return operation==='delete' ? 'Expense removed · ' + name : (operation==='insert' ? 'Expense added · ' + name : 'Expense updated · ' + name);
+  if(collection==='expenses') {
+    if(item.isCardCredit)return operation==='delete'?'Card refund removed · '+name:(operation==='insert'?'Card refund added · '+name:'Card refund updated · '+name);
+    return operation==='delete' ? 'Expense removed · ' + name : (operation==='insert' ? 'Expense added · ' + name : 'Expense updated · ' + name);
+  }
   if(collection==='income') return operation==='delete' ? 'Income removed · ' + name : (operation==='insert' ? 'Income added · ' + name : 'Income updated · ' + name);
   if(collection==='envelopes') {
     if(operation==='delete') return 'Envelope removed · ' + name;
@@ -1889,11 +1893,11 @@ function migrateAccounts(){
   if(!checking){checking={id:makeLedgerId('account'),name:'Checking',type:'checking',closed:false,createdAt:new Date().toISOString()};S.accounts.push(checking);}
   if(!cash){cash={id:makeLedgerId('account'),name:'Cash',type:'cash',closed:false,createdAt:new Date().toISOString()};S.accounts.push(cash);}
   S.income.forEach(function(i){if(!i.accountId)i.accountId=i.isCash?cash.id:checking.id;if(i.cleared===undefined)i.cleared=false;});
-  S.expenses.forEach(function(e){if(!e.isCredit&&!e.accountId)e.accountId=e.payMethod==='cash'?cash.id:checking.id;if(e.cleared===undefined)e.cleared=false;});
+  S.expenses.forEach(function(e){if(e.isCardCredit===undefined)e.isCardCredit=false;if(!e.isCredit&&!e.accountId)e.accountId=e.payMethod==='cash'?cash.id:checking.id;if(e.cleared===undefined)e.cleared=false;});
 }
 function migrateCreditCardRegisters(){
   S.creditCards.forEach(function(card){
-    if(card.openingBalance===undefined){var purchases=0,payments=0;S.expenses.forEach(function(e){if(e.isCredit&&e.ccId===card.id)purchases+=Number(e.amount)||0;else if(e.isCCPayment&&e.envId===card.paymentEnvId)payments+=Number(e.amount)||0;});card.openingBalance=money((Number(card.balance)||0)-purchases+payments);}
+    if(card.openingBalance===undefined){var purchases=0,payments=0,credits=0;S.expenses.forEach(function(e){if(e.isCardCredit&&e.ccId===card.id)credits+=Number(e.amount)||0;else if(e.isCredit&&e.ccId===card.id)purchases+=Number(e.amount)||0;else if(e.isCCPayment&&e.envId===card.paymentEnvId)payments+=Number(e.amount)||0;});card.openingBalance=money((Number(card.balance)||0)-purchases+payments+credits);}
     if(card.reconciledAt===undefined)card.reconciledAt=null;
   });
 }
@@ -2006,7 +2010,7 @@ function accountBalance(accountId,clearedOnly,throughDate){
   (S.transfers||[]).forEach(function(t){if(!included(t))return;if(checking&&checking.id===accountId)total+=transferBankEffect(t);if(cash&&cash.id===accountId)total+=transferCashEffect(t);});
   return money(total);
 }
-function creditCardRegisterEntries(cardId){var card=S.creditCards.find(function(c){return c.id===cardId;}),rows=[];if(!card)return rows;S.expenses.forEach(function(e){if(e.isCredit&&e.ccId===cardId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Purchase',date:e.date,amount:Number(e.amount)||0,cleared:!!e.cleared,reconciled:!!e.reconciled});else if(e.isCCPayment&&e.envId===card.paymentEnvId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Payment',date:e.date,amount:-(Number(e.amount)||0),cleared:!!e.cleared,reconciled:!!e.reconciled});});return rows.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});}
+function creditCardRegisterEntries(cardId){var card=S.creditCards.find(function(c){return c.id===cardId;}),rows=[];if(!card)return rows;S.expenses.forEach(function(e){if(e.isCardCredit&&e.ccId===cardId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Card refund',date:e.date,amount:-(Number(e.amount)||0),cleared:!!e.cleared,reconciled:!!e.reconciled});else if(e.isCredit&&e.ccId===cardId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Purchase',date:e.date,amount:Number(e.amount)||0,cleared:!!e.cleared,reconciled:!!e.reconciled});else if(e.isCCPayment&&e.envId===card.paymentEnvId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Payment',date:e.date,amount:-(Number(e.amount)||0),cleared:!!e.cleared,reconciled:!!e.reconciled});});return rows.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});}
 function creditCardRegisterBalance(cardId,clearedOnly,throughDate){var card=S.creditCards.find(function(c){return c.id===cardId;});if(!card)return 0;var total=Number(card.openingBalance)||0;creditCardRegisterEntries(cardId).forEach(function(x){if((!clearedOnly||x.cleared)&&(!throughDate||String(x.date)<=throughDate))total+=x.amount;});return money(total);}
 function selectedRegisterEntries(){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterEntries(String(activeAccountId).slice(3)):accountRegisterEntries(activeAccountId);}
 function selectedRegisterBalance(clearedOnly,throughDate){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterBalance(String(activeAccountId).slice(3),clearedOnly,throughDate):accountBalance(activeAccountId,clearedOnly,throughDate);}
@@ -2063,10 +2067,25 @@ function totalAssigned(monthKey) {
 }
 function totalPositiveAvailable(monthKey){var key=normalizeMonthKey(monthKey||currentMonthKey()),total=0;S.envelopes.forEach(function(e){total+=Math.max(0,envAvailableForMonth(e.id,key));});return money(total);}
 function readyToAssign(monthKey) { return money(budgetBalance() - totalPositiveAvailable(monthKey||currentMonthKey())); }
+function expenseSpendingAmount(e) {
+  if (!e || e.isCCPayment) return 0;
+  return money((e.isCardCredit?-1:1)*(Number(e.amount)||0));
+}
+function cardCreditReleaseForMonth(cardId, monthKey) {
+  var key=normalizeMonthKey(monthKey||currentMonthKey()),total=0;
+  S.expenses.forEach(function(e){if(e.isCardCredit&&e.ccId===cardId&&monthKeyFromDate(e.date)===key)total+=Number(e.releasedAmount)||0;});
+  return money(total);
+}
+function paymentEnvelopeCreditRelease(paymentEnvId,monthKey){
+  var card=S.creditCards.find(function(c){return c.paymentEnvId===paymentEnvId;});
+  return card?cardCreditReleaseForMonth(card.id,monthKey):0;
+}
 function envSpentForMonth(envId, monthKey) {
   var total = 0;
   S.expenses.forEach(function(e) {
-    if (e.envId === envId && monthKeyFromDate(e.date) === monthKey) total += Number(e.amount)||0;
+    if (monthKeyFromDate(e.date) !== monthKey) return;
+    if(e.isCardCredit){if(e.refundEnvId===envId)total-=Number(e.releasedAmount)||0;return;}
+    if (e.envId === envId) total += Number(e.amount)||0;
   });
   return money(total);
 }
@@ -2077,7 +2096,7 @@ function fundedCreditActivity(paymentEnvId, monthKey) {
   var key = normalizeMonthKey(monthKey||currentMonthKey());
   var expensesByEnvelope = {};
   S.expenses.forEach(function(e,idx){
-    if(e.isCCPayment || monthKeyFromDate(e.date)!==key || !e.envId || !(Number(e.amount)>0))return;
+    if(e.isCCPayment || e.isCardCredit || monthKeyFromDate(e.date)!==key || !e.envId || !(Number(e.amount)>0))return;
     if(!expensesByEnvelope[e.envId])expensesByEnvelope[e.envId]=[];
     expensesByEnvelope[e.envId].push({expense:e,index:idx});
   });
@@ -2101,7 +2120,7 @@ function fundedCreditActivity(paymentEnvId, monthKey) {
 }
 function totalSpent() {
   var total = 0;
-  S.expenses.forEach(function(e){ if(monthKeyFromDate(e.date)===currentMonthKey()) total += Number(e.amount)||0; });
+  S.expenses.forEach(function(e){ if(monthKeyFromDate(e.date)===currentMonthKey()) total += expenseSpendingAmount(e); });
   return money(total);
 }
 function totalAvailable() {
@@ -2122,7 +2141,8 @@ function envAvailableBase(envId, monthKey) {
   if (!env) return 0;
   var key = monthKey || currentMonthKey();
   var fundedCredit = env.isCCPayment ? fundedCreditActivity(env.id,key) : 0;
-  return money(assignmentForMonth(env,key) + fundedCredit - envSpentForMonth(envId,key));
+  var cardCreditRelease=env.isCCPayment?paymentEnvelopeCreditRelease(env.id,key):0;
+  return money(assignmentForMonth(env,key) + fundedCredit - cardCreditRelease - envSpentForMonth(envId,key));
 }
 function carryIntoMonth(envId, monthKey) {
   var env = S.envelopes.find(function(e){return e.id===envId;});
@@ -2131,7 +2151,7 @@ function carryIntoMonth(envId, monthKey) {
   if(key<=start)return key===start?money(env.openingCarry||0):0;
   var cursor=start, carry=money(env.openingCarry||0), guard=0;
   while(cursor<key && guard++<240){
-    var available=money(carry+assignmentForMonth(env,cursor)+(env.isCCPayment?fundedCreditActivity(env.id,cursor):0)-envSpentForMonth(envId,cursor));
+    var available=money(carry+assignmentForMonth(env,cursor)+(env.isCCPayment?fundedCreditActivity(env.id,cursor)-paymentEnvelopeCreditRelease(env.id,cursor):0)-envSpentForMonth(envId,cursor));
     carry=money(Math.max(0,available));
     cursor=addMonths(cursor,1);
   }
@@ -2140,7 +2160,7 @@ function carryIntoMonth(envId, monthKey) {
 function envAvailableForMonth(envId, monthKey) {
   var env=S.envelopes.find(function(e){return e.id===envId;});if(!env)return 0;
   var key=normalizeMonthKey(monthKey);
-  return money(carryIntoMonth(envId,key)+assignmentForMonth(env,key)+(env.isCCPayment?fundedCreditActivity(env.id,key):0)-envSpentForMonth(envId,key));
+  return money(carryIntoMonth(envId,key)+assignmentForMonth(env,key)+(env.isCCPayment?fundedCreditActivity(env.id,key)-paymentEnvelopeCreditRelease(env.id,key):0)-envSpentForMonth(envId,key));
 }
 function envAvailable(envId) {
   return envAvailableForMonth(envId,currentMonthKey());
@@ -2543,7 +2563,7 @@ function renderEnvCard(env) {
   var avail = envAvailableForMonth(env.id,key);
   var carried=carryIntoMonth(env.id,key);
   var budgeted = money(assigned + carried);
-  var pct = budgeted > 0 ? Math.min(spent / budgeted * 100, 100) : 0;
+  var pct = budgeted > 0 ? Math.max(0,Math.min(spent / budgeted * 100, 100)) : 0;
   var wk = S.weeklyMode ? ' <span style="color:var(--text3);font-size:10px">('+fmt(assigned/4)+'/wk)</span>' : '';
   var availClass = avail < 0 ? ' over' : (avail === 0 && assigned > 0 ? ' empty' : '');
   var tp = targetProgress(env);
@@ -2559,7 +2579,7 @@ function renderEnvCard(env) {
   var savingsLbl = env.isSavings ? '&#x1F437; Savings' : '&#x1F4B0; Regular';
   var carryHtml = (carried>0)
     ? '<div class="env-num"><div class="env-num-val" style="color:var(--green)">'+fmt(carried)+'</div><div class="env-num-lbl">Carried Over</div></div>'
-    : '<div class="env-num"><div class="env-num-val">'+fmt(spent)+'</div><div class="env-num-lbl">Spent</div></div>';
+    : '<div class="env-num"><div class="env-num-val"'+(spent<0?' style="color:var(--green)"':'')+'>'+(spent<0?'-':'')+fmt(spent)+'</div><div class="env-num-lbl">'+(spent<0?'Net Credit':'Spent')+'</div></div>';
 
   return '<div class="env" id="env_'+eid+'" data-eid="'+eid+'" draggable="true">' +
     '<div class="env-hdr" data-eid="'+eid+'" onclick="toggleEnv(this.dataset.eid)">' +
@@ -2832,7 +2852,7 @@ function cardFundingDetails(card) {
   var paymentEnv=ccPaymentEnv(card.id), ready=paymentEnv?Math.max(0,envAvailable(paymentEnv.id)):0;
   var month=currentMonthKey(), purchases=0;
   S.expenses.forEach(function(e){
-    if((e.isCredit||e.payMethod==='credit')&&!e.isCCPayment&&e.ccId===card.id&&monthKeyFromDate(e.date)===month) purchases+=Number(e.amount)||0;
+    if((e.isCredit||e.payMethod==='credit')&&!e.isCCPayment&&!e.isCardCredit&&e.ccId===card.id&&monthKeyFromDate(e.date)===month) purchases+=Number(e.amount)||0;
   });
   purchases=money(purchases);
   var funded=paymentEnv?Math.min(purchases,Math.max(0,fundedCreditActivity(paymentEnv.id,month))):0;
@@ -2866,6 +2886,44 @@ function saveCCPayment() {
   S.expenses.push({id:uid(),desc:'CC Payment — '+card.name,amount:amt,envId:card.paymentEnvId,date:date,payMethod:'debit',accountId:accountId,cleared:false,isCredit:false,isCCPayment:true,ccId:card.id});
   saveS();closeModal('ccPaymentModal');renderEnvelopes();renderCCTab();renderExpenses();renderAccounts();updateRTA();toast('💳 Payment recorded');
 }
+function cardCreditDestinationOptions(selectedId){
+  var html='<option value=""'+(!selectedId?' selected':'')+'>Ready to Assign</option>';
+  sortedGroups().forEach(function(g){
+    var envs=groupEnvelopes(g.id).filter(function(e){return !e.isCCPayment;});if(!envs.length)return;
+    html+='<optgroup label="'+esc(g.name)+'">'+envs.map(function(e){return '<option value="'+e.id+'"'+(e.id===selectedId?' selected':'')+'>'+e.emoji+' '+esc(e.name)+'</option>';}).join('')+'</optgroup>';
+  });
+  return html;
+}
+function openCardCreditModal(cardId,creditId){
+  var credit=creditId?S.expenses.find(function(e){return e.id===creditId&&e.isCardCredit;}):null;
+  if(credit&&credit.reconciled){toast('Reconciled transactions are locked');return;}
+  editingCardCreditId=credit?credit.id:null;
+  var selectedCardId=credit?credit.ccId:cardId;
+  document.getElementById('cardCreditTitle').textContent=credit?'Edit Card Refund':'Record Card Refund';
+  document.getElementById('cardCreditCard').innerHTML=S.creditCards.map(function(c){return '<option value="'+c.id+'"'+(c.id===selectedCardId?' selected':'')+'>'+esc(c.name)+(c.lastFour?' · '+esc(c.lastFour):'')+'</option>';}).join('');
+  document.getElementById('cardCreditDesc').value=credit?credit.desc:'';
+  document.getElementById('cardCreditAmount').value=credit?credit.amount:'';
+  document.getElementById('cardCreditDate').value=credit?credit.date:new Date().toISOString().slice(0,10);
+  document.getElementById('cardCreditDestination').innerHTML=cardCreditDestinationOptions(credit?credit.refundEnvId:null);
+  document.getElementById('deleteCardCreditBtn').style.display=credit?'block':'none';
+  openModal('cardCreditModal');
+}
+function saveCardCredit(){
+  var cardId=document.getElementById('cardCreditCard').value,card=S.creditCards.find(function(c){return c.id===cardId;});
+  var desc=document.getElementById('cardCreditDesc').value.trim(),amount=money(parseFloat(document.getElementById('cardCreditAmount').value)||0),date=document.getElementById('cardCreditDate').value,refundEnvId=document.getElementById('cardCreditDestination').value||null;
+  if(!card){toast('Choose a credit card');return;}if(!desc){toast('Describe the refund');return;}if(amount<=0){toast('Enter the refund amount');return;}if(!date){toast('Choose the refund date');return;}
+  var old=editingCardCreditId?S.expenses.find(function(e){return e.id===editingCardCreditId&&e.isCardCredit;}):null;
+  if(old&&old.reconciled){toast('Reconciled transactions are locked');return;}
+  var paymentEnv=ccPaymentEnv(card.id),month=monthKeyFromDate(date),availableBefore=paymentEnv?envAvailableForMonth(paymentEnv.id,month):0;
+  if(old&&old.ccId===card.id&&monthKeyFromDate(old.date)===month)availableBefore=money(availableBefore+(Number(old.releasedAmount)||0));
+  var releasedAmount=money(Math.min(amount,Math.max(0,availableBefore)));
+  if(old){var oldCard=S.creditCards.find(function(c){return c.id===old.ccId;});if(oldCard)oldCard.balance=money((Number(oldCard.balance)||0)+(Number(old.amount)||0));S.expenses=S.expenses.filter(function(e){return e.id!==old.id;});}
+  card.balance=money((Number(card.balance)||0)-amount);
+  S.expenses.push({id:old?old.id:uid(),desc:desc,amount:amount,date:date,time:old&&old.time?old.time:'12:00',datetime:date+'T'+(old&&old.time?old.time:'12:00'),isCardCredit:true,isCredit:true,payMethod:'credit',ccId:card.id,refundEnvId:refundEnvId,envId:refundEnvId,releasedAmount:releasedAmount,cleared:old?!!old.cleared:false,reconciled:false});
+  saveS();closeModal('cardCreditModal');editingCardCreditId=null;renderEnvelopes();renderCCTab();renderExpenses();renderAccounts();renderReports();updateRTA();
+  toast('↩ Card refund recorded · '+fmt(releasedAmount)+' released');
+}
+function deleteCardCredit(){if(editingCardCreditId){delExp(editingCardCreditId);editingCardCreditId=null;closeModal('cardCreditModal');}}
 function renderCCTab() {
   var el = document.getElementById('ccList');
   if (!S.creditCards.length) {
@@ -2888,7 +2946,7 @@ function renderCCTab() {
           '<div class="cc-balance-lbl">Balance owed</div>',
         '</div>',
         '<div style="display:flex;align-items:center;gap:8px">',
-          '<div class="cc-balance">'+fmt(card.balance||0)+'</div>',
+          '<div class="cc-balance" style="color:'+((Number(card.balance)||0)<0?'var(--green)':'var(--red)')+'">'+((Number(card.balance)||0)<0?'-':'')+fmt(card.balance||0)+'</div>',
           '<button class="grp-menu-btn" id="ccEditBtn_'+card.id+'">&#8943;</button>',
         '</div>',
       '</div>',
@@ -2903,6 +2961,7 @@ function renderCCTab() {
         '</div>',
         '<div style="text-align:right;flex-shrink:0">',
           '<div class="cc-pay-amt" style="color:'+(payReady>=(card.balance||0)?'var(--green)':'var(--yellow)')+'">'+fmt(payReady)+'</div>',
+          '<button class="cc-pay-btn" id="ccRefundBtn_'+card.id+'" style="margin-bottom:6px">Record Refund</button>',
           '<button class="cc-pay-btn" id="ccPayBtn_'+card.id+'">Record Payment</button>',
         '</div>',
       '</div>'
@@ -2911,8 +2970,10 @@ function renderCCTab() {
     (function(cid){
       var editBtn = div.querySelector('#ccEditBtn_'+cid);
       var payBtn = div.querySelector('#ccPayBtn_'+cid);
+      var refundBtn = div.querySelector('#ccRefundBtn_'+cid);
       if(editBtn) editBtn.addEventListener('click', function(){ openCCModal(cid); });
       if(payBtn) payBtn.addEventListener('click', function(){ recordCCPayment(cid); });
+      if(refundBtn) refundBtn.addEventListener('click', function(){ openCardCreditModal(cid,null); });
     })(card.id);
     el.appendChild(div);
   });
@@ -2946,8 +3007,8 @@ function renderExpenses() {
     filterSel.value = currentFilter; // restore selection
   }
   var filterEnvId = filterSel ? filterSel.value : '';
-  var allExp = filterEnvId ? S.expenses.filter(function(e){return e.envId===filterEnvId;}) : S.expenses;
-  var total = 0; allExp.forEach(function(e){total+=e.amount;});
+  var allExp = filterEnvId ? S.expenses.filter(function(e){return e.isCardCredit?e.refundEnvId===filterEnvId:e.envId===filterEnvId;}) : S.expenses;
+  var total = 0; allExp.forEach(function(e){total+=expenseSpendingAmount(e);});
   var cnt = allExp.length;
   document.getElementById('expTot').textContent = fmtS(total);
   document.getElementById('expCnt').textContent = cnt;
@@ -2966,20 +3027,20 @@ function renderExpenses() {
     return db - da;
   });
   sorted.forEach(function(e) {
-    var env = S.envelopes.find(function(v){return v.id===e.envId;});
+    var env = S.envelopes.find(function(v){return v.id===(e.isCardCredit?e.refundEnvId:e.envId);});
     var clr = env ? env.color+'55' : 'var(--surf2)';
     var dtObj = e.datetime ? new Date(e.datetime) : new Date(e.date+'T12:00:00');
     var dt = dtObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}) +
       (e.time ? ' ' + dtObj.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) : '');
     var pmLabel = e.payMethod === 'cash' ? '💵' : e.payMethod === 'credit' ? '💳' : '🏦';
-    var tags = pmLabel + ' ' + (e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
+    var tags = pmLabel + ' ' + (e.isCardCredit?'<span class="tag reimb">REFUND</span>':e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
     var div = document.createElement('div');
     div.className = 'exp-item';
     div.innerHTML =
       '<div class="exp-ico" style="background:'+clr+'">'+(env?env.emoji:'📦')+'</div>'+
       '<div class="exp-body"><div class="exp-desc">'+esc(e.desc)+'</div>'+
-      '<div class="exp-meta">'+(env?esc(env.name):e.envId)+(tags?' · '+tags:'')+(e.accountId?' · '+esc(accountName(e.accountId)):'')+'</div></div>'+
-      '<div class="exp-right"><div class="exp-amt">'+fmt(e.amount)+'</div><div class="exp-date">'+dt+'</div></div>'+
+      '<div class="exp-meta">'+(e.isCardCredit?(env?esc(env.name):'Ready to Assign'):(env?esc(env.name):e.envId))+(tags?' · '+tags:'')+(e.accountId?' · '+esc(accountName(e.accountId)):'')+'</div></div>'+
+      '<div class="exp-right"><div class="exp-amt" style="color:'+(e.isCardCredit?'var(--green)':'')+'">'+(e.isCardCredit?'-':'')+fmt(e.amount)+'</div><div class="exp-date">'+dt+'</div></div>'+
       '<button class="inc-edit-btn" id="eedit_'+e.id+'">✏️</button>'+
       '<button class="del-btn" id="edel_'+e.id+'">×</button>';
     (function(exp){
@@ -3001,7 +3062,10 @@ function delExp(id) {
   var exp=S.expenses.find(function(e){return e.id===id;});
   if(exp&&exp.reconciled){toast('Reconciled transactions are locked');return;}
   applyBackdatedExpenseEffect(exp,'remove');
-  if (exp && exp.isCredit && exp.ccId) {
+  if(exp&&exp.isCardCredit&&exp.ccId){
+    var refundCard=S.creditCards.find(function(c){return c.id===exp.ccId;});
+    if(refundCard)refundCard.balance=money((Number(refundCard.balance)||0)+(Number(exp.amount)||0));
+  } else if (exp && exp.isCredit && exp.ccId) {
     var card=S.creditCards.find(function(c){return c.id===exp.ccId;});
     if(card) card.balance=money(Math.max(0,(card.balance||0)-(exp.amount||0)));
   } else if (exp && exp.isCCPayment) {
@@ -3017,6 +3081,7 @@ function openEditExpModal(id) {
   var exp = S.expenses.find(function(e){return e.id===id;});
   if (!exp) return;
   if(exp.reconciled){toast('Reconciled transactions are locked');return;}
+  if(exp.isCardCredit){editingExpId=null;openCardCreditModal(exp.ccId,exp.id);return;}
   if(exp.isCCPayment){editingExpId=null;toast('Card payments cannot be edited. Remove and re-record the payment instead.');return;}
   creditOn = exp.isCredit || false;
   document.getElementById('creditTog').className = 'tog'+(creditOn?' on':'');
@@ -3595,10 +3660,11 @@ function renderAccounts(){
   var cardHtml=cards.map(function(c){var id='cc:'+c.id,bal=creditCardRegisterBalance(c.id);return '<button class="account-card'+(id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+id+'\')"><div class="account-name">◇ '+esc(c.name)+'</div><div class="account-type">Credit card'+(c.lastFour?' · '+esc(c.lastFour):'')+'</div><div class="account-balance" style="color:'+(bal>0?'var(--red)':'var(--green)')+'">'+fmt(Math.abs(bal))+(bal<0?' credit':' owed')+'</div></button>';}).join('');
   grid.innerHTML=assetHtml+cardHtml;
   var isCard=String(activeAccountId||'').indexOf('cc:')===0,record=isCard?cards.find(function(c){return c.id===activeAccountId.slice(3);}):accounts.find(function(a){return a.id===activeAccountId;});if(!record){register.innerHTML='<div class="empty"><p>No account selected.</p></div>';return;}
-  document.getElementById('registerTitle').textContent=record.name+' Register';document.getElementById('registerStatus').textContent=record.reconciledAt?'Reconciled through '+record.reconciledAt:'Not reconciled yet';
+  document.getElementById('registerTitle').textContent=record.name+' Register';document.getElementById('registerStatus').textContent=record.reconciledAt?'Reconciled through '+record.reconciledAt:'Not reconciled yet';var refundBtn=document.getElementById('cardRefundAccountBtn');if(refundBtn)refundBtn.style.display=isCard?'inline-flex':'none';
   var rows=selectedRegisterEntries();register.innerHTML=rows.length?rows.map(function(x){var positiveColor=isCard?(x.amount>0?'var(--red)':'var(--green)'):(x.amount<0?'var(--red)':'var(--green)');return '<div class="register-row"><button class="clear-btn'+(x.cleared?' cleared':'')+'" onclick="toggleTransactionCleared(\''+x.kind+'\',\''+x.id+'\')" aria-label="'+(x.cleared?'Cleared':'Uncleared')+'">'+(x.reconciled?'◆':x.cleared?'✓':'○')+'</button><div class="register-main"><div class="register-name">'+esc(x.name)+'</div><div class="register-meta">'+x.date+' · '+(x.reconciled?'Reconciled':x.cleared?'Cleared':'Uncleared')+'</div></div><div class="register-amount" style="color:'+positiveColor+'">'+(x.amount<0?'-':'+')+fmt(Math.abs(x.amount))+'</div></div>';}).join(''):'<div class="empty"><p>No transactions in this account.</p></div>';
 }
 function selectAccount(id){activeAccountId=id;renderAccounts();}
+function openRefundForSelectedCard(){if(String(activeAccountId||'').indexOf('cc:')!==0){toast('Choose a credit card');return;}openCardCreditModal(activeAccountId.slice(3),null);}
 function toggleTransactionCleared(kind,id){var list=kind==='income'?S.income:kind==='expense'?S.expenses:kind==='legacyTransfer'?S.transfers:kind==='custody'?S.custodialTransactions:S.accountTransfers,record=list.find(function(x){return x.id===id;});if(!record)return;if(record.reconciled){toast('Reconciled transactions are locked');return;}record.cleared=!record.cleared;saveS();renderAccounts();}
 function openAccountModal(){document.getElementById('accountName').value='';document.getElementById('accountType').value='savings';openModal('accountModal');}
 function saveAccount(){var name=document.getElementById('accountName').value.trim(),type=document.getElementById('accountType').value;if(!name){toast('Enter an account name');return;}var account={id:makeLedgerId('account'),name:name,type:type,closed:false,createdAt:new Date().toISOString()};S.accounts.push(account);activeAccountId=account.id;saveS();closeModal('accountModal');renderAccounts();toast(name+' added');}
@@ -4315,6 +4381,14 @@ function importData(e) {
 function resetMonth() {
   if (!confirm('Clear all expenses for this month? Envelopes and assignments stay.')) return;
   var month = new Date().toISOString().slice(0,7);
+  S.expenses.forEach(function(e){
+    if(String(e.date||'').slice(0,7)!==month)return;
+    var card=e.ccId?S.creditCards.find(function(c){return c.id===e.ccId;}):e.isCCPayment?S.creditCards.find(function(c){return c.paymentEnvId===e.envId;}):null;
+    if(!card)return;
+    if(e.isCardCredit)card.balance=money((Number(card.balance)||0)+(Number(e.amount)||0));
+    else if(e.isCCPayment)card.balance=money((Number(card.balance)||0)+(Number(e.amount)||0));
+    else if(e.isCredit)card.balance=money((Number(card.balance)||0)-(Number(e.amount)||0));
+  });
   S.expenses = S.expenses.filter(function(e){return e.date.slice(0,7)!==month;});
   saveS(); renderAll(); toast('Month reset');
 }
@@ -4391,7 +4465,14 @@ function ledgerInvariantIssues(){
   LEDGER_COLLECTIONS.forEach(function(name){var seen={};(S[name]||[]).forEach(function(item){if(!item||!item.id)return;if(seen[item.id])issues.push('Duplicate '+name+' record');seen[item.id]=true;});});
   S.envelopes.forEach(function(env){Object.keys(env.assignments||{}).forEach(function(key){if(!/^\d{4}-\d{2}$/.test(key)||!isFinite(Number(env.assignments[key])))issues.push('Invalid monthly assignment');});});
   S.creditCards.forEach(function(card){if(!ccPaymentEnv(card.id))issues.push('Card payment envelope missing');else if(Math.abs((Number(card.balance)||0)-creditCardRegisterBalance(card.id))>0.01)issues.push('Card register balance mismatch');});
-  S.expenses.forEach(function(exp){if(!exp.isCredit&&exp.accountId&&!S.accounts.some(function(a){return a.id===exp.accountId;}))issues.push('Expense account missing');});
+  S.expenses.forEach(function(exp){
+    if(!exp.isCredit&&exp.accountId&&!S.accounts.some(function(a){return a.id===exp.accountId;}))issues.push('Expense account missing');
+    if(exp.isCardCredit){
+      if(!S.creditCards.some(function(c){return c.id===exp.ccId;}))issues.push('Card refund card missing');
+      if(exp.refundEnvId&&!S.envelopes.some(function(e){return e.id===exp.refundEnvId&&!e.isCCPayment;}))issues.push('Card refund destination missing');
+      if((Number(exp.releasedAmount)||0)<0||(Number(exp.releasedAmount)||0)>(Number(exp.amount)||0)+.005)issues.push('Invalid card refund release');
+    }
+  });
   return issues;
 }
 
@@ -4712,7 +4793,7 @@ function captureFinancialSnapshot(){
 function reportMonthKeys(count){var keys=[];for(var i=count-1;i>=0;i--)keys.push(addMonths(currentMonthKey(),-i));return keys;}
 function monthShort(key){var p=key.split('-');return new Date(Number(p[0]),Number(p[1])-1,1).toLocaleDateString('en-US',{month:'short'});}
 function renderIncomeExpenseTrend(){
-  var keys=reportMonthKeys(reportMonths),rows=keys.map(function(key){var income=0,spending=0;S.income.forEach(function(x){if(monthKeyFromDate(x.date)===key)income+=Number(x.amount)||0;});S.expenses.forEach(function(x){if(!x.isCCPayment&&monthKeyFromDate(x.date)===key)spending+=Number(x.amount)||0;});return {key:key,income:money(income),spending:money(spending)};}),max=1;
+  var keys=reportMonthKeys(reportMonths),rows=keys.map(function(key){var income=0,spending=0;S.income.forEach(function(x){if(monthKeyFromDate(x.date)===key)income+=Number(x.amount)||0;});S.expenses.forEach(function(x){if(monthKeyFromDate(x.date)===key)spending+=expenseSpendingAmount(x);});return {key:key,income:money(income),spending:money(spending)};}),max=1;
   rows.forEach(function(x){max=Math.max(max,x.income,x.spending);});var totalIncome=rows.reduce(function(t,x){return t+x.income;},0),totalSpending=rows.reduce(function(t,x){return t+x.spending;},0),net=money(totalIncome-totalSpending);
   document.getElementById('incomeExpenseTrend').innerHTML='<div class="trend-card"><div class="trend-bars">'+rows.map(function(x){return '<div class="trend-col"><div class="trend-bar" title="Income '+fmt(x.income)+'" style="height:'+Math.max(x.income/max*100,x.income?3:0)+'%;background:var(--green)"></div><div class="trend-bar" title="Spending '+fmt(x.spending)+'" style="height:'+Math.max(x.spending/max*100,x.spending?3:0)+'%;background:var(--red)"></div><div class="trend-label">'+monthShort(x.key)+'</div></div>';}).join('')+'</div><div class="trend-legend"><span><i class="trend-dot" style="background:var(--green)"></i>Income</span><span><i class="trend-dot" style="background:var(--red)"></i>Spending</span></div><div class="trend-value">'+fmt(totalIncome)+' income · '+fmt(totalSpending)+' spending · <b style="color:'+(net>=0?'var(--green)':'var(--red)')+'">'+(net>=0?'+':'-')+fmt(Math.abs(net))+' net</b></div></div>';
 }
@@ -4738,17 +4819,18 @@ function renderReports() {
     return !e.isCCPayment&&new Date(e.date+'T12:00:00') >= cutoff;
   });
   var total = 0;
-  filtered.forEach(function(e){total+=Number(e.amount)||0;});
+  filtered.forEach(function(e){total+=expenseSpendingAmount(e);});
   document.getElementById('rptTotal').textContent = fmtS(total);
   renderIncomeExpenseTrend();renderPositionTrends();
 
   // By envelope
   var byEnv = {};
   filtered.forEach(function(e){
-    byEnv[e.envId] = (byEnv[e.envId]||0) + (Number(e.amount)||0);
+    var envKey=e.isCardCredit?(e.refundEnvId||'__card_credit__'):e.envId;
+    byEnv[envKey] = money((byEnv[envKey]||0) + expenseSpendingAmount(e));
   });
-  var sorted = Object.keys(byEnv).sort(function(a,b){return byEnv[b]-byEnv[a];});
-  var maxAmt = sorted.length ? byEnv[sorted[0]] : 1;
+  var sorted = Object.keys(byEnv).filter(function(k){return Math.abs(byEnv[k])>.005;}).sort(function(a,b){return Math.abs(byEnv[b])-Math.abs(byEnv[a]);});
+  var maxAmt = sorted.length ? Math.abs(byEnv[sorted[0]]) : 1;
 
   var listEl = document.getElementById('reportsList');
   if (!sorted.length) {
@@ -4758,16 +4840,16 @@ function renderReports() {
     sorted.forEach(function(envId) {
       var env = S.envelopes.find(function(e){return e.id===envId;});
       var amt = byEnv[envId];
-      var pct = Math.min(amt/maxAmt*100, 100);
+      var pct = Math.min(Math.abs(amt)/maxAmt*100, 100);
       var color = env ? env.color : 'var(--acc)';
       var avgPerMonth = amt / reportMonths;
       var div = document.createElement('div');
       div.className = 'rpt-row';
       div.innerHTML =
         '<div class="rpt-top">' +
-          '<div class="rpt-icon" style="background:'+(env?env.color+'55':'var(--surf2)')+'">'+( env?env.emoji:'📦')+'</div>' +
-          '<div class="rpt-name">'+(env?esc(env.name):envId)+'</div>' +
-          '<div class="rpt-total">'+fmt(amt)+'</div>' +
+          '<div class="rpt-icon" style="background:'+(env?env.color+'55':'var(--surf2)')+'">'+( env?env.emoji:'↩')+'</div>' +
+          '<div class="rpt-name">'+(env?esc(env.name):envId==='__card_credit__'?'Card credits · Ready to Assign':envId)+'</div>' +
+          '<div class="rpt-total" style="color:'+(amt<0?'var(--green)':'')+'">'+(amt<0?'-':'')+fmt(amt)+'</div>' +
         '</div>' +
         '<div class="rpt-bar-wrap"><div class="rpt-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>' +
         '<div class="rpt-meta"><span>'+reportMonths+'-month total</span><span>'+fmt(avgPerMonth)+'/mo avg</span></div>';
@@ -4795,7 +4877,7 @@ function renderMonthCompare() {
     var t = 0;
     S.expenses.forEach(function(e){
       var d = new Date(e.date+'T12:00:00');
-      if (d.getFullYear()===year && d.getMonth()===month&&!e.isCCPayment) t+=Number(e.amount)||0;
+      if (d.getFullYear()===year && d.getMonth()===month) t+=expenseSpendingAmount(e);
     });
     return t;
   }
@@ -5092,6 +5174,10 @@ window.onload = async function() {
   document.getElementById('saveCCPaymentBtn').addEventListener('click', saveCCPayment);
   document.getElementById('cancelCCPaymentBtn').addEventListener('click', function(){closeModal('ccPaymentModal');});
   document.getElementById('ccPaymentModal').addEventListener('click', function(e){modalBg(e,'ccPaymentModal');});
+  document.getElementById('saveCardCreditBtn').addEventListener('click', saveCardCredit);
+  document.getElementById('cancelCardCreditBtn').addEventListener('click', function(){editingCardCreditId=null;closeModal('cardCreditModal');});
+  document.getElementById('deleteCardCreditBtn').addEventListener('click', deleteCardCredit);
+  document.getElementById('cardCreditModal').addEventListener('click', function(e){modalBg(e,'cardCreditModal');});
 
   // Settings
   document.getElementById('manualRolloverBtn').addEventListener('click', manualRollover);
@@ -5253,6 +5339,23 @@ window.onload = async function() {
     <div class="field"><label>Payment Date</label><input id="ccPayDate" type="date"></div>
     <button class="btn-p" id="saveCCPaymentBtn">Record Payment</button>
     <button class="btn-s" id="cancelCCPaymentBtn">Cancel</button>
+  </div>
+</div>
+
+<!-- Credit Card Refund Modal -->
+<div class="overlay" id="cardCreditModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title" id="cardCreditTitle">Record Card Refund</div>
+    <div style="color:var(--muted);font-size:13px;margin:-4px 0 18px">Lowers card debt without adding money to Checking or Cash.</div>
+    <div class="field"><label>Credit Card</label><select id="cardCreditCard"></select></div>
+    <div class="field"><label>Description</label><input id="cardCreditDesc" placeholder="e.g. Dermatology refund"></div>
+    <div class="field"><label>Refund Amount ($)</label><input id="cardCreditAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>Refund Date</label><input id="cardCreditDate" type="date"></div>
+    <div class="field"><label>Return Reserved Money To</label><select id="cardCreditDestination"></select><div class="field-help">Choose the original envelope to restore it, or Ready to Assign if you want to decide later.</div></div>
+    <button class="btn-p" id="saveCardCreditBtn">Record Refund</button>
+    <button class="btn-s" id="cancelCardCreditBtn">Cancel</button>
+    <button class="btn-d" id="deleteCardCreditBtn" style="display:none">Delete Refund</button>
   </div>
 </div>
 
