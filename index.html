@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="3.1.0">
-<title>Ledger — Monthly Planning v3.1.0</title>
+<meta name="ledger-version" content="3.2.0">
+<title>Ledger — Monthly Planning v3.2.0</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -672,7 +672,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.1.0</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.2.0</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -1121,8 +1121,8 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v3.1.0 — Monthly Planning</div><div class="set-sub">Zero-based planning across months and accounts</div></div></div>
-          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Credit-card refunds can now restore an envelope or return reserved money to Ready to Assign</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v3.2.0 — Future-Month Funding</div><div class="set-sub">Money assigned in a future month is reserved everywhere</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Fund September directly; those dollars immediately stop appearing in Ready to Assign in August</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">On-device unless Drive or backup is used</div></div></div>
         </div></div>
       </div>
@@ -1375,7 +1375,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 6;
 var LEDGER_SCHEMA_VERSION = 7;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '3.1.0';
+var LEDGER_APP_VERSION = '3.2.0';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1851,6 +1851,7 @@ async function loadS() {
     if(e.openingCarry===undefined)e.openingCarry=0;
     delete e.assignedNext;
   });
+  retireEmptyNextMonthBuffer();
   delete S.viewingNextMonth;
   if(!S.lastBackupDate)S.lastBackupDate=null;
   if(S.cashBalance===undefined)S.cashBalance=0;
@@ -1951,9 +1952,20 @@ function seedGroups() {
     {id:uid(),groupId:g3,name:'Dental Work',emoji:'🦷',color:'#b7a6d9',assigned:0,order:0,target:{type:'save',amount:5000,byDate:null},isSavings:true,carryForward:0},
     {id:uid(),groupId:g3,name:'Emergency Fund',emoji:'🛟',color:'#a7cbbf',assigned:0,order:1,target:{type:'save',amount:7000,byDate:null},isSavings:true,carryForward:0},
     {id:uid(),groupId:g3,name:'Christmas',emoji:'🎄',color:'#d9c38b',assigned:0,order:2,target:{type:'save',amount:300,byDate:null},isSavings:true,carryForward:0},
-    {id:uid(),groupId:g4,name:'Credit Card Payment',emoji:'💳',color:'#9db7d6',assigned:0,order:0,target:{type:'refill',amount:40,byDate:null}},
-    {id:uid(),groupId:g5,name:'Next Month Buffer',emoji:'🧾',color:'#a9b0d8',assigned:0,order:0,target:null}
+    {id:uid(),groupId:g4,name:'Credit Card Payment',emoji:'💳',color:'#9db7d6',assigned:0,order:0,target:{type:'refill',amount:40,byDate:null}}
   ];
+}
+
+// The former Next Month Buffer was only a workaround. Real future-month
+// assignments now reserve the same pool of Ready to Assign money. Remove the
+// legacy envelope only when it has never held money or activity.
+function retireEmptyNextMonthBuffer(){
+  var legacy=S.envelopes.find(function(e){return /^next month buffer$/i.test(String(e.name||'').trim());});
+  if(!legacy)return;
+  var hasAssignment=Object.keys(legacy.assignments||{}).some(function(key){return Math.abs(Number(legacy.assignments[key])||0)>.005;});
+  var hasMoney=Math.abs(Number(legacy.assigned)||0)>.005||Math.abs(Number(legacy.openingCarry)||0)>.005||Math.abs(Number(legacy.carryForward)||0)>.005;
+  var hasActivity=S.expenses.some(function(x){return x.envId===legacy.id||x.refundEnvId===legacy.id;});
+  if(!hasAssignment&&!hasMoney&&!hasActivity&&!legacy.target)S.envelopes=S.envelopes.filter(function(e){return e.id!==legacy.id;});
 }
 
 // Move the legacy holding envelope into a separate custodial ledger without
@@ -2066,7 +2078,25 @@ function totalAssigned(monthKey) {
   return money(total);
 }
 function totalPositiveAvailable(monthKey){var key=normalizeMonthKey(monthKey||currentMonthKey()),total=0;S.envelopes.forEach(function(e){total+=Math.max(0,envAvailableForMonth(e.id,key));});return money(total);}
-function readyToAssign(monthKey) { return money(budgetBalance() - totalPositiveAvailable(monthKey||currentMonthKey())); }
+function latestFundedMonthKey(){
+  var current=currentMonthKey(),latest=current;
+  S.envelopes.forEach(function(env){
+    Object.keys(env.assignments||{}).forEach(function(key){
+      var normalized=normalizeMonthKey(key);
+      if(normalized>=current&&Math.abs(Number(env.assignments[key])||0)>.005&&normalized>latest)latest=normalized;
+    });
+  });
+  return latest;
+}
+function globallyCommittedAvailable(){
+  var current=currentMonthKey(),latest=latestFundedMonthKey(),cursor=current,maxCommitted=0,guard=0;
+  while(cursor<=latest&&guard++<240){
+    maxCommitted=Math.max(maxCommitted,totalPositiveAvailable(cursor));
+    cursor=addMonths(cursor,1);
+  }
+  return money(maxCommitted);
+}
+function readyToAssign() { return money(budgetBalance() - globallyCommittedAvailable()); }
 function expenseSpendingAmount(e) {
   if (!e || e.isCCPayment) return 0;
   return money((e.isCardCredit?-1:1)*(Number(e.amount)||0));
@@ -2348,7 +2378,7 @@ function renderMonthNavigator() {
   var banner = document.getElementById('nextMonthBanner');
   if(label)label.textContent=monthLabel(key);
   if(today)today.style.display=key===current?'none':'inline-block';
-  if(banner){banner.textContent=key>current?'✨ Future month — assign money here without changing another month':key<current?'📚 Past month — assignments and activity are preserved':'📅 Current month';banner.className='next-month-banner'+(key===current?'':' show');}
+  if(banner){banner.textContent=key>current?'✨ Future month — assignments reserve Ready to Assign across every month':key<current?'📚 Past month — assignments and activity are preserved':'📅 Current month';banner.className='next-month-banner'+(key===current?'':' show');}
 }
 function changeBudgetMonth(offset) {
   S.selectedMonth=addMonths(selectedMonthKey(),offset);
@@ -4182,6 +4212,7 @@ function normalizeRestoredState(data) {
   S.creditCards.forEach(function(c){if(c.apr===undefined)c.apr=0;var paymentEnv=S.envelopes.find(function(e){return e.id===c.paymentEnvId;});if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}});
   migrateCreditCardRegisters();
   S.envelopes.forEach(function(e,i){if(e.order===undefined)e.order=i;if(e.isSavings===undefined)e.isSavings=false;if(!e.assignments||typeof e.assignments!=='object'){e.assignments={};e.assignments[S.currentMonth]=money(e.assigned||0);if(Number(e.assignedNext||0)!==0)e.assignments[addMonths(S.currentMonth,1)]=money(e.assignedNext||0);e.openingCarry=money(e.carryForward||0);}if(e.openingCarry===undefined)e.openingCarry=0;delete e.assignedNext;});
+  retireEmptyNextMonthBuffer();
   ensureRecordIds();
 }
 
