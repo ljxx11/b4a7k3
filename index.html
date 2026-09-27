@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="3.2.2">
-<title>Ledger — Monthly Planning v3.2.2</title>
+<meta name="ledger-version" content="3.2.3">
+<title>Ledger — Monthly Planning v3.2.3</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -672,7 +672,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.2.2</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.2.3</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -1121,7 +1121,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v3.2.2 — Future-Month Funding</div><div class="set-sub">Money assigned in a future month is reserved everywhere</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v3.2.3 — Future-Month Funding</div><div class="set-sub">Money assigned in a future month is reserved everywhere</div></div></div>
           <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Fund September directly; those dollars immediately stop appearing in Ready to Assign in August</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">On-device unless Drive or backup is used</div></div></div>
         </div></div>
@@ -1341,6 +1341,7 @@ var S = {
   accounts: [],     // {id,name,type:'checking'|'savings'|'cash',closed,reconciledAt,reconciledBalance}
   accountTransfers: [], // {id,fromAccountId,toAccountId,amount,date,note}
   reconciliationAdjustments: [], // {id,targetType:'account'|'card',targetId,amount,date,note,cleared,reconciled}
+  envelopeBalanceAdjustments: [], // {id,envelopeId,amount,date,note,createdAt}
   groups: [],       // {id, name, collapsed, order}
   envelopes: [],    // {id, groupId, name, emoji, color, assignments:{YYYY-MM:amount}, openingCarry, order, target, isSavings}
   // target: {type:'spend'|'save'|'refill', amount, byDate(optional)}
@@ -1393,7 +1394,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 6;
 var LEDGER_SCHEMA_VERSION = 7;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '3.2.2';
+var LEDGER_APP_VERSION = '3.2.3';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1411,7 +1412,7 @@ var pendingRestore = null;
 var pendingCloudPackage = null;
 var previousModalFocus = null;
 
-var LEDGER_COLLECTIONS = ['income','expenses','accounts','accountTransfers','reconciliationAdjustments','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','custodialBalanceAdjustments','transfers'];
+var LEDGER_COLLECTIONS = ['income','expenses','accounts','accountTransfers','reconciliationAdjustments','envelopeBalanceAdjustments','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','custodialBalanceAdjustments','transfers'];
 var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','selectedMonth','budgetStartMonth','rolloverDate','custodialMigrationVersion'];
 
 function openLedgerDB() {
@@ -1826,6 +1827,8 @@ async function loadS() {
   if(!S.expenses) S.expenses=[];
   if(!S.accounts) S.accounts=[];
   if(!S.accountTransfers) S.accountTransfers=[];
+  if(!S.reconciliationAdjustments) S.reconciliationAdjustments=[];
+  if(!S.envelopeBalanceAdjustments) S.envelopeBalanceAdjustments=[];
   if(!S.groups) S.groups=[];
   if(!S.envelopes) S.envelopes=[];
   if(!S.owedToMe) S.owedToMe=[];
