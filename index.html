@@ -1855,6 +1855,7 @@ async function loadS() {
     if(paymentEnv){paymentEnv.isCCPayment=true;paymentEnv.ccId=c.id;}
   });
   migrateCreditCardRegisters();
+  S.creditCards.forEach(function(card){card.balance=creditCardRegisterBalance(card.id);});
   if(!S.currentMonth) S.currentMonth=currentMonthKey();
   S.currentMonth=normalizeMonthKey(S.currentMonth);
   if(!S.budgetStartMonth) S.budgetStartMonth=S.currentMonth;
@@ -2346,7 +2347,7 @@ function monthlyIncome(monthKey) {
 
 // ── TOTAL CC DEBT ──
 function totalCCDebt() {
-  var t = 0; S.creditCards.forEach(function(c){ t += c.balance||0; }); return t;
+  var t = 0; S.creditCards.forEach(function(c){ t += Math.max(0,creditCardRegisterBalance(c.id)); }); return money(t);
 }
 function groupAssigned(gid) {
   var key=selectedMonthKey(),t=0; S.envelopes.filter(function(e){return e.groupId===gid;}).forEach(function(e){t+=assignmentForMonth(e,key);}); return money(t);
@@ -2910,7 +2911,7 @@ function cardFundingDetails(card) {
   });
   purchases=money(purchases);
   var funded=paymentEnv?Math.min(purchases,Math.max(0,fundedCreditActivity(paymentEnv.id,month))):0;
-  var balance=Math.max(0,Number(card.balance)||0);
+  var balance=Math.max(0,creditCardRegisterBalance(card.id));
   return {ready:money(ready),balance:money(balance),gap:money(Math.max(0,balance-ready)),purchases:purchases,funded:money(funded),unfunded:money(Math.max(0,purchases-funded))};
 }
 function recordCCPayment(cardId) {
@@ -3000,7 +3001,7 @@ function renderCCTab() {
           '<div class="cc-balance-lbl">Balance owed</div>',
         '</div>',
         '<div style="display:flex;align-items:center;gap:8px">',
-          '<div class="cc-balance" style="color:'+((Number(card.balance)||0)<0?'var(--green)':'var(--red)')+'">'+((Number(card.balance)||0)<0?'-':'')+fmt(card.balance||0)+'</div>',
+          '<div class="cc-balance" style="color:'+(details.balance<0?'var(--green)':'var(--red)')+'">'+(details.balance<0?'-':'')+fmt(details.balance)+'</div>',
           '<button class="grp-menu-btn" id="ccEditBtn_'+card.id+'">&#8943;</button>',
         '</div>',
       '</div>',
@@ -3745,7 +3746,7 @@ function selectedRegisterRecord(){return String(activeAccountId||'').indexOf('cc
 function openReconcileModal(){var account=selectedRegisterRecord();if(!account){toast('Choose an account');return;}document.getElementById('reconcileAccountName').textContent=account.name;document.getElementById('reconcileDate').value=new Date().toISOString().slice(0,10);document.getElementById('reconcileBalance').value='';updateReconcileDifference();openModal('reconcileModal');}
 function updateReconcileDifference(){var date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value),cleared=selectedRegisterBalance(true,date),book=selectedRegisterBalance(false,date),difference=isNaN(statement)?0:money(statement-cleared);document.getElementById('reconcileCleared').textContent=(cleared<0?'-':'')+fmt(Math.abs(cleared));document.getElementById('reconcileBook').textContent=(book<0?'-':'')+fmt(Math.abs(book));document.getElementById('reconcileDifference').textContent=(difference<0?'-':'')+fmt(Math.abs(difference));document.getElementById('reconcileDifference').style.color=Math.abs(difference)<.005?'var(--green)':'var(--red)';document.getElementById('reconcileHint').textContent=isNaN(statement)?'Enter the verified balance':Math.abs(difference)<.005?'Cleared balance matches':'Finish normally after clearing transactions, or use Set Verified Balance for a clean restart';}
 function finishReconcile(){var account=selectedRegisterRecord(),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the verified date and balance');return;}var cleared=selectedRegisterBalance(true,date),difference=money(statement-cleared);if(Math.abs(difference)>=.005){toast('Cleared difference must be $0.00, or use Set Verified Balance');return;}selectedRegisterEntries().forEach(function(x){if(x.cleared&&String(x.date)<=date)x.record.reconciled=true;});account.reconciledAt=date;account.reconciledBalance=money(statement);saveS();closeModal('reconcileModal');renderAccounts();toast(account.name+' reconciled');}
-function setVerifiedBalance(){var account=selectedRegisterRecord(),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the verified date and balance');return;}var book=selectedRegisterBalance(false,date),delta=money(statement-book);var isCard=String(activeAccountId||'').indexOf('cc:')===0;var label=account.name;if(!confirm('Set '+label+' to '+(statement<0?'-':'')+fmt(Math.abs(statement))+' on '+date+'?\n\nLedger will create a '+(delta<0?'-':'')+fmt(Math.abs(delta))+' reconciliation adjustment. It will change the account balance and Ready to Assign where applicable, but it will not appear as income or spending.'))return;(S.reconciliationAdjustments||(S.reconciliationAdjustments=[])).push({id:makeLedgerId('reconcile_adjustment'),targetType:isCard?'card':'account',targetId:isCard?String(activeAccountId).slice(3):activeAccountId,amount:delta,date:date,note:'Verified balance adjustment',cleared:true,reconciled:true,createdAt:new Date().toISOString()});selectedRegisterEntries().forEach(function(x){if(String(x.date)<=date){x.record.cleared=true;x.record.reconciled=true;}});account.reconciledAt=date;account.reconciledBalance=money(statement);saveS();closeModal('reconcileModal');renderAll();go('accounts');toast(label+' set to verified balance');}
+function setVerifiedBalance(){var account=selectedRegisterRecord(),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the verified date and balance');return;}var book=selectedRegisterBalance(false,date),delta=money(statement-book);var isCard=String(activeAccountId||'').indexOf('cc:')===0;var label=account.name;if(!confirm('Set '+label+' to '+(statement<0?'-':'')+fmt(Math.abs(statement))+' on '+date+'?\n\nLedger will create a '+(delta<0?'-':'')+fmt(Math.abs(delta))+' reconciliation adjustment. It will change the account balance and Ready to Assign where applicable, but it will not appear as income or spending.'))return;(S.reconciliationAdjustments||(S.reconciliationAdjustments=[])).push({id:makeLedgerId('reconcile_adjustment'),targetType:isCard?'card':'account',targetId:isCard?String(activeAccountId).slice(3):activeAccountId,amount:delta,date:date,note:'Verified balance adjustment',cleared:true,reconciled:true,createdAt:new Date().toISOString()});selectedRegisterEntries().forEach(function(x){if(String(x.date)<=date){x.record.cleared=true;x.record.reconciled=true;}});account.reconciledAt=date;account.reconciledBalance=money(statement);if(isCard)account.balance=money(statement);saveS();closeModal('reconcileModal');renderAll();go('accounts');toast(label+' set to verified balance');}
 
 // ═══════════════════════════════════════════
 // NAVIGATION
