@@ -5404,6 +5404,23 @@ window.onload = async function() {
   </div>
 </div>
 
+<!-- Verified Credit Card Payment Reserve -->
+<div class="overlay" id="ccReserveModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title">Set Verified Payment Reserve — <span id="ccReserveCardName"></span></div>
+    <div class="field"><label>Verified Date</label><input id="ccReserveDate" type="date"></div>
+    <div class="field"><label>Amount Reserved for Payment ($)</label><input id="ccReserveAmount" type="number" inputmode="decimal" placeholder="0.00" oninput="updateVerifiedCardReserve()"></div>
+    <div class="card" style="margin-bottom:10px"><div class="card-body">
+      <div class="set-row"><div><div class="set-lbl">Card Balance Owed</div><div class="set-sub">Verified posted balance</div></div><strong id="ccReserveOwed">$0.00</strong></div>
+      <div class="set-row"><div><div class="set-lbl">Current Payment Reserve</div><div class="set-sub">What Ledger currently has set aside</div></div><strong id="ccReserveCurrent">$0.00</strong></div>
+      <div class="set-row"><div><div class="set-lbl">Adjustment to Create</div><div class="set-sub">Payment-envelope only; no fake income or spending</div></div><strong id="ccReserveDifference">$0.00</strong></div>
+    </div></div>
+    <button class="btn-p" onclick="saveVerifiedCardReserve()">Set Verified Reserve</button>
+    <button class="btn-s" onclick="closeModal('ccReserveModal')">Cancel</button>
+  </div>
+</div>
+
 <!-- Credit Card Payment Modal -->
 <div class="overlay" id="ccPaymentModal">
   <div class="sheet">
