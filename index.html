@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="3.2.3">
-<title>Ledger — Monthly Planning v3.2.3</title>
+<meta name="ledger-version" content="3.2.4">
+<title>Ledger — Monthly Planning v3.2.4</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -672,7 +672,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.2.3</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.2.4</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -1121,7 +1121,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         </div></div>
         <div class="settings-subhead">About Ledger</div>
         <div class="card"><div class="card-body">
-          <div class="set-row"><div><div class="set-lbl">Ledger v3.2.3 — Future-Month Funding</div><div class="set-sub">Money assigned in a future month is reserved everywhere</div></div></div>
+          <div class="set-row"><div><div class="set-lbl">Ledger v3.2.4 — Future-Month Funding</div><div class="set-sub">Money assigned in a future month is reserved everywhere</div></div></div>
           <div class="set-row"><div><div class="set-lbl">What changed</div><div class="set-sub">Fund September directly; those dollars immediately stop appearing in Ready to Assign in August</div></div></div>
           <div class="set-row"><div><div class="set-lbl">Privacy</div><div class="set-sub">On-device unless Drive or backup is used</div></div></div>
         </div></div>
@@ -1209,6 +1209,22 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <!-- Account Transfer -->
 <div class="overlay" id="accountTransferModal"><div class="sheet"><div class="drag"></div><div class="sheet-title">Transfer Between Accounts</div><div class="field"><label>From</label><select id="accountTransferFrom"></select></div><div class="field"><label>To</label><select id="accountTransferTo"></select></div><div class="field"><label>Amount ($)</label><input id="accountTransferAmount" type="number" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Date</label><input id="accountTransferDate" type="date"></div><div class="field"><label>Note</label><input id="accountTransferNote" placeholder="Optional"></div><button class="btn-p" id="saveAccountTransferBtn">Record Transfer</button><button class="btn-s" id="cancelAccountTransferBtn">Cancel</button></div></div>
+
+<!-- Verified Envelope Balance -->
+<div class="overlay" id="envVerifiedModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title">Set Verified Envelope Balance — <span id="envVerifiedName"></span></div>
+    <div class="field"><label>Verified Date</label><input id="envVerifiedDate" type="date"></div>
+    <div class="field"><label>Verified Available Balance ($)</label><input id="envVerifiedBalance" type="number" inputmode="decimal" placeholder="0.00" oninput="updateVerifiedEnvelopeDifference()"></div>
+    <div class="card" style="margin-bottom:10px"><div class="card-body">
+      <div class="set-row"><div><div class="set-lbl">Current Available</div><div class="set-sub">What Ledger currently says is available in this envelope</div></div><strong id="envVerifiedCurrent">$0.00</strong></div>
+      <div class="set-row"><div><div class="set-lbl">Adjustment to Create</div><div class="set-sub">Envelope-only correction; account balances will not move</div></div><strong id="envVerifiedDifference">$0.00</strong></div>
+    </div></div>
+    <button class="btn-p" onclick="saveVerifiedEnvelopeBalance()">Set Verified Envelope Balance</button>
+    <button class="btn-s" onclick="closeModal('envVerifiedModal')">Cancel</button>
+  </div>
+</div>
 
 <!-- Add Envelope -->
 <div class="overlay" id="envModal">
@@ -1394,7 +1410,7 @@ var LEDGER_DB_NAME = 'ledger_database';
 var LEDGER_DB_VERSION = 6;
 var LEDGER_SCHEMA_VERSION = 7;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '3.2.3';
+var LEDGER_APP_VERSION = '3.2.4';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -2668,10 +2684,40 @@ function renderEnvCard(env) {
         '<button class="env-act-btn" data-eid="'+eid+'" onclick="openEnvModal(this.dataset.eid,null)">&#9999;&#65039; Edit</button>' +
         '<button class="env-act-btn" data-eid="'+eid+'" onclick="openTargetModal(this.dataset.eid)">&#127919; Target</button>' +
         '<button class="env-act-btn" data-eid="'+eid+'" onclick="moveToEnv(this.dataset.eid)">&#8596;&#65039; Move</button>' +
+        '<button class="env-act-btn" data-eid="'+eid+'" onclick="openVerifiedEnvelopeBalance(this.dataset.eid)">&#10003; Verify balance</button>' +
         '<button class="env-act-btn'+savingsCls+'" data-eid="'+eid+'" onclick="toggleSavingsFlag(this.dataset.eid)">'+savingsLbl+'</button>' +
       '</div>' +
     '</div>' +
   '</div>';
+}
+
+var verifyingEnvelopeId=null;
+function openVerifiedEnvelopeBalance(envId){
+  var env=S.envelopes.find(function(e){return e.id===envId;});if(!env)return;
+  verifyingEnvelopeId=envId;
+  document.getElementById('envVerifiedName').textContent=env.name;
+  document.getElementById('envVerifiedDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('envVerifiedBalance').value='';
+  updateVerifiedEnvelopeDifference();
+  openModal('envVerifiedModal');
+}
+function updateVerifiedEnvelopeDifference(){
+  var env=S.envelopes.find(function(e){return e.id===verifyingEnvelopeId;});if(!env)return;
+  var current=envAvailableForMonth(env.id,selectedMonthKey()),verified=parseFloat(document.getElementById('envVerifiedBalance').value);
+  var delta=isNaN(verified)?0:money(verified-current);
+  document.getElementById('envVerifiedCurrent').textContent=(current<0?'-':'')+fmt(Math.abs(current));
+  document.getElementById('envVerifiedDifference').textContent=(delta<0?'-':'+')+fmt(Math.abs(delta));
+  document.getElementById('envVerifiedDifference').style.color=Math.abs(delta)<.005?'var(--green)':delta<0?'var(--red)':'var(--green)';
+}
+function saveVerifiedEnvelopeBalance(){
+  var env=S.envelopes.find(function(e){return e.id===verifyingEnvelopeId;});
+  var date=document.getElementById('envVerifiedDate').value,verified=parseFloat(document.getElementById('envVerifiedBalance').value);
+  if(!env||!date||isNaN(verified)){toast('Enter a valid verified balance');return;}
+  var current=envAvailableForMonth(env.id,selectedMonthKey()),delta=money(verified-current);
+  if(Math.abs(delta)<.005){closeModal('envVerifiedModal');toast(env.name+' already matches');return;}
+  if(!confirm('Set '+env.name+' available balance to '+(verified<0?'-':'')+fmt(Math.abs(verified))+' on '+date+'?\n\nLedger will create a '+(delta<0?'-':'+')+fmt(Math.abs(delta))+' envelope-only adjustment. Account balances will not move.'))return;
+  (S.envelopeBalanceAdjustments||(S.envelopeBalanceAdjustments=[])).push({id:makeLedgerId('envelope_balance_adjustment'),envelopeId:env.id,amount:delta,date:date,note:'Verified envelope balance adjustment',createdAt:new Date().toISOString()});
+  saveS();closeModal('envVerifiedModal');renderAll();go('budget');toast(env.name+' set to verified envelope balance');verifyingEnvelopeId=null;
 }
 
 function toggleGroup(id) {
