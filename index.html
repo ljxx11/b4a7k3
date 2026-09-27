@@ -1590,6 +1590,7 @@ function operationSummary(collection, operation, current, previous, changedSetti
   if(collection==='accounts') return operation==='delete' ? 'Account removed · ' + name : (operation==='insert' ? 'Account added · ' + name : 'Account updated · ' + name);
   if(collection==='accountTransfers') return operation==='delete' ? 'Account transfer removed' : (operation==='insert' ? 'Account transfer recorded' : 'Account transfer updated');
   if(collection==='reconciliationAdjustments') return operation==='delete' ? 'Verified balance adjustment removed' : (operation==='insert' ? 'Verified balance set · '+name : 'Verified balance adjustment updated · '+name);
+  if(collection==='envelopeBalanceAdjustments') return operation==='delete' ? 'Verified reserve adjustment removed' : (operation==='insert' ? 'Verified reserve set · '+name : 'Verified reserve adjustment updated · '+name);
   if(collection==='owedToMe' || collection==='iOwe') return operation==='delete' ? 'Balance removed · ' + name : (operation==='insert' ? 'Balance tracked · ' + name : 'Balance updated · ' + name);
   if(collection==='custodialAccounts') return operation==='delete' ? 'Custodial fund removed · ' + name : (operation==='insert' ? 'Custodial fund added · ' + name : 'Custodial fund updated · ' + name);
   if(collection==='custodialTransactions') return operation==='delete' ? 'Custodial entry removed · ' + name : (operation==='insert' ? 'Custodial entry added · ' + name : 'Custodial entry updated · ' + name);
@@ -2206,16 +2207,17 @@ function carryIntoMonth(envId, monthKey) {
   if(key<=start)return key===start?money(env.openingCarry||0):0;
   var cursor=start, carry=money(env.openingCarry||0), guard=0;
   while(cursor<key && guard++<240){
-    var available=money(carry+assignmentForMonth(env,cursor)+(env.isCCPayment?fundedCreditActivity(env.id,cursor)-paymentEnvelopeCreditRelease(env.id,cursor):0)-envSpentForMonth(envId,cursor));
+    var available=money(carry+assignmentForMonth(env,cursor)+(env.isCCPayment?fundedCreditActivity(env.id,cursor)-paymentEnvelopeCreditRelease(env.id,cursor):0)-envSpentForMonth(envId,cursor)+envelopeAdjustmentForMonth(env.id,cursor));
     carry=money(Math.max(0,available));
     cursor=addMonths(cursor,1);
   }
   return carry;
 }
+function envelopeAdjustmentForMonth(envId,monthKey){var key=normalizeMonthKey(monthKey),total=0;(S.envelopeBalanceAdjustments||[]).forEach(function(a){if(a.envelopeId===envId&&monthKeyFromDate(a.date)===key)total+=Number(a.amount)||0;});return money(total);}
 function envAvailableForMonth(envId, monthKey) {
   var env=S.envelopes.find(function(e){return e.id===envId;});if(!env)return 0;
   var key=normalizeMonthKey(monthKey);
-  return money(carryIntoMonth(envId,key)+assignmentForMonth(env,key)+(env.isCCPayment?fundedCreditActivity(env.id,key)-paymentEnvelopeCreditRelease(env.id,key):0)-envSpentForMonth(envId,key));
+  return money(carryIntoMonth(envId,key)+assignmentForMonth(env,key)+(env.isCCPayment?fundedCreditActivity(env.id,key)-paymentEnvelopeCreditRelease(env.id,key):0)-envSpentForMonth(envId,key)+envelopeAdjustmentForMonth(env.id,key));
 }
 function envAvailable(envId) {
   return envAvailableForMonth(envId,currentMonthKey());
