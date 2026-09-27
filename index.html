@@ -2905,6 +2905,37 @@ function ensureCCGroup() {
   return gid;
 }
 var payingCCId = null;
+var verifyingCardReserveId=null;
+function openVerifiedCardReserve(cardId){
+  var card=S.creditCards.find(function(c){return c.id===cardId;}),env=card?ccPaymentEnv(card.id):null;
+  if(!card||!env){toast('Payment envelope not found');return;}
+  verifyingCardReserveId=cardId;
+  document.getElementById('ccReserveCardName').textContent=card.name;
+  document.getElementById('ccReserveDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('ccReserveAmount').value='';
+  updateVerifiedCardReserve();
+  openModal('ccReserveModal');
+}
+function updateVerifiedCardReserve(){
+  var card=S.creditCards.find(function(c){return c.id===verifyingCardReserveId;}),env=card?ccPaymentEnv(card.id):null;
+  if(!card||!env)return;
+  var owed=Math.max(0,creditCardRegisterBalance(card.id)),current=Math.max(0,envAvailable(env.id));
+  var verified=parseFloat(document.getElementById('ccReserveAmount').value),delta=isNaN(verified)?0:money(verified-current);
+  document.getElementById('ccReserveOwed').textContent=fmt(owed);
+  document.getElementById('ccReserveCurrent').textContent=fmt(current);
+  document.getElementById('ccReserveDifference').textContent=(delta<0?'-':'+')+fmt(Math.abs(delta));
+  document.getElementById('ccReserveDifference').style.color=Math.abs(delta)<.005?'var(--green)':delta<0?'var(--red)':'var(--green)';
+}
+function saveVerifiedCardReserve(){
+  var card=S.creditCards.find(function(c){return c.id===verifyingCardReserveId;}),env=card?ccPaymentEnv(card.id):null;
+  var date=document.getElementById('ccReserveDate').value,verified=parseFloat(document.getElementById('ccReserveAmount').value);
+  if(!card||!env||!date||isNaN(verified)||verified<0){toast('Enter a valid verified reserve');return;}
+  var current=Math.max(0,envAvailable(env.id)),delta=money(verified-current);
+  if(Math.abs(delta)<.005){closeModal('ccReserveModal');toast('Payment reserve already matches');return;}
+  if(!confirm('Set '+card.name+' payment reserve to '+fmt(verified)+' on '+date+'?\n\nLedger will create a '+(delta<0?'-':'+')+fmt(Math.abs(delta))+' envelope-only adjustment.'))return;
+  (S.envelopeBalanceAdjustments||(S.envelopeBalanceAdjustments=[])).push({id:makeLedgerId('envelope_balance_adjustment'),envelopeId:env.id,amount:delta,date:date,note:'Verified payment reserve adjustment',createdAt:new Date().toISOString()});
+  saveS();closeModal('ccReserveModal');renderAll();go('cards');toast(card.name+' payment reserve verified');verifyingCardReserveId=null;
+}
 function cardFundingDetails(card) {
   var paymentEnv=ccPaymentEnv(card.id), ready=paymentEnv?Math.max(0,envAvailable(paymentEnv.id)):0;
   var month=currentMonthKey(), purchases=0;
@@ -3018,6 +3049,7 @@ function renderCCTab() {
         '</div>',
         '<div style="text-align:right;flex-shrink:0">',
           '<div class="cc-pay-amt" style="color:'+(payReady>=(card.balance||0)?'var(--green)':'var(--yellow)')+'">'+fmt(payReady)+'</div>',
+          '<button class="cc-pay-btn" id="ccReserveBtn_'+card.id+'" style="margin-bottom:6px">Set Verified Reserve</button>',
           '<button class="cc-pay-btn" id="ccRefundBtn_'+card.id+'" style="margin-bottom:6px">Record Refund</button>',
           '<button class="cc-pay-btn" id="ccPayBtn_'+card.id+'">Record Payment</button>',
         '</div>',
@@ -3028,9 +3060,11 @@ function renderCCTab() {
       var editBtn = div.querySelector('#ccEditBtn_'+cid);
       var payBtn = div.querySelector('#ccPayBtn_'+cid);
       var refundBtn = div.querySelector('#ccRefundBtn_'+cid);
+      var reserveBtn = div.querySelector('#ccReserveBtn_'+cid);
       if(editBtn) editBtn.addEventListener('click', function(){ openCCModal(cid); });
       if(payBtn) payBtn.addEventListener('click', function(){ recordCCPayment(cid); });
       if(refundBtn) refundBtn.addEventListener('click', function(){ openCardCreditModal(cid,null); });
+      if(reserveBtn) reserveBtn.addEventListener('click', function(){ openVerifiedCardReserve(cid); });
     })(card.id);
     el.appendChild(div);
   });
