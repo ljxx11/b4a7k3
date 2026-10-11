@@ -2739,6 +2739,7 @@ function applyReimbursementAssignment(inc,sign){
 }
 function delIncome(id) {
   var locked=S.income.find(function(i){return i.id===id;});if(locked&&locked.reconciled){toast('Reconciled transactions are locked');return;}
+  if(locked&&locked.isIOURepayment){toast('IOU repayments are protected because they are linked to settlement history');return;}
   if(locked)applyReimbursementAssignment(locked,-1);
   S.income = S.income.filter(function(i){return i.id!==id;});
   saveS(); renderIncome(); renderEnvelopes(); renderSummary(); toast('Income removed');
@@ -2750,6 +2751,7 @@ function openEditIncomeModal(id) {
   var inc = S.income.find(function(i){return i.id===id;});
   if (!inc) return;
   if(inc.reconciled){toast('Reconciled transactions are locked');return;}
+  if(inc.isIOURepayment){editingIncomeId=null;toast('IOU repayments are linked to settlement history and are read-only');return;}
   cashIncOn = inc.isCash || false;
   document.getElementById('cashIncTog').className = 'tog' + (cashIncOn?' on':'');
   reimbOn = inc.isReimb || false;
@@ -3444,6 +3446,7 @@ function applyBackdatedExpenseEffect(exp,mode){
 function delExp(id) {
   var exp=S.expenses.find(function(e){return e.id===id;});
   if(exp&&exp.reconciled){toast('Reconciled transactions are locked');return;}
+  if(exp&&splitHasSettlementHistory(exp)){toast('This expense has IOU repayment/forgiveness history and is protected');return;}
   applyBackdatedExpenseEffect(exp,'remove');
   S.expenses = S.expenses.filter(function(e){return e.id!==id;});
   S.owedToMe=(S.owedToMe||[]).filter(function(i){return i.sourceExpenseId!==id;});
@@ -3455,6 +3458,7 @@ function openEditExpModal(id) {
   var exp = S.expenses.find(function(e){return e.id===id;});
   if (!exp) return;
   if(exp.reconciled){toast('Reconciled transactions are locked');return;}
+  if(splitHasSettlementHistory(exp)){editingExpId=null;toast('This expense has IOU repayment/forgiveness history and is read-only');return;}
   var historicalCard=exp.ccId?S.creditCards.find(function(c){return c.id===exp.ccId;}):null;
   if(historicalCard&&historicalCard.archived){editingExpId=null;toast('Archived card history is read-only');return;}
   if(exp.isCardCredit){editingExpId=null;openCardCreditModal(exp.ccId,exp.id);return;}
@@ -3690,6 +3694,7 @@ function renderOwed() {
       '<div class="owed-name"><div class="owed-who">' + esc(i.who) + '</div><div class="owed-note">' + esc(i.note||'') + ' · ' + i.date + (i.sourceExpenseId?' · From expense':'') + '</div></div>' +
       '<div class="owed-amt" style="color:var(--green)">' + fmt(i.amount) + '</div>' +
       '<button class="owed-pay-btn" onclick="openIOURepayment(\''+esc(String(i.who)).replace(/'/g,"\\'")+'\')">Repayment</button>' +
+      '<button class="owed-forgive-btn" onclick="openIOUForgiveness(\''+i.id+'\')">Forgive</button>' +
       '<button class="del-btn" onclick="delOwed(\'toMe\',\''+i.id+'\')">×</button>' +
       '</div>';
   }).join('');
@@ -3706,6 +3711,73 @@ function renderOwed() {
 }
 function owedTotalForPerson(who){
   return money((S.owedToMe||[]).filter(function(i){return String(i.who||'').trim().toLowerCase()===String(who||'').trim().toLowerCase();}).reduce(function(t,i){return t+(Number(i.amount)||0);},0));
+}
+function sourceExpenseAndSplit(item){
+  if(!item||!item.sourceExpenseId||!item.sourceSplitId)return null;
+  var exp=S.expenses.find(function(e){return e.id===item.sourceExpenseId;});if(!exp)return null;
+  var line=expenseSplits(exp).find(function(x){return x.id===item.sourceSplitId;});if(!line||!splitIsFronted(line))return null;
+  return {exp:exp,line:line};
+}
+function splitHasSettlementHistory(exp){
+  return expenseSplits(exp).some(function(line){return splitIsSettledForOther(line)||!!line.forgivenFromIOU;});
+}
+function settleLinkedIOURepayment(item,amount){
+  var source=sourceExpenseAndSplit(item);if(!source)return false;
+  var exp=source.exp,line=source.line,applied=money(Math.min(Number(line.amount)||0,Number(amount)||0));if(applied<=0)return false;
+  var remaining=money((Number(line.amount)||0)-applied);
+  var category=line.envId||item.sourceEnvId||null;
+  if(remaining>.005)line.amount=remaining;
+  else exp.splits=expenseSplits(exp).filter(function(x){return x.id!==line.id;});
+  exp.splits.push({id:makeLedgerId('split'),amount:applied,envId:category,owedBy:null,settledForOther:true,settledAt:new Date().toISOString(),settledWho:item.who||''});
+  exp.frontedAmount=expenseFrontedAmount(exp);
+  return true;
+}
+function forgivenessEnvelopeOptions(selectedId){
+  var html='<option value="">Choose a category</option>';
+  sortedGroups().forEach(function(g){
+    var envs=groupEnvelopes(g.id).filter(function(e){return !e.isCCPayment;});if(!envs.length)return;
+    html+='<optgroup label="'+esc(g.name)+'">'+envs.map(function(e){return '<option value="'+e.id+'"'+(e.id===selectedId?' selected':'')+'>'+esc(e.emoji||'')+' '+esc(e.name)+'</option>';}).join('')+'</optgroup>';
+  });
+  return html;
+}
+function openIOUForgiveness(id){
+  var item=(S.owedToMe||[]).find(function(i){return i.id===id;});if(!item){toast('IOU not found');return;}
+  forgivingIOUId=id;
+  var source=sourceExpenseAndSplit(item),selected=(source&&source.line.envId)||item.sourceEnvId||null;
+  document.getElementById('iouForgivenessWho').textContent=item.who||'';
+  document.getElementById('iouForgivenessOutstanding').textContent=fmt(item.amount||0);
+  document.getElementById('iouForgivenessSource').textContent=(item.note||'Money owed')+' · '+(source&&source.exp?source.exp.date:(item.date||''));
+  document.getElementById('iouForgivenessAmount').value=money(item.amount||0).toFixed(2);
+  document.getElementById('iouForgivenessEnvelope').innerHTML=forgivenessEnvelopeOptions(selected);
+  openModal('iouForgivenessModal');
+}
+function applyLinkedIOUForgiveness(item,amount,envId){
+  var source=sourceExpenseAndSplit(item);if(!source)return false;
+  var exp=source.exp,line=source.line,applied=money(Math.min(Number(line.amount)||0,Number(amount)||0));if(applied<=0)return false;
+  var month=normalizeMonthKey(monthKeyFromDate(exp.date)),env=S.envelopes.find(function(e){return e.id===envId;});if(!env)return false;
+  setAssignmentForMonth(env,month,money(assignmentForMonth(env,month)+applied));
+  var remaining=money((Number(line.amount)||0)-applied);
+  if(remaining>.005){line.amount=remaining;line.envId=envId;}
+  else exp.splits=expenseSplits(exp).filter(function(x){return x.id!==line.id;});
+  exp.splits.push({id:makeLedgerId('split'),amount:applied,envId:envId,owedBy:null,forgivenFromIOU:true,forgivenAt:new Date().toISOString(),forgivenWho:item.who||''});
+  exp.frontedAmount=expenseFrontedAmount(exp);
+  return true;
+}
+function saveIOUForgiveness(){
+  var item=(S.owedToMe||[]).find(function(i){return i.id===forgivingIOUId;});if(!item){toast('IOU not found');return;}
+  var amount=money(parseFloat(document.getElementById('iouForgivenessAmount').value)||0),envId=document.getElementById('iouForgivenessEnvelope').value;
+  if(amount<=0){toast('Enter the amount to forgive');return;}
+  if(amount>(Number(item.amount)||0)+.005){toast('This IOU is only '+fmt(item.amount||0));return;}
+  var env=S.envelopes.find(function(e){return e.id===envId&&!e.archived&&!e.isCCPayment;});if(!env){toast('Choose a spending category');return;}
+  var linked=applyLinkedIOUForgiveness(item,amount,envId);
+  if(!linked){
+    var date=item.date||new Date().toISOString().slice(0,10),month=normalizeMonthKey(monthKeyFromDate(date));
+    setAssignmentForMonth(env,month,money(assignmentForMonth(env,month)+amount));
+    S.expenses.push({id:uid(),desc:'Forgiven IOU — '+(item.who||'Other'),amount:amount,envId:envId,date:date,time:'12:00',datetime:date+'T12:00',payMethod:'adjustment',accountId:null,isCredit:false,isIOUForgiveness:true,forgivenIOUId:item.id,forgivenWho:item.who||'',cleared:true});
+  }
+  item.amount=money((Number(item.amount)||0)-amount);
+  if(item.amount<=.005)S.owedToMe=(S.owedToMe||[]).filter(function(i){return i.id!==item.id;});
+  saveS();closeModal('iouForgivenessModal');forgivingIOUId=null;renderAll();go('owed');toast('✓ '+fmt(amount)+' forgiven · now counted as your spending');
 }
 function openIOURepayment(who){
   var outstanding=owedTotalForPerson(who);if(outstanding<=0){toast('Nothing is currently owed by '+who);return;}
@@ -3725,23 +3797,29 @@ function saveIOURepayment(){
   if(amount<=0){toast('Enter the repayment amount');return;}
   if(amount>outstanding+.005){toast(who+' only owes '+fmt(outstanding));return;}
   if(!date){toast('Choose the repayment date');return;}
-  var remaining=amount;
+  var remaining=amount,applications=[];
   var items=(S.owedToMe||[]).filter(function(i){return String(i.who||'').trim().toLowerCase()===String(who).trim().toLowerCase();}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));});
   items.forEach(function(item){
     if(remaining<=.005)return;
     var applied=money(Math.min(remaining,Number(item.amount)||0));
+    var linked=settleLinkedIOURepayment(item,applied);
+    applications.push({iouId:item.id,amount:applied,sourceExpenseId:item.sourceExpenseId||null,sourceSplitId:item.sourceSplitId||null,linked:linked});
     item.amount=money((Number(item.amount)||0)-applied);
     remaining=money(remaining-applied);
   });
   S.owedToMe=(S.owedToMe||[]).filter(function(i){return (Number(i.amount)||0)>.005;});
-  S.income.push({id:uid(),name:'Repayment from '+who,amount:amount,date:date,accountId:accountId,isCash:account.type==='cash',isReimb:true,reimbEnvId:null,isIOURepayment:true,repaymentWho:who,cleared:false});
+  S.income.push({id:uid(),name:'Repayment from '+who,amount:amount,date:date,accountId:accountId,isCash:account.type==='cash',isReimb:true,reimbEnvId:null,isIOURepayment:true,repaymentWho:who,sourceIOUApplications:applications,cleared:false});
   saveS();closeModal('iouRepaymentModal');repayingIOUWho=null;renderAll();go('owed');toast('✓ '+fmt(amount)+' repayment recorded from '+who);
 }
 function delOwed(type, id) {
-  if (type === 'toMe') S.owedToMe = S.owedToMe.filter(function(i){return i.id!==id;});
-  else S.iOwe = S.iOwe.filter(function(i){return i.id!==id;});
-  saveS(); renderOwed(); toast('Removed');
+  if(type==='toMe'){
+    var item=(S.owedToMe||[]).find(function(i){return i.id===id;});
+    if(item&&item.sourceExpenseId){toast('Use Repayment or Forgive so the linked expense stays accurate');return;}
+    S.owedToMe=S.owedToMe.filter(function(i){return i.id!==id;});
+  }else S.iOwe=S.iOwe.filter(function(i){return i.id!==id;});
+  saveS();renderOwed();toast('Removed');
 }
+
 
 
 // ═══════════════════════════════════════════
@@ -5633,6 +5711,9 @@ window.onload = async function() {
   document.getElementById('saveIOURepaymentBtn').addEventListener('click', saveIOURepayment);
   document.getElementById('cancelIOURepaymentBtn').addEventListener('click', function(){repayingIOUWho=null;closeModal('iouRepaymentModal');});
   document.getElementById('iouRepaymentModal').addEventListener('click', function(e){modalBg(e,'iouRepaymentModal');});
+  document.getElementById('saveIOUForgivenessBtn').addEventListener('click', saveIOUForgiveness);
+  document.getElementById('cancelIOUForgivenessBtn').addEventListener('click', function(){forgivingIOUId=null;closeModal('iouForgivenessModal');});
+  document.getElementById('iouForgivenessModal').addEventListener('click', function(e){modalBg(e,'iouForgivenessModal');});
 
   // Custodial funds and Bank / Cash moves
   document.getElementById('addCustodyAccountBtn').addEventListener('click', function(){openCustodyAccountModal(null);});
