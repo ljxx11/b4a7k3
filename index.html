@@ -2534,7 +2534,7 @@ function monthlyIncome(monthKey) {
 
 // ── TOTAL CC DEBT ──
 function totalCCDebt() {
-  var t = 0; S.creditCards.forEach(function(c){ t += Math.max(0,creditCardRegisterBalance(c.id)); }); return money(t);
+  var t = 0; activeCreditCards().forEach(function(c){ t += Math.max(0,cardBalance(c)); }); return money(t);
 }
 function groupAssigned(gid) {
   var key=selectedMonthKey(),t=0; S.envelopes.filter(function(e){return e.groupId===gid;}).forEach(function(e){t+=assignmentForMonth(e,key);}); return money(t);
@@ -3039,11 +3039,12 @@ function archiveEnvelope(env){env.archived=true;env.archivedAt=new Date().toISOS
 function deleteGroup() {
   if (!editingGroupId) return;
   var g=S.groups.find(function(x){return x.id===editingGroupId;});if(!g)return;
-  var envs=S.envelopes.filter(function(e){return e.groupId===editingGroupId&&!e.archived;});
+  var allGroupEnvs=S.envelopes.filter(function(e){return e.groupId===editingGroupId;});
+  var envs=allGroupEnvs.filter(function(e){return !e.archived;});
   if(envs.some(function(e){return e.isCCPayment;})){toast('Credit-card payment categories are managed with their card');return;}
   var open=envs.find(envelopeHasOpenPlan);
   if(open){toast(open.name+' still has money or upcoming activity. Clear it before archiving this group.');return;}
-  var historical=envs.some(envelopeHasHistory);
+  var historical=allGroupEnvs.some(function(e){return e.archived||envelopeHasHistory(e);});
   if(historical){
     if(!confirm('Archive "'+g.name+'"? Historical transactions will stay intact, but this group will leave the active budget.'))return;
     g.archived=true;g.archivedAt=new Date().toISOString();envs.forEach(archiveEnvelope);
@@ -3141,8 +3142,8 @@ function saveCC() {
 function deleteCC() {
   if (!editingCCId) return;
   var card=S.creditCards.find(function(c){return c.id===editingCCId;});if(!card)return;
-  var balance=Math.max(0,cardBalance(card)),paymentEnv=ccPaymentEnv(card.id);
-  if(balance>.005){toast('Pay or reconcile '+card.name+' to $0 before archiving it');return;}
+  var rawBalance=cardBalance(card),paymentEnv=ccPaymentEnv(card.id);
+  if(Math.abs(rawBalance)>.005){toast('Reconcile '+card.name+' to exactly $0 before archiving it');return;}
   if(paymentEnv&&envelopeHasOpenPlan(paymentEnv)){toast('The card payment category still has money or upcoming activity');return;}
   if((S.scheduled||[]).some(function(x){return x.ccId===card.id||x.envId===card.paymentEnvId;})){toast('Remove scheduled activity for this card first');return;}
   var hasHistory=(S.expenses||[]).some(function(e){return e.ccId===card.id||e.envId===card.paymentEnvId;}) ||
