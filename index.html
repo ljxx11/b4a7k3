@@ -245,6 +245,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .owed-who{font-weight:700;font-size:14px;color:var(--text)}
 .owed-note{font-size:11px;color:var(--text3);margin-top:2px}
 .owed-amt{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-right:8px}
+.owed-pay-btn{border:1px solid var(--border);background:var(--green-dim);color:var(--green);border-radius:9px;padding:7px 9px;font-size:10px;font-weight:900;white-space:nowrap}
 
 /* GOALS */
 .goal-card{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:15px;margin-bottom:10px;box-shadow:0 10px 22px rgba(0,0,0,0.08)}
@@ -1296,6 +1297,23 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   </div>
 </div>
 
+<!-- IOU Repayment -->
+<div class="overlay" id="iouRepaymentModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title">Record repayment from <span id="iouRepaymentWho"></span></div>
+    <div style="color:var(--text2);font-size:13px;line-height:1.5;margin:-4px 0 14px">This is money coming back to you, not new income. Ledger will reduce what this person owes and increase the account that received the money.</div>
+    <div class="card" style="margin-bottom:12px"><div class="card-body">
+      <div class="set-row"><div><div class="set-lbl">Currently owed</div><div class="set-sub">Across all open IOUs for this person</div></div><strong id="iouRepaymentOutstanding">$0.00</strong></div>
+    </div></div>
+    <div class="field"><label>Amount received ($)</label><input id="iouRepaymentAmount" type="number" inputmode="decimal" step="0.01" placeholder="0.00"></div>
+    <div class="field"><label>Received into</label><select id="iouRepaymentAccount"></select></div>
+    <div class="field"><label>Date</label><input id="iouRepaymentDate" type="date"></div>
+    <button class="btn-p" id="saveIOURepaymentBtn">Record repayment</button>
+    <button class="btn-s" id="cancelIOURepaymentBtn">Cancel</button>
+  </div>
+</div>
+
 <!-- Add Envelope -->
 <div class="overlay" id="envModal">
   <div class="sheet">
@@ -1468,6 +1486,7 @@ var cashIncOn = false;
 var reimbOn = false;
 var creditOn = false;
 var splitExpenseOn = false;
+var repayingIOUWho = null;
 var dialOpen = false;
 var ufCollapsed = false;
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
@@ -3601,8 +3620,9 @@ function renderOwed() {
   if (!S.owedToMe.length) toMeEl.innerHTML = '<div class="empty" style="padding:14px 0"><p>Nobody owes you anything 🎉</p></div>';
   else toMeEl.innerHTML = S.owedToMe.map(function(i){
     return '<div class="owed-item">' +
-      '<div class="owed-name"><div class="owed-who">' + esc(i.who) + '</div><div class="owed-note">' + esc(i.note||'') + ' · ' + i.date + '</div></div>' +
+      '<div class="owed-name"><div class="owed-who">' + esc(i.who) + '</div><div class="owed-note">' + esc(i.note||'') + ' · ' + i.date + (i.sourceExpenseId?' · From expense':'') + '</div></div>' +
       '<div class="owed-amt" style="color:var(--green)">' + fmt(i.amount) + '</div>' +
+      '<button class="owed-pay-btn" onclick="openIOURepayment(\''+esc(String(i.who)).replace(/'/g,"\\'")+'\')">Repayment</button>' +
       '<button class="del-btn" onclick="delOwed(\'toMe\',\''+i.id+'\')">×</button>' +
       '</div>';
   }).join('');
@@ -3616,6 +3636,39 @@ function renderOwed() {
       '<button class="del-btn" onclick="delOwed(\'iOwe\',\''+i.id+'\')">×</button>' +
       '</div>';
   }).join('');
+}
+function owedTotalForPerson(who){
+  return money((S.owedToMe||[]).filter(function(i){return String(i.who||'').trim().toLowerCase()===String(who||'').trim().toLowerCase();}).reduce(function(t,i){return t+(Number(i.amount)||0);},0));
+}
+function openIOURepayment(who){
+  var outstanding=owedTotalForPerson(who);if(outstanding<=0){toast('Nothing is currently owed by '+who);return;}
+  repayingIOUWho=who;
+  document.getElementById('iouRepaymentWho').textContent=who;
+  document.getElementById('iouRepaymentOutstanding').textContent=fmt(outstanding);
+  document.getElementById('iouRepaymentAmount').value=outstanding.toFixed(2);
+  var preferred=defaultAccount('checking')||activeAccounts()[0],sel=document.getElementById('iouRepaymentAccount');
+  sel.innerHTML=accountOptions(preferred&&preferred.id,true);
+  document.getElementById('iouRepaymentDate').value=new Date().toISOString().slice(0,10);
+  openModal('iouRepaymentModal');
+}
+function saveIOURepayment(){
+  var who=repayingIOUWho,amount=money(parseFloat(document.getElementById('iouRepaymentAmount').value)||0),accountId=document.getElementById('iouRepaymentAccount').value,date=document.getElementById('iouRepaymentDate').value;
+  var outstanding=owedTotalForPerson(who),account=(S.accounts||[]).find(function(a){return a.id===accountId;});
+  if(!who||!account){toast('Choose where the repayment was received');return;}
+  if(amount<=0){toast('Enter the repayment amount');return;}
+  if(amount>outstanding+.005){toast(who+' only owes '+fmt(outstanding));return;}
+  if(!date){toast('Choose the repayment date');return;}
+  var remaining=amount;
+  var items=(S.owedToMe||[]).filter(function(i){return String(i.who||'').trim().toLowerCase()===String(who).trim().toLowerCase();}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));});
+  items.forEach(function(item){
+    if(remaining<=.005)return;
+    var applied=money(Math.min(remaining,Number(item.amount)||0));
+    item.amount=money((Number(item.amount)||0)-applied);
+    remaining=money(remaining-applied);
+  });
+  S.owedToMe=(S.owedToMe||[]).filter(function(i){return (Number(i.amount)||0)>.005;});
+  S.income.push({id:uid(),name:'Repayment from '+who,amount:amount,date:date,accountId:accountId,isCash:account.type==='cash',isReimb:true,reimbEnvId:null,isIOURepayment:true,repaymentWho:who,cleared:false});
+  saveS();closeModal('iouRepaymentModal');repayingIOUWho=null;renderAll();go('owed');toast('✓ '+fmt(amount)+' repayment recorded from '+who);
 }
 function delOwed(type, id) {
   if (type === 'toMe') S.owedToMe = S.owedToMe.filter(function(i){return i.id!==id;});
@@ -5523,6 +5576,9 @@ window.onload = async function() {
   document.getElementById('saveOwedBtn').addEventListener('click', saveOwed);
   document.getElementById('cancelOwedBtn').addEventListener('click', function(){closeModal('owedModal');});
   document.getElementById('owedModal').addEventListener('click', function(e){modalBg(e,'owedModal');});
+  document.getElementById('saveIOURepaymentBtn').addEventListener('click', saveIOURepayment);
+  document.getElementById('cancelIOURepaymentBtn').addEventListener('click', function(){repayingIOUWho=null;closeModal('iouRepaymentModal');});
+  document.getElementById('iouRepaymentModal').addEventListener('click', function(e){modalBg(e,'iouRepaymentModal');});
 
   // Custodial funds and Bank / Cash moves
   document.getElementById('addCustodyAccountBtn').addEventListener('click', function(){openCustodyAccountModal(null);});
