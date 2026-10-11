@@ -144,6 +144,24 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .truth-value.good{color:var(--green)}.truth-value.debt{color:var(--red)}
 .truth-note{font-size:9px;color:var(--text3);margin-top:2px}
 
+/* SPLIT / FRONTED EXPENSES */
+.split-box{display:none;background:var(--surf2);border:1px solid var(--border);border-radius:14px;padding:12px;margin:-2px 0 14px}
+.split-box.show{display:block}
+.split-help{font-size:11px;line-height:1.5;color:var(--text3);margin-bottom:10px}
+.split-row{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:8px}
+.split-row:last-child{margin-bottom:0}
+.split-row-top{display:grid;grid-template-columns:minmax(0,1fr) 92px 30px;gap:8px;align-items:center}
+.split-row input,.split-row select{width:100%;background:var(--surf2);border:1px solid var(--border);border-radius:9px;padding:9px;color:var(--text);font:700 12px 'Nunito',sans-serif;outline:none}
+.split-row input:focus,.split-row select:focus{border-color:var(--acc)}
+.split-row-owed{margin-top:8px}
+.split-row-owed input{font-weight:600}
+.split-remove{width:30px;height:34px;border-radius:9px;background:var(--red-dim);color:var(--red);font-size:17px;font-weight:900}
+.split-add{width:100%;margin-top:8px;padding:9px;border-radius:10px;background:var(--surf3);color:var(--text2);font-size:11px;font-weight:900}
+.split-summary{margin-top:9px;padding:9px 10px;border-radius:10px;background:var(--surf3);font-size:11px;font-weight:800;color:var(--text2);display:flex;justify-content:space-between;gap:10px}
+.split-summary.bad{background:var(--red-dim);color:var(--red)}
+.split-summary.good{background:var(--green-dim);color:var(--green)}
+.split-fronted-note{font-size:10px;color:var(--text3);margin-top:5px;line-height:1.4}
+
 /* INCOME */
 .inc-item{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
 .inc-item:last-child{border-bottom:none}
@@ -1214,7 +1232,18 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="sheet-title" id="expModalTitle">Log Expense</div>
     <div class="field"><label>Description</label><input id="expDesc" placeholder="What was this for?"></div>
     <div class="field"><label>Amount ($)</label><input id="expAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
-    <div class="field"><label>Envelope</label><select id="expCat"></select></div>
+    <div class="tog-row" id="splitExpenseRow">
+      <div><div class="tog-lbl">Split / someone owes me</div><div class="tog-sub">One real charge can contain your share plus money you fronted for someone else</div></div>
+      <div class="tog" id="splitExpTog"></div>
+    </div>
+    <div class="split-box" id="expSplitField">
+      <div class="split-help">Each line is part of this one transaction. Leave “Owed by” blank for your own spending. If someone owes you, enter their name and Ledger will create the IOU automatically.</div>
+      <div id="expSplitRows"></div>
+      <button class="split-add" type="button" id="addExpenseSplitBtn">＋ Add another part</button>
+      <div class="split-summary" id="expSplitSummary"><span>Split total</span><span>$0.00 / $0.00</span></div>
+      <div class="split-fronted-note">Fronted portions reduce the money you can safely spend, but they do not count as your personal consumption.</div>
+    </div>
+    <div class="field" id="expSingleEnvelopeField"><label>Envelope</label><select id="expCat"></select></div>
     <div class="field"><label>Date</label><input id="expDate" type="date"></div>
     <div class="field"><label>Time (optional)</label><input id="expTime" type="time"></div>
     <div class="field" id="expAccountField"><label>Payment Account</label><select id="expAccount"></select></div>
@@ -1438,6 +1467,7 @@ var dragType = null; // 'group' or 'env'
 var cashIncOn = false;
 var reimbOn = false;
 var creditOn = false;
+var splitExpenseOn = false;
 var dialOpen = false;
 var ufCollapsed = false;
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
@@ -2220,9 +2250,21 @@ function globallyCommittedAvailable(){
   return money(maxCommitted);
 }
 function readyToAssign() { return money(budgetBalance() - globallyCommittedAvailable()); }
+function expenseSplits(e){
+  if(e&&Array.isArray(e.splits)&&e.splits.length)return e.splits;
+  return [];
+}
+function splitIsFronted(line){return !!String(line&&line.owedBy||'').trim();}
+function expenseFrontedAmount(e){return money(expenseSplits(e).reduce(function(t,line){return t+(splitIsFronted(line)?Number(line.amount)||0:0);},0));}
+function expensePersonalAmount(e){
+  var splits=expenseSplits(e);
+  if(!splits.length)return money(Number(e&&e.amount)||0);
+  return money(splits.reduce(function(t,line){return t+(!splitIsFronted(line)?Number(line.amount)||0:0);},0));
+}
 function expenseSpendingAmount(e) {
   if (!e || e.isCCPayment) return 0;
-  return money((e.isCardCredit?-1:1)*(Number(e.amount)||0));
+  var base=expensePersonalAmount(e);
+  return money((e.isCardCredit?-1:1)*base);
 }
 function cardCreditReleaseForMonth(cardId, monthKey) {
   var key=normalizeMonthKey(monthKey||currentMonthKey()),total=0;
@@ -2238,6 +2280,13 @@ function envSpentForMonth(envId, monthKey) {
   S.expenses.forEach(function(e) {
     if (monthKeyFromDate(e.date) !== monthKey) return;
     if(e.isCardCredit){if(e.refundEnvId===envId)total-=Number(e.releasedAmount)||0;return;}
+    var splits=expenseSplits(e);
+    if(splits.length){
+      splits.forEach(function(line){
+        if(!splitIsFronted(line)&&line.envId===envId)total+=Number(line.amount)||0;
+      });
+      return;
+    }
     if (e.envId === envId) total += Number(e.amount)||0;
   });
   return money(total);
@@ -2248,12 +2297,25 @@ function fundedCreditActivity(paymentEnvId, monthKey) {
   if (!card) return 0;
   var key = normalizeMonthKey(monthKey||currentMonthKey());
   var expensesByEnvelope = {};
+  var frontedReserve=0;
   S.expenses.forEach(function(e,idx){
-    if(e.isCCPayment || e.isCardCredit || monthKeyFromDate(e.date)!==key || !e.envId || !(Number(e.amount)>0))return;
+    if(e.isCCPayment || e.isCardCredit || monthKeyFromDate(e.date)!==key || !(Number(e.amount)>0) || !(e.isCredit||e.payMethod==='credit') || e.ccId!==card.id)return;
+    var splits=expenseSplits(e);
+    if(splits.length){
+      splits.forEach(function(line,lineIndex){
+        var amount=money(line.amount||0);if(amount<=0)return;
+        if(splitIsFronted(line)){frontedReserve=money(frontedReserve+amount);return;}
+        if(!line.envId)return;
+        if(!expensesByEnvelope[line.envId])expensesByEnvelope[line.envId]=[];
+        expensesByEnvelope[line.envId].push({expense:e,index:idx,lineIndex:lineIndex,amount:amount});
+      });
+      return;
+    }
+    if(!e.envId)return;
     if(!expensesByEnvelope[e.envId])expensesByEnvelope[e.envId]=[];
-    expensesByEnvelope[e.envId].push({expense:e,index:idx});
+    expensesByEnvelope[e.envId].push({expense:e,index:idx,lineIndex:0,amount:money(e.amount||0)});
   });
-  var total=0;
+  var total=frontedReserve;
   Object.keys(expensesByEnvelope).forEach(function(envId){
     var env=S.envelopes.find(function(e){return e.id===envId;});
     if(!env || env.isCCPayment)return;
@@ -2261,12 +2323,14 @@ function fundedCreditActivity(paymentEnvId, monthKey) {
     expensesByEnvelope[envId].sort(function(a,b){
       var ad=String(a.expense.datetime||((a.expense.date||'')+'T'+(a.expense.time||'00:00')));
       var bd=String(b.expense.datetime||((b.expense.date||'')+'T'+(b.expense.time||'00:00')));
-      return ad<bd?-1:(ad>bd?1:a.index-b.index);
+      if(ad!==bd)return ad<bd?-1:1;
+      if(a.index!==b.index)return a.index-b.index;
+      return a.lineIndex-b.lineIndex;
     }).forEach(function(item){
-      var expense=item.expense, amount=money(expense.amount||0);
+      var amount=money(item.amount||0);
       var funded=money(Math.min(amount,Math.max(0,remaining)));
       remaining=money(Math.max(0,remaining-funded));
-      if(expense.isCredit && expense.ccId===card.id)total=money(total+funded);
+      total=money(total+funded);
     });
   });
   return money(total);
@@ -3257,13 +3321,14 @@ function renderExpenses() {
     var dt = dtObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}) +
       (e.time ? ' ' + dtObj.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) : '');
     var pmLabel = e.payMethod === 'cash' ? '💵' : e.payMethod === 'credit' ? '💳' : '🏦';
-    var tags = pmLabel + ' ' + (e.isCardCredit?'<span class="tag reimb">REFUND</span>':e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '');
+    var splits=expenseSplits(e),fronted=expenseFrontedAmount(e),personal=expensePersonalAmount(e);
+    var tags = pmLabel + ' ' + (e.isCardCredit?'<span class="tag reimb">REFUND</span>':e.isCredit ? '<span class="tag credit">CREDIT</span>' : '') + (e.isReimb ? '<span class="tag reimb">REIMB</span>' : '') + (splits.length?'<span class="tag credit">SPLIT</span>':'') + (fronted>0?'<span class="tag reimb">FRONTED</span>':'');
     var div = document.createElement('div');
     div.className = 'exp-item';
     div.innerHTML =
       '<div class="exp-ico" style="background:'+clr+'">'+(env?env.emoji:'📦')+'</div>'+
       '<div class="exp-body"><div class="exp-desc">'+esc(e.desc)+'</div>'+
-      '<div class="exp-meta">'+(e.isCardCredit?(env?esc(env.name):'Ready to Assign'):(env?esc(env.name):e.envId))+(tags?' · '+tags:'')+(e.accountId?' · '+esc(accountName(e.accountId)):'')+'</div></div>'+
+      '<div class="exp-meta">'+(e.isCardCredit?(env?esc(env.name):'Ready to Assign'):(splits.length?(fmt(personal)+' yours'+(fronted>0?' · '+fmt(fronted)+' fronted':'')):(env?esc(env.name):e.envId)))+(tags?' · '+tags:'')+(e.accountId?' · '+esc(accountName(e.accountId)):'')+'</div></div>'+
       '<div class="exp-right"><div class="exp-amt" style="color:'+(e.isCardCredit?'var(--green)':'')+'">'+(e.isCardCredit?'-':'')+fmt(e.amount)+'</div><div class="exp-date">'+dt+'</div></div>'+
       '<button class="inc-edit-btn" id="eedit_'+e.id+'">✏️</button>'+
       '<button class="del-btn" id="edel_'+e.id+'">×</button>';
@@ -3297,6 +3362,7 @@ function delExp(id) {
     if(card2) card2.balance=money((card2.balance||0)+(exp.amount||0));
   }
   S.expenses = S.expenses.filter(function(e){return e.id!==id;});
+  S.owedToMe=(S.owedToMe||[]).filter(function(i){return i.sourceExpenseId!==id;});
   saveS(); renderExpenses(); renderEnvelopes(); renderSummary(); renderCCTab(); updateRTA(); toast('Expense removed');
 }
 
@@ -3333,6 +3399,7 @@ function openEditExpModal(id) {
     opts += '</optgroup>';
   });
   sel.innerHTML = opts;
+  setSplitExpense(expenseSplits(exp).length>0,expenseSplits(exp));
   var mt = document.getElementById('expModalTitle'); if(mt) mt.textContent = 'Edit Expense';
   var sb = document.getElementById('saveExpBtn'); if(sb) sb.textContent = 'Save Changes';
   var db = document.getElementById('deleteExpBtn'); if(db) db.style.display = 'block';
@@ -4045,6 +4112,79 @@ function openIncomeModal() {
   setTimeout(function(){document.getElementById('incAmt').focus();},300);
 }
 
+function expenseSplitEnvelopeOptions(selectedId){
+  var opts='<option value="">No envelope — fronted money</option>';
+  sortedGroups().forEach(function(g){
+    var envs=groupEnvelopes(g.id).filter(function(e){return !e.isCCPayment;});if(!envs.length)return;
+    opts+='<optgroup label="'+esc(g.name)+'">'+envs.map(function(e){return '<option value="'+e.id+'"'+(selectedId===e.id?' selected':'')+'>'+esc(e.emoji||'')+' '+esc(e.name)+'</option>';}).join('')+'</optgroup>';
+  });
+  return opts;
+}
+function addExpenseSplitRow(data){
+  var host=document.getElementById('expSplitRows');if(!host)return;
+  data=data||{};
+  var row=document.createElement('div');row.className='split-row';
+  row.innerHTML='<div class="split-row-top"><select class="split-env">'+expenseSplitEnvelopeOptions(data.envId||'')+'</select><input class="split-amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="$0.00" value="'+(Number(data.amount)>0?Number(data.amount).toFixed(2):'')+'"><button type="button" class="split-remove" aria-label="Remove split">×</button></div><div class="split-row-owed"><input class="split-owed" placeholder="Owed by (leave blank if this is yours)" value="'+esc(data.owedBy||'')+'"></div>';
+  host.appendChild(row);
+  var owed=row.querySelector('.split-owed'),env=row.querySelector('.split-env'),amt=row.querySelector('.split-amt');
+  row.querySelector('.split-remove').addEventListener('click',function(){row.remove();if(!host.children.length)addExpenseSplitRow({});updateExpenseSplitSummary();});
+  [owed,env,amt].forEach(function(el){el.addEventListener('input',updateExpenseSplitSummary);el.addEventListener('change',updateExpenseSplitSummary);});
+  owed.addEventListener('input',function(){if(this.value.trim())env.value='';updateExpenseSplitSummary();});
+  env.addEventListener('change',function(){if(this.value)owed.value='';updateExpenseSplitSummary();});
+  updateExpenseSplitSummary();
+}
+function collectExpenseSplits(){
+  var lines=[];
+  Array.prototype.forEach.call(document.querySelectorAll('#expSplitRows .split-row'),function(row){
+    var amount=money(parseFloat(row.querySelector('.split-amt').value)||0);
+    var envId=row.querySelector('.split-env').value||null;
+    var owedBy=row.querySelector('.split-owed').value.trim();
+    if(amount>0)lines.push({id:makeLedgerId('split'),amount:amount,envId:owedBy?null:envId,owedBy:owedBy||null});
+  });
+  return lines;
+}
+function updateExpenseSplitSummary(){
+  var el=document.getElementById('expSplitSummary');if(!el)return;
+  var total=money(parseFloat(document.getElementById('expAmt').value)||0),sum=0,fronted=0;
+  Array.prototype.forEach.call(document.querySelectorAll('#expSplitRows .split-row'),function(row){
+    var amount=money(parseFloat(row.querySelector('.split-amt').value)||0);sum=money(sum+amount);
+    if(row.querySelector('.split-owed').value.trim())fronted=money(fronted+amount);
+  });
+  var diff=money(total-sum),ok=total>0&&Math.abs(diff)<.005;
+  el.className='split-summary '+(ok?'good':'bad');
+  el.innerHTML='<span>'+(ok?'✓ Split matches':'Split total')+(fronted>0?' · '+fmt(fronted)+' fronted':'')+'</span><span>'+fmt(sum)+' / '+fmt(total)+(ok?'':(' · '+(diff>0?fmt(diff)+' left':fmt(Math.abs(diff))+' over')))+'</span>';
+}
+function setSplitExpense(on,lines){
+  splitExpenseOn=!!on;
+  var tog=document.getElementById('splitExpTog'),box=document.getElementById('expSplitField'),single=document.getElementById('expSingleEnvelopeField'),host=document.getElementById('expSplitRows');
+  if(tog)tog.className='tog'+(splitExpenseOn?' on':'');
+  if(box)box.className='split-box'+(splitExpenseOn?' show':'');
+  if(single)single.style.display=splitExpenseOn?'none':'block';
+  if(splitExpenseOn&&host){
+    host.innerHTML='';
+    var initial=Array.isArray(lines)&&lines.length?lines:null;
+    if(initial)initial.forEach(function(line){addExpenseSplitRow(line);});
+    else{
+      var total=money(parseFloat(document.getElementById('expAmt').value)||0),env=document.getElementById('expCat').value||null;
+      addExpenseSplitRow({amount:total,envId:env});addExpenseSplitRow({});
+    }
+    updateExpenseSplitSummary();
+  }else if(host)host.innerHTML='';
+}
+function validateExpenseSplits(total){
+  var lines=collectExpenseSplits();if(!lines.length){toast('Add at least one split');return null;}
+  var sum=money(lines.reduce(function(t,line){return t+(Number(line.amount)||0);},0));
+  if(Math.abs(sum-total)>.005){toast('Split parts must add up to '+fmt(total));return null;}
+  for(var i=0;i<lines.length;i++){if(!splitIsFronted(lines[i])&&!lines[i].envId){toast('Choose an envelope for each part that is yours');return null;}}
+  return lines;
+}
+function createExpenseIOUs(exp){
+  S.owedToMe=(S.owedToMe||[]).filter(function(i){return i.sourceExpenseId!==exp.id;});
+  expenseSplits(exp).forEach(function(line){
+    if(!splitIsFronted(line))return;
+    S.owedToMe.push({id:uid(),who:String(line.owedBy).trim(),amount:money(line.amount||0),note:(exp.desc||'Expense')+' · fronted',date:exp.date,sourceExpenseId:exp.id,sourceSplitId:line.id||null});
+  });
+}
 function openExpModal() {
   editingExpId = null;
   if (document.getElementById('expModalTitle')) document.getElementById('expModalTitle').textContent = 'Log Expense';
@@ -4055,6 +4195,7 @@ function openExpModal() {
   var sb=document.getElementById('saveExpBtn'); if(sb) sb.textContent='Log Expense';
   var db=document.getElementById('deleteExpBtn'); if(db) db.style.display='none';
   creditOn = false;
+  setSplitExpense(false);
   document.getElementById('creditTog').className = 'tog';
   var pm = document.getElementById('payMethod');
   if (pm) pm.value = 'debit';
@@ -4208,8 +4349,7 @@ function saveIncome() {
 
 function saveExp() {
   var desc = document.getElementById('expDesc').value.trim() || 'Expense';
-  var amt = Math.round((parseFloat(document.getElementById('expAmt').value)||0) * 100) / 100;
-  var envId = document.getElementById('expCat').value;
+  var amt = money(parseFloat(document.getElementById('expAmt').value)||0);
   var date = document.getElementById('expDate').value;
   var time = document.getElementById('expTime').value || '00:00';
   var datetime = date + 'T' + time;
@@ -4222,22 +4362,34 @@ function saveExp() {
   if(!isCredit)payMethod=paymentAccount&&paymentAccount.type==='cash'?'cash':'debit';
   if (!amt || amt <= 0) { toast('Enter a valid amount'); return; }
   if (!date) { toast('Pick a date'); return; }
-  if (!envId) { toast('Pick an envelope'); return; }
+  if (isCredit&&!ccId) { toast('Choose a credit card'); return; }
+
+  var splits=splitExpenseOn?validateExpenseSplits(amt):null;
+  if(splitExpenseOn&&!splits)return;
+  var envId=splitExpenseOn?(splits.find(function(line){return !splitIsFronted(line)&&line.envId;})||{}).envId:document.getElementById('expCat').value;
+  if(!splitExpenseOn&&!envId){toast('Pick an envelope');return;}
+
+  var spendByEnv={};
+  if(splitExpenseOn)splits.forEach(function(line){if(!splitIsFronted(line)&&line.envId)spendByEnv[line.envId]=money((spendByEnv[line.envId]||0)+(Number(line.amount)||0));});
+  else spendByEnv[envId]=amt;
+  var overs=[];
+  Object.keys(spendByEnv).forEach(function(id){var available=envAvailable(id),needed=spendByEnv[id];if(needed>available+.005){var env=S.envelopes.find(function(e){return e.id===id;});overs.push((env?env.name:'Envelope')+' by '+fmt(needed-available));}});
+  if(overs.length&&!confirm('⚠️ This exceeds '+overs.join(', ')+'. Proceed anyway?'))return;
 
   if (editingExpId) {
-    // Edit existing expense
     var exp = S.expenses.find(function(e){return e.id===editingExpId;});
     if (exp) {
       applyBackdatedExpenseEffect(exp,'remove');
       if(exp.isCredit && exp.ccId){var oldCard=S.creditCards.find(function(c){return c.id===exp.ccId;});if(oldCard)oldCard.balance=money(Math.max(0,(oldCard.balance||0)-(exp.amount||0)));}
-      var beforeAvail = envAvailable(envId) + (exp.envId===envId ? (exp.amount||0) : 0);
-      exp.desc=desc; exp.amount=amt; exp.envId=envId; exp.date=date; exp.time=time; exp.datetime=datetime; exp.payMethod=payMethod; exp.accountId=accountId; exp.isCredit=isCredit; exp.ccId=ccId||null;exp.cleared=false;
-      exp.fundedAmount=isCredit?money(Math.min(amt,Math.max(0,beforeAvail))):0;
+      exp.desc=desc;exp.amount=amt;exp.envId=envId||null;exp.date=date;exp.time=time;exp.datetime=datetime;exp.payMethod=payMethod;exp.accountId=accountId;exp.isCredit=isCredit;exp.ccId=ccId||null;exp.cleared=false;
+      if(splitExpenseOn)exp.splits=splits;else delete exp.splits;
+      exp.frontedAmount=splitExpenseOn?expenseFrontedAmount(exp):0;
       if(isCredit && ccId){var newCard=S.creditCards.find(function(c){return c.id===ccId;});if(newCard)newCard.balance=money((newCard.balance||0)+amt);}
+      createExpenseIOUs(exp);
       applyBackdatedExpenseEffect(exp,'add');
     }
     editingExpId = null;
-    saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
+    saveS();closeModal('expModal');renderAll();
     toast('✓ Expense updated!');
     document.getElementById('expModalTitle').textContent = 'Log Expense';
     document.getElementById('saveExpBtn').textContent = 'Log Expense';
@@ -4245,25 +4397,15 @@ function saveExp() {
     return;
   }
 
-  // Check spending envelope balance
-  var avail = envAvailable(envId);
-  if (amt > avail + 0.005) {
-    var env = S.envelopes.find(function(e){return e.id===envId;});
-    var proceed = confirm('⚠️ This exceeds your '+(env?env.name:'envelope')+' balance by '+fmt(amt-avail)+'. Proceed anyway?');
-    if (!proceed) return;
-  }
-  // Log the expense
-  S.expenses.push({id:uid(), desc:desc, amount:amt, envId:envId, date:date, time:time, datetime:datetime, payMethod:payMethod, accountId:accountId, isCredit:isCredit, ccId:ccId||null,cleared:false});
-  // A funded credit purchase reduces the spending envelope and makes the same amount available for card payment.
-  if (isCredit && ccId) {
-    var card = S.creditCards.find(function(c){return c.id===ccId;});
-    if (card) card.balance = money((card.balance||0) + amt);
-    var justAdded=S.expenses[S.expenses.length-1];
-    justAdded.fundedAmount=money(Math.min(amt,Math.max(0,avail)));
-  }
-  applyBackdatedExpenseEffect(S.expenses[S.expenses.length-1],'add');
-  saveS(); closeModal('expModal'); renderExpenses(); renderEnvelopes(); renderSummary(); updateRTA();
-  toast('✓ Expense logged!');
+  var newExp={id:uid(),desc:desc,amount:amt,envId:envId||null,date:date,time:time,datetime:datetime,payMethod:payMethod,accountId:accountId,isCredit:isCredit,ccId:ccId||null,cleared:false};
+  if(splitExpenseOn){newExp.splits=splits;newExp.frontedAmount=expenseFrontedAmount(newExp);}
+  S.expenses.push(newExp);
+  if(isCredit&&ccId){var card=S.creditCards.find(function(c){return c.id===ccId;});if(card)card.balance=money((card.balance||0)+amt);}
+  createExpenseIOUs(newExp);
+  applyBackdatedExpenseEffect(newExp,'add');
+  saveS();closeModal('expModal');renderAll();
+  var fronted=expenseFrontedAmount(newExp);
+  toast(fronted>0?'✓ Expense logged · '+fmt(fronted)+' added to IOUs':'✓ Expense logged!');
 }
 
 function saveEnv() {
@@ -5069,8 +5211,13 @@ function renderReports() {
   // By envelope
   var byEnv = {};
   filtered.forEach(function(e){
-    var envKey=e.isCardCredit?(e.refundEnvId||'__card_credit__'):e.envId;
-    byEnv[envKey] = money((byEnv[envKey]||0) + expenseSpendingAmount(e));
+    if(e.isCardCredit){var refundKey=e.refundEnvId||'__card_credit__';byEnv[refundKey]=money((byEnv[refundKey]||0)+expenseSpendingAmount(e));return;}
+    var splits=expenseSplits(e);
+    if(splits.length){
+      splits.forEach(function(line){if(splitIsFronted(line)||!line.envId)return;byEnv[line.envId]=money((byEnv[line.envId]||0)+(Number(line.amount)||0));});
+      return;
+    }
+    var envKey=e.envId;byEnv[envKey]=money((byEnv[envKey]||0)+expenseSpendingAmount(e));
   });
   var sorted = Object.keys(byEnv).filter(function(k){return Math.abs(byEnv[k])>.005;}).sort(function(a,b){return Math.abs(byEnv[b])-Math.abs(byEnv[a]);});
   var maxAmt = sorted.length ? Math.abs(byEnv[sorted[0]]) : 1;
@@ -5289,10 +5436,14 @@ window.onload = async function() {
 
   // Expense modal
   document.getElementById('saveExpBtn').addEventListener('click', saveExp);
+  document.getElementById('splitExpTog').addEventListener('click',function(){setSplitExpense(!splitExpenseOn);});
+  document.getElementById('addExpenseSplitBtn').addEventListener('click',function(){addExpenseSplitRow({});});
+  document.getElementById('expAmt').addEventListener('input',updateExpenseSplitSummary);
   document.getElementById('expFilter').addEventListener('change', renderExpenses);
   document.getElementById('cancelExpBtn').addEventListener('click', function(){
     closeModal('expModal');
     editingExpId = null;
+    splitExpenseOn = false;
     if(document.getElementById('expModalTitle')) document.getElementById('expModalTitle').textContent = 'Log Expense';
     if(document.getElementById('saveExpBtn')) document.getElementById('saveExpBtn').textContent = 'Log Expense';
     if(document.getElementById('deleteExpBtn')) document.getElementById('deleteExpBtn').style.display = 'none';
