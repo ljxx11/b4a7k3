@@ -2519,7 +2519,7 @@ function monthlyTargetAmount(env,monthKey) { return targetAmountForMonth(env,mon
 function totalTargets(monthKey) {
   var key=normalizeMonthKey(monthKey||selectedMonthKey());
   var t = 0;
-  S.envelopes.forEach(function(env) { t += requiredFundingForMonth(env,key); });
+  activeEnvelopes().forEach(function(env) { t += requiredFundingForMonth(env,key); });
   return money(t);
 }
 function monthlyIncome(monthKey) {
@@ -2543,10 +2543,10 @@ function groupAvailable(gid) {
   var key=selectedMonthKey(),t=0; S.envelopes.filter(function(e){return e.groupId===gid;}).forEach(function(e){t+=envAvailableForMonth(e.id,key);}); return money(t);
 }
 function sortedGroups() {
-  return S.groups.slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
+  return S.groups.filter(function(g){return !g.archived;}).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
 }
 function groupEnvelopes(gid) {
-  return S.envelopes.filter(function(e){return e.groupId===gid;}).sort(function(a,b){return (a.order||0)-(b.order||0);});
+  return S.envelopes.filter(function(e){return e.groupId===gid&&!e.archived;}).sort(function(a,b){return (a.order||0)-(b.order||0);});
 }
 // Target progress helpers
 function targetProgress(env) {
@@ -3018,14 +3018,42 @@ function saveGroup() {
   }
   saveS(); closeModal('groupModal'); renderEnvelopes(); toast('✓ Saved!');
 }
+function envelopeHasHistory(env){
+  if(!env)return false;
+  var id=env.id;
+  if((S.expenses||[]).some(function(x){return x.envId===id||x.refundEnvId===id||expenseSplits(x).some(function(line){return line.envId===id;});}))return true;
+  if((S.income||[]).some(function(x){return x.reimbEnvId===id;}))return true;
+  if((S.scheduled||[]).some(function(x){return x.envId===id;}))return true;
+  if((S.envelopeBalanceAdjustments||[]).some(function(x){return x.envelopeId===id;}))return true;
+  if(Object.keys(env.assignments||{}).some(function(key){return Math.abs(Number(env.assignments[key])||0)>.005;}))return true;
+  return Math.abs(Number(env.openingCarry)||0)>.005;
+}
+function envelopeHasOpenPlan(env){
+  if(!env)return false;
+  if(Math.abs(envAvailable(env.id))>.005)return true;
+  var current=currentMonthKey();
+  return Object.keys(env.assignments||{}).some(function(key){return normalizeMonthKey(key)>=current&&Math.abs(Number(env.assignments[key])||0)>.005;}) ||
+    (S.scheduled||[]).some(function(x){return x.envId===env.id;});
+}
+function archiveEnvelope(env){env.archived=true;env.archivedAt=new Date().toISOString();}
 function deleteGroup() {
   if (!editingGroupId) return;
-  var g = S.groups.find(function(x){return x.id===editingGroupId;});
-  var envCount = S.envelopes.filter(function(e){return e.groupId===editingGroupId;}).length;
-  if (!confirm('Delete "'+g.name+'"?'+(envCount?' This will also delete '+envCount+' envelope(s).':''))) return;
-  S.envelopes = S.envelopes.filter(function(e){return e.groupId!==editingGroupId;});
-  S.groups = S.groups.filter(function(x){return x.id!==editingGroupId;});
-  saveS(); closeModal('groupModal'); renderEnvelopes(); toast('Group deleted');
+  var g=S.groups.find(function(x){return x.id===editingGroupId;});if(!g)return;
+  var envs=S.envelopes.filter(function(e){return e.groupId===editingGroupId&&!e.archived;});
+  if(envs.some(function(e){return e.isCCPayment;})){toast('Credit-card payment categories are managed with their card');return;}
+  var open=envs.find(envelopeHasOpenPlan);
+  if(open){toast(open.name+' still has money or upcoming activity. Clear it before archiving this group.');return;}
+  var historical=envs.some(envelopeHasHistory);
+  if(historical){
+    if(!confirm('Archive "'+g.name+'"? Historical transactions will stay intact, but this group will leave the active budget.'))return;
+    g.archived=true;g.archivedAt=new Date().toISOString();envs.forEach(archiveEnvelope);
+    saveS();closeModal('groupModal');renderAll();toast('Group archived · history preserved');return;
+  }
+  if(!confirm('Delete empty group "'+g.name+'"?'))return;
+  var ids=envs.map(function(e){return e.id;});
+  S.envelopes=S.envelopes.filter(function(e){return ids.indexOf(e.id)<0;});
+  S.groups=S.groups.filter(function(x){return x.id!==editingGroupId;});
+  saveS();closeModal('groupModal');renderEnvelopes();toast('Empty group deleted');
 }
 
 // ── TARGET MODAL ──
@@ -3112,11 +3140,22 @@ function saveCC() {
 }
 function deleteCC() {
   if (!editingCCId) return;
-  var card = S.creditCards.find(function(c){return c.id===editingCCId;});
-  if (!confirm('Delete '+card.name+'? The payment envelope will also be removed.')) return;
-  S.envelopes = S.envelopes.filter(function(e){return e.id!==card.paymentEnvId;});
-  S.creditCards = S.creditCards.filter(function(c){return c.id!==editingCCId;});
-  saveS(); closeModal('ccModal'); renderEnvelopes(); renderCCTab(); toast('Card removed');
+  var card=S.creditCards.find(function(c){return c.id===editingCCId;});if(!card)return;
+  var balance=Math.max(0,cardBalance(card)),paymentEnv=ccPaymentEnv(card.id);
+  if(balance>.005){toast('Pay or reconcile '+card.name+' to $0 before archiving it');return;}
+  if(paymentEnv&&envelopeHasOpenPlan(paymentEnv)){toast('The card payment category still has money or upcoming activity');return;}
+  if((S.scheduled||[]).some(function(x){return x.ccId===card.id||x.envId===card.paymentEnvId;})){toast('Remove scheduled activity for this card first');return;}
+  var hasHistory=(S.expenses||[]).some(function(e){return e.ccId===card.id||e.envId===card.paymentEnvId;}) ||
+    (S.reconciliationAdjustments||[]).some(function(a){return a.targetType==='card'&&a.targetId===card.id;});
+  if(hasHistory){
+    if(!confirm('Archive '+card.name+'? Its transaction history will be preserved.'))return;
+    card.archived=true;card.archivedAt=new Date().toISOString();if(paymentEnv)archiveEnvelope(paymentEnv);
+    saveS();closeModal('ccModal');renderAll();toast('Card archived · history preserved');return;
+  }
+  if(!confirm('Delete unused card '+card.name+'?'))return;
+  S.envelopes=S.envelopes.filter(function(e){return e.id!==card.paymentEnvId;});
+  S.creditCards=S.creditCards.filter(function(c){return c.id!==editingCCId;});
+  saveS();closeModal('ccModal');renderAll();toast('Unused card deleted');
 }
 function ensureCCGroup() {
   var g = S.groups.find(function(x){return x.isCCGroup;});
@@ -3242,16 +3281,17 @@ function saveCardCredit(){
 }
 function deleteCardCredit(){if(editingCardCreditId){delExp(editingCardCreditId);editingCardCreditId=null;closeModal('cardCreditModal');}}
 function renderCCTab() {
-  var el = document.getElementById('ccList');
-  if (!S.creditCards.length) {
-    el.innerHTML = '<div class="empty"><div class="ei">💳</div><p>No credit cards.</p></div>';
+  var el = document.getElementById('ccList'),cards=activeCreditCards();
+  if (!cards.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">💳</div><p>No active credit cards.</p></div>';
     document.getElementById('ccTotalDebt').textContent = '$0';
+    var emptyCount=document.getElementById('ccCardCount');if(emptyCount)emptyCount.textContent='0';
     return;
   }
   document.getElementById('ccTotalDebt').textContent = fmtS(totalCCDebt());
-  var ccCountEl = document.getElementById('ccCardCount'); if(ccCountEl) ccCountEl.textContent = S.creditCards.length;
+  var ccCountEl = document.getElementById('ccCardCount'); if(ccCountEl) ccCountEl.textContent = cards.length;
   el.innerHTML = '';
-  S.creditCards.forEach(function(card) {
+  cards.forEach(function(card) {
     var details=cardFundingDetails(card), payReady=details.ready;
     var payPct = details.balance>0 ? Math.min(payReady/details.balance*100,100) : 100;
     var div = document.createElement('div');
@@ -3472,7 +3512,7 @@ function emergencyFundProgress(){
 function compassGoalItems(){
   var items=[];
   S.goals.forEach(function(g){items.push({id:g.id,name:g.name||'Goal',saved:Number(g.saved)||0,target:Number(g.target)||0,source:'legacy',emoji:'🎯'});});
-  S.envelopes.forEach(function(e){
+  activeEnvelopes().forEach(function(e){
     if(e.isSavings&&e.target&&e.target.type==='save'&&!items.some(function(x){return String(x.name).toLowerCase()===String(e.name).toLowerCase();})){
       items.push({id:e.id,name:e.name,saved:Math.max(0,envAvailable(e.id)),target:Number(e.target.amount)||0,source:'envelope',emoji:e.emoji||'🎯'});
     }
@@ -3490,7 +3530,7 @@ function setCompassMetric(id,value,sub,level,pct){
   if(f){f.style.width=Math.max(0,Math.min(100,pct||0))+'%';f.className='compass-fill'+(level==='bad'?' bad':level==='warn'?' warn':'');}
 }
 function compassLesson(rta,week,month,age,emergency){
-  var overspent=S.envelopes.find(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
+  var overspent=activeEnvelopes().find(function(e){return !e.isCCPayment&&envAvailable(e.id)<-0.005;});
   if(rta<-.005)return {title:'Plan overassigned',copy:fmt(Math.abs(rta))+' must be removed from assignments.'};
   if(overspent)return {title:'Overspending',copy:overspent.name+' is '+fmt(Math.abs(envAvailable(overspent.id)))+' below zero.'};
   if(rta>.005)return {title:'Personal funds ready',copy:'Custodial money remains separate.'};
@@ -3845,7 +3885,7 @@ function monthExpensesForEnv(envId) {
   },0);
 }
 function findEnvByWords(words) {
-  var list = S.envelopes.filter(function(e){ return !e.isCCPayment; });
+  var list = activeEnvelopes().filter(function(e){ return !e.isCCPayment; });
   for (var i=0;i<words.length;i++) {
     var w=words[i].toLowerCase();
     var found=list.find(function(e){return (e.name||'').toLowerCase().indexOf(w)>=0;});
@@ -3863,7 +3903,7 @@ function regularUnderfunded(){
   return getUnderfunded().filter(function(x){return !x.env.isCCPayment && (!x.env.target || x.env.target.type!=='save');}).sort(function(a,b){return b.needed-a.needed;});
 }
 function todayRiskState(rta,upcoming){
-  var overspent=S.envelopes.filter(function(e){return !e.isCCPayment && envAvailable(e.id)<-0.005;});
+  var overspent=activeEnvelopes().filter(function(e){return !e.isCCPayment && envAvailable(e.id)<-0.005;});
   var overdue=upcoming.filter(function(x){return x.days<0;});
   var shortNear=upcoming.filter(function(x){var e=S.envelopes.find(function(v){return v.id===x.s.envId;});return x.days<=3 && (!e || envAvailable(e.id)+0.005<x.s.amount);});
   var shortWeek=upcoming.filter(function(x){var e=S.envelopes.find(function(v){return v.id===x.s.envId;});return x.days<=7 && (!e || envAvailable(e.id)+0.005<x.s.amount);});
@@ -3985,7 +4025,7 @@ function renderTodayUpcoming(upcoming){
 function populateAffordEnvelopes(){
   var sel=document.getElementById('affordEnvelope'); if(!sel)return;
   var current=sel.value;
-  var envs=S.envelopes.filter(function(e){return !e.isCCPayment;}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
+  var envs=activeEnvelopes().filter(function(e){return !e.isCCPayment;}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
   sel.innerHTML=envs.length?envs.map(function(e){return '<option value="'+e.id+'">'+(e.emoji||'')+' '+esc(e.name)+' · '+fmt(envAvailable(e.id))+'</option>';}).join(''):'<option value="">No envelopes yet</option>';
   if(current&&envs.some(function(e){return e.id===current;}))sel.value=current;
   else {var shoes=findEnvByWords(['shoe','clothing']);if(shoes)sel.value=shoes.id;}
@@ -3996,7 +4036,7 @@ function checkAffordability(){
   if(!amount||amount<=0||!env){out.className='afford-result bad';out.textContent='Amount and envelope required.';return;}
   var avail=envAvailable(env.id), after=avail-amount;
   if(after>=0){out.className='afford-result good';out.textContent='Yes · '+fmt(after)+' remains in '+env.name+'.';return;}
-  var shortage=Math.abs(after), donors=S.envelopes.filter(function(e){return e.id!==env.id&&!e.isCCPayment&&envAvailable(e.id)>shortage;}).sort(function(a,b){return envAvailable(b.id)-envAvailable(a.id);});
+  var shortage=Math.abs(after), donors=activeEnvelopes().filter(function(e){return e.id!==env.id&&!e.isCCPayment&&envAvailable(e.id)>shortage;}).sort(function(a,b){return envAvailable(b.id)-envAvailable(a.id);});
   if(donors.length){out.className='afford-result warn';out.textContent=fmt(shortage)+' short · available from '+donors.slice(0,2).map(function(e){return e.name;}).join(' or ')+'.';}
   else {out.className='afford-result bad';out.textContent='No · '+env.name+' is '+fmt(shortage)+' short.';}
 }
@@ -4016,7 +4056,7 @@ function accountRegisterEntries(accountId){
   return rows.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
 }
 function renderAccounts(){
-  var accounts=activeAccounts(),cards=S.creditCards||[],grid=document.getElementById('accountGrid'),register=document.getElementById('accountRegister');if(!grid||!register)return;
+  var accounts=activeAccounts(),cards=activeCreditCards(),grid=document.getElementById('accountGrid'),register=document.getElementById('accountRegister');if(!grid||!register)return;
   var valid=accounts.map(function(a){return a.id;}).concat(cards.map(function(c){return 'cc:'+c.id;}));if(!activeAccountId||valid.indexOf(activeAccountId)<0)activeAccountId=valid[0]||null;
   var assetHtml=accounts.map(function(a){var bal=accountBalance(a.id),icon=a.type==='savings'?'◈':a.type==='cash'?'●':'▣';return '<button class="account-card'+(a.id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+a.id+'\')"><div class="account-name">'+icon+' '+esc(a.name)+'</div><div class="account-type">'+a.type+'</div><div class="account-balance" style="color:'+(bal<0?'var(--red)':'var(--text)')+'">'+(bal<0?'-':'')+fmt(Math.abs(bal))+'</div></button>';}).join('');
   var cardHtml=cards.map(function(c){var id='cc:'+c.id,bal=creditCardRegisterBalance(c.id);return '<button class="account-card'+(id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+id+'\')"><div class="account-name">◇ '+esc(c.name)+'</div><div class="account-type">Credit card'+(c.lastFour?' · '+esc(c.lastFour):'')+'</div><div class="account-balance" style="color:'+(bal>0?'var(--red)':'var(--green)')+'">'+fmt(Math.abs(bal))+(bal<0?' credit':' owed')+'</div></button>';}).join('');
@@ -4480,10 +4520,16 @@ function saveEnv() {
 
 function deleteEnv() {
   if (!editingEnvId) return;
-  var env = S.envelopes.find(function(e){return e.id===editingEnvId;});
-  if (!confirm('Delete ' + (env?env.name:'this envelope') + '? This cannot be undone.')) return;
-  S.envelopes = S.envelopes.filter(function(e){return e.id!==editingEnvId;});
-  saveS(); closeModal('envModal'); renderEnvelopes(); renderSummary(); toast('Deleted');
+  var env=S.envelopes.find(function(e){return e.id===editingEnvId;});if(!env)return;
+  if(env.isCCPayment){toast('Credit-card payment categories are managed with their card');return;}
+  if(envelopeHasOpenPlan(env)){toast(env.name+' still has money or upcoming activity. Clear it before archiving.');return;}
+  if(envelopeHasHistory(env)){
+    if(!confirm('Archive '+env.name+'? Historical transactions will keep their category name.'))return;
+    archiveEnvelope(env);saveS();closeModal('envModal');renderAll();toast(env.name+' archived · history preserved');return;
+  }
+  if(!confirm('Delete unused envelope '+env.name+'?'))return;
+  S.envelopes=S.envelopes.filter(function(e){return e.id!==editingEnvId;});
+  saveS();closeModal('envModal');renderAll();toast('Unused envelope deleted');
 }
 
 function saveOwed() {
@@ -4979,7 +5025,7 @@ function toggleTechnicalDetails() {
 function getUnderfunded() {
   var key=selectedMonthKey();
   var items = [];
-  S.envelopes.forEach(function(env) {
+  activeEnvelopes().forEach(function(env) {
     var targetRequired=targetAmountForMonth(env,key),scheduled=scheduledAmountForMonth(env.id,key),monthlyTarget=Math.max(targetRequired,scheduled);
     if (!monthlyTarget) return;
     var assigned=assignmentForMonth(env,key),funded=money(assigned+carryIntoMonth(env.id,key));
