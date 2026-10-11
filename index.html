@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="ledger-version" content="3.2.4">
-<title>Ledger — Monthly Planning v3.2.4</title>
+<meta name="ledger-version" content="4.0.0-preview.1">
+<title>Ledger — v4 Preview</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -695,7 +695,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 
 <header class="hdr today-mode">
   <div class="hdr-top">
-    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v3.2.4</span></div>
+    <div class="logo"><span class="logo-mark">◯</span> Ledger <span style="font-size:9px;color:var(--text3);font-family:Nunito,sans-serif;font-weight:800">v4 preview</span></div>
     <div class="hdr-right">
       <div class="month-pill" id="monthPill"></div>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light and dark mode">🌙</button>
@@ -1444,11 +1444,11 @@ var swTouchX = 0, swTouchY = 0, swTouchT = 0;
 // IndexedDB is the durable primary store. A compatibility mirror remains so
 // existing installations can migrate safely and older backups stay readable.
 // ═══════════════════════════════════════════
-var LEDGER_DB_NAME = 'ledger_database';
+var LEDGER_DB_NAME = 'ledger_database_v4_preview';
 var LEDGER_DB_VERSION = 6;
 var LEDGER_SCHEMA_VERSION = 7;
 var LEDGER_SYNC_PROTOCOL = 2;
-var LEDGER_APP_VERSION = '3.2.4';
+var LEDGER_APP_VERSION = '4.0.0-preview.1';
 var ledgerDevice = null;
 var ledgerRevision = 0;
 var ledgerLastHash = '';
@@ -1853,7 +1853,7 @@ function saveS() {
   try{
     captureFinancialSnapshot();
     var json=JSON.stringify(S);
-    localStorage.setItem('piggybank_v2',json);
+    localStorage.setItem('piggybank_v4_preview',json);
     scheduleDurableSave(); scheduleAutomaticSnapshot('Automatic checkpoint');
     scheduleSessionCloudSync();
     if(typeof renderToday==='function') setTimeout(renderToday,0);
@@ -1875,7 +1875,7 @@ async function loadS() {
     await loadCloudMetadata();
   }catch(e){console.warn('Ledger database unavailable; using compatibility storage.',e);}
   if(!loadedFromDatabase){
-    var d=localStorage.getItem('piggybank_v2')||localStorage.getItem('piggybank_v1');
+    var d=localStorage.getItem('piggybank_v4_preview');
     if(d){try{S=JSON.parse(d);}catch(e){console.error('Failed to migrate saved data:',e);}}
   }
   if(!S.income) S.income=[];
@@ -4419,16 +4419,16 @@ async function confirmRestorePackage(){
     await createSnapshot('Before verified restore',true);
     normalizeRestoredState(restore.data);
     var normalizedHash=ledgerStateHash(S);
-    localStorage.setItem('piggybank_v2',JSON.stringify(S));
+    localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));
     ledgerLastHash='';ledgerLastState=null;
     await persistLedgerState({quietActivity:true});
     var current=await dbGet('current','ledger-state');
     if(ledgerDb){if(!current||ledgerStateHash(current.data)!==normalizedHash)throw new Error('Restore verification failed');}
-    else {var mirrored=JSON.parse(localStorage.getItem('piggybank_v2')||'null');if(!mirrored||ledgerStateHash(mirrored)!==normalizedHash)throw new Error('Restore verification failed');}
+    else {var mirrored=JSON.parse(localStorage.getItem('piggybank_v4_preview')||'null');if(!mirrored||ledgerStateHash(mirrored)!==normalizedHash)throw new Error('Restore verification failed');}
     if(restore.parsed.cloudBaseHash){ledgerCloud.lastSyncedHash=restore.parsed.cloudBaseHash;ledgerCloud.lastSyncedState=restore.parsed.cloudBaseState?cloneLedger(restore.parsed.cloudBaseState):null;ledgerCloud.enabled=true;await saveCloudMetadata();}
     closeModal('restorePreviewModal');renderAll();updateCloudStatus();toast('Everything was restored successfully');
   }catch(e){
-    console.error(e);S=before;ledgerCloud=cloudBefore;localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;await persistLedgerState({quietActivity:true}).catch(function(){});renderAll();closeModal('restorePreviewModal');toast('Restore stopped. Your previous Ledger was kept.');
+    console.error(e);S=before;ledgerCloud=cloudBefore;localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;await persistLedgerState({quietActivity:true}).catch(function(){});renderAll();closeModal('restorePreviewModal');toast('Restore stopped. Your previous Ledger was kept.');
   }
 }
 
@@ -4475,7 +4475,7 @@ async function uploadDrivePackage(fileId,pack){
   var response=await driveFetch(url,{method:fileId?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary},body:multipartBody(metadata,pack,boundary)});return response.json();
 }
 async function buildCloudPackage(){
-  S.lastBackupDate=new Date().toISOString().slice(0,10);localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';await persistLedgerState({quietActivity:true});
+  S.lastBackupDate=new Date().toISOString().slice(0,10);localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));ledgerLastHash='';await persistLedgerState({quietActivity:true});
   var data=cloneLedger(S);return {format:'ledger-cloud',formatVersion:1,appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,updatedAt:new Date().toISOString(),sourceDevice:cloneLedger(ledgerDevice),revision:ledgerRevision,stateHash:ledgerStateHash(data),checksum:ledgerStateHash(data),data:data};
 }
 async function markCloudSynced(fileId,hash,state){ledgerCloud.fileId=fileId;ledgerCloud.lastSyncedHash=hash;ledgerCloud.lastSyncedState=cloneLedger(state||S);ledgerCloud.lastSyncedAt=new Date().toISOString();ledgerCloud.enabled=true;ledgerCloud.connected=!!gdriveToken;ledgerLastSyncedRevision=ledgerRevision;await saveCloudMetadata();updateCloudStatus();renderBackupBanner();}
@@ -4485,8 +4485,8 @@ async function uploadLocalToCloud(existingId,quiet){
 }
 async function applyCloudPackage(pack,quiet){
   var data=readBackupPackage(pack),before=cloneLedger(S);await createSnapshot('Before Google Drive restore',true);
-  try{normalizeRestoredState(data);localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;await persistLedgerState({quietActivity:true});await markCloudSynced(ledgerCloud.fileId||null,ledgerStateHash(S),S);renderAll();if(!quiet)toast('This device is current with Google Drive');}
-  catch(e){S=before;localStorage.setItem('piggybank_v2',JSON.stringify(S));throw e;}
+  try{normalizeRestoredState(data);localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;await persistLedgerState({quietActivity:true});await markCloudSynced(ledgerCloud.fileId||null,ledgerStateHash(S),S);renderAll();if(!quiet)toast('This device is current with Google Drive');}
+  catch(e){S=before;localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));throw e;}
 }
 
 function sameLedgerValue(a,b){return stableLedgerString(a)===stableLedgerString(b);}
@@ -4528,7 +4528,7 @@ function mergeLedgerStates(base,local,remote){
 }
 async function applyAutomaticCloudMerge(merged,fileId,quiet){
   await createSnapshot('Before automatic cloud merge',true);
-  normalizeRestoredState(merged);localStorage.setItem('piggybank_v2',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;
+  normalizeRestoredState(merged);localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));ledgerLastHash='';ledgerLastState=null;
   await persistLedgerState({quietActivity:true});await uploadLocalToCloud(fileId,true);renderAll();
   if(!quiet)toast('Changes from both devices were combined safely');
 }
@@ -4598,8 +4598,7 @@ function resetMonth() {
 
 function clearAll() {
   if (!confirm('Reset EVERYTHING? This cannot be undone.')) return;
-  localStorage.removeItem('piggybank_v1');
-  localStorage.removeItem('piggybank_v2');
+  localStorage.removeItem('piggybank_v4_preview');
   localStorage.removeItem('ledger_last_snapshot_at');
   localStorage.removeItem('ledger_welcome_seen');
   if(ledgerDb){ dbDeleteAll().then(function(){location.reload();}).catch(function(){location.reload();}); }
