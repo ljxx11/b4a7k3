@@ -2211,7 +2211,7 @@ function openBalanceSnapshotModal(){
   var host=document.getElementById('balanceSnapshotRows');if(!host)return;
   var html='';
   activeAccounts().forEach(function(a){html+=balanceSnapshotRow('account',a.id,a.name,accountBalance(a.id),'Current account balance');});
-  S.creditCards.forEach(function(c){html+=balanceSnapshotRow('card',c.id,c.name,Math.max(0,creditCardRegisterBalance(c.id)),'Current amount owed');});
+  activeCreditCards().forEach(function(c){html+=balanceSnapshotRow('card',c.id,c.name,Math.max(0,cardBalance(c)),'Current amount owed');});
   (S.custodialAccounts||[]).forEach(function(a){html+=balanceSnapshotRow('custody',a.id,a.name,custodyAccountBalance(a.id),'Money currently held for this person');});
   host.innerHTML=html||'<div class="activity-empty">Add an account or card first.</div>';
   document.getElementById('balanceSnapshotDate').value=new Date().toISOString().slice(0,10);
@@ -3257,8 +3257,11 @@ function openCardCreditModal(cardId,creditId){
   if(credit&&credit.reconciled){toast('Reconciled transactions are locked');return;}
   editingCardCreditId=credit?credit.id:null;
   var selectedCardId=credit?credit.ccId:cardId;
+  var selectedCard=S.creditCards.find(function(c){return c.id===selectedCardId;});
+  if(credit&&selectedCard&&selectedCard.archived){toast('Archived card history is read-only');editingCardCreditId=null;return;}
+  var refundCards=activeCreditCards();
   document.getElementById('cardCreditTitle').textContent=credit?'Edit Card Refund':'Record Card Refund';
-  document.getElementById('cardCreditCard').innerHTML=S.creditCards.map(function(c){return '<option value="'+c.id+'"'+(c.id===selectedCardId?' selected':'')+'>'+esc(c.name)+(c.lastFour?' · '+esc(c.lastFour):'')+'</option>';}).join('');
+  document.getElementById('cardCreditCard').innerHTML=refundCards.map(function(c){return '<option value="'+c.id+'"'+(c.id===selectedCardId?' selected':'')+'>'+esc(c.name)+(c.lastFour?' · '+esc(c.lastFour):'')+'</option>';}).join('');
   document.getElementById('cardCreditDesc').value=credit?credit.desc:'';
   document.getElementById('cardCreditAmount').value=credit?credit.amount:'';
   document.getElementById('cardCreditDate').value=credit?credit.date:new Date().toISOString().slice(0,10);
@@ -3431,6 +3434,8 @@ function openEditExpModal(id) {
   var exp = S.expenses.find(function(e){return e.id===id;});
   if (!exp) return;
   if(exp.reconciled){toast('Reconciled transactions are locked');return;}
+  var historicalCard=exp.ccId?S.creditCards.find(function(c){return c.id===exp.ccId;}):null;
+  if(historicalCard&&historicalCard.archived){editingExpId=null;toast('Archived card history is read-only');return;}
   if(exp.isCardCredit){editingExpId=null;openCardCreditModal(exp.ccId,exp.id);return;}
   if(exp.isCCPayment){editingExpId=null;toast('Card payments cannot be edited. Remove and re-record the payment instead.');return;}
   creditOn = exp.isCredit || false;
@@ -5244,7 +5249,7 @@ var reportMonths = 3;
 
 function currentFinancialPosition(){
   var assets=0;activeAccounts().forEach(function(a){assets+=accountBalance(a.id);});
-  var cards=0;S.creditCards.forEach(function(c){cards+=Math.max(0,creditCardRegisterBalance(c.id));});
+  var cards=0;activeCreditCards().forEach(function(c){cards+=Math.max(0,cardBalance(c));});
   var loans=0;S.debts.forEach(function(d){loans+=Math.max(0,Number(d.balance)||0);});
   var custody=Math.max(0,custodialBalanceTotal()),receivable=owedToMeTotal(),owed=iOweTotal();
   return {assets:money(assets),cards:money(cards),loans:money(loans),debt:money(cards+loans+owed),netWorth:money(assets-custody-cards-loans+receivable-owed)};
