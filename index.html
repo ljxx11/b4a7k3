@@ -1154,7 +1154,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="set-row"><div><div class="set-lbl">Restore Latest Recovery Point</div><div class="set-sub">Undo a serious mistake</div></div><button class="sh-btn" id="restoreSnapshotBtn">Restore</button></div>
         <div class="set-row"><div><div class="set-lbl">💾 Save to Phone</div><div class="set-sub">Verified backup file</div></div><button class="sh-btn" id="exportBtn">Save</button></div>
         <div class="set-row"><div><div class="set-lbl">📂 Restore Backup</div><div class="set-sub">Preview and verify first</div></div><button class="sh-btn" id="importBtn">Restore</button><input type="file" id="importFile" accept=".json,application/json" style="display:none"></div>
-        <div class="set-row"><div><div class="set-lbl">Reset This Month</div><div class="set-sub">Keep envelopes and assignments</div></div><button class="sh-btn danger-action" id="resetMonthBtn">Reset</button></div>
+        <div class="set-row"><div><div class="set-lbl">Monthly records</div><div class="set-sub">Transactions are preserved. Correct or remove individual entries instead of bulk-resetting a month.</div></div><span style="font-size:11px;font-weight:900;color:var(--text3)">Protected</span></div>
         <div class="set-row"><div><div class="set-lbl">Clear All Data</div><div class="set-sub">Factory reset</div></div><button class="sh-btn danger-action" id="clearBtn">Clear</button></div>
       </div></div></div>
     </details>
@@ -3536,7 +3536,7 @@ function compassLesson(rta,week,month,age,emergency){
   if(rta>.005)return {title:'Personal funds ready',copy:'Custodial money remains separate.'};
   if(!week.hasData)return {title:'Upcoming not measured',copy:'No recurring bills are scheduled.'};
   if(week.short>.005)return {title:'Next 7 days underfunded',copy:fmt(week.short)+' is still needed.'};
-  var card=S.creditCards.find(function(c){return (cardBalance(c))>0 && (Number(c.apr)||0)>0;});
+  var card=activeCreditCards().find(function(c){return cardBalance(c)>0 && (Number(c.apr)||0)>0;});
   if(card){var daily=(cardBalance(card))*(Number(card.apr)||0)/100/365;return {title:'Card interest',copy:card.name+' costs about '+fmt(daily)+' per day.'};}
   if(month.pct<100)return {title:'30-day coverage',copy:month.pct+'% of scheduled bills is funded.'};
   if(age.days<30)return {title:'Money age',copy:age.days+' of 30 buffer days reached.'};
@@ -3804,13 +3804,13 @@ function renderDebts() {
   var otherBal=0,otherMin=0;
   S.debts.forEach(function(d){otherBal+=Number(d.balance)||0;otherMin+=Number(d.minPayment)||0;});
   var cardBal=totalCCDebt(),cardMin=0;
-  S.creditCards.forEach(function(c){cardMin+=cardRequiredPayment(c);});
+  activeCreditCards().forEach(function(c){cardMin+=cardRequiredPayment(c);});
   var totalBal=money(cardBal+otherBal),totalMin=money(cardMin+otherMin);
   document.getElementById('debtTot').textContent=fmtS(totalBal);
   document.getElementById('debtMinStat').textContent=fmtS(totalMin);
   var breakdown=document.getElementById('debtBreakdown');
   if(breakdown)breakdown.innerHTML=
-    '<button class="debt-breakdown-card" type="button" onclick="go(\'cards\')"><div class="debt-breakdown-label">Credit Cards</div><div class="debt-breakdown-value" style="color:'+(cardBal>0?'var(--red)':'var(--text)')+'">'+fmt(cardBal)+'</div><div class="debt-breakdown-sub">'+S.creditCards.length+' card'+(S.creditCards.length===1?'':'s')+' · '+fmt(cardMin)+' required</div></button>'+
+    '<button class="debt-breakdown-card" type="button" onclick="go(\'cards\')"><div class="debt-breakdown-label">Credit Cards</div><div class="debt-breakdown-value" style="color:'+(cardBal>0?'var(--red)':'var(--text)')+'">'+fmt(cardBal)+'</div><div class="debt-breakdown-sub">'+activeCreditCards().length+' card'+(activeCreditCards().length===1?'':'s')+' · '+fmt(cardMin)+' required</div></button>'+
     '<div class="debt-breakdown-card"><div class="debt-breakdown-label">Loans & Other</div><div class="debt-breakdown-value" style="color:'+(otherBal>0?'var(--red)':'var(--text)')+'">'+fmt(otherBal)+'</div><div class="debt-breakdown-sub">'+S.debts.length+' balance'+(S.debts.length===1?'':'s')+' · '+fmt(otherMin)+' required</div></div>';
   var overview=document.getElementById('loanOverview'),baseInterest=0,fastInterest=0,baseMonths=0,fastMonths=0,allPossible=true,hasExtra=false;
   S.debts.forEach(function(d){var base=loanProjection(d.balance,d.rate,d.minPayment),fast=loanProjection(d.balance,d.rate,(Number(d.minPayment)||0)+(Number(d.extraPayment)||0));if(!base.possible||!fast.possible){allPossible=false;return;}baseInterest+=base.interest;fastInterest+=fast.interest;baseMonths=Math.max(baseMonths,base.months);fastMonths=Math.max(fastMonths,fast.months);if(Number(d.extraPayment)>0)hasExtra=true;});
@@ -4861,21 +4861,6 @@ function importData(e) {
   r.onload=function(ev){try{previewRestorePackage(JSON.parse(ev.target.result),'backup');}catch(err){toast('This file could not be read');}e.target.value='';};r.readAsText(file);
 }
 
-function resetMonth() {
-  if (!confirm('Clear all expenses for this month? Envelopes and assignments stay.')) return;
-  var month = new Date().toISOString().slice(0,7);
-  S.expenses.forEach(function(e){
-    if(String(e.date||'').slice(0,7)!==month)return;
-    var card=e.ccId?S.creditCards.find(function(c){return c.id===e.ccId;}):e.isCCPayment?S.creditCards.find(function(c){return c.paymentEnvId===e.envId;}):null;
-    if(!card)return;
-    if(e.isCardCredit)card.balance=money((cardBalance(card))+(Number(e.amount)||0));
-    else if(e.isCCPayment)card.balance=money((cardBalance(card))+(Number(e.amount)||0));
-    else if(e.isCredit)card.balance=money((cardBalance(card))-(Number(e.amount)||0));
-  });
-  S.expenses = S.expenses.filter(function(e){return e.date.slice(0,7)!==month;});
-  saveS(); renderAll(); toast('Month reset');
-}
-
 function clearAll() {
   if (!confirm('Reset EVERYTHING? This cannot be undone.')) return;
   localStorage.removeItem('piggybank_v4_preview');
@@ -5230,7 +5215,7 @@ function openSchedModal(preset) {
   sel.innerHTML=opts;
   if(preset.words){var env=findEnvByWords(preset.words);if(env)sel.value=env.id;}
   var pay=document.getElementById('schedPayFrom'),checking=defaultAccount('checking');
-  pay.innerHTML=activeAccounts().map(function(a){return '<option value="'+esc(a.id)+'"'+(checking&&a.id===checking.id?' selected':'')+'>'+esc(a.name)+'</option>';}).join('')+S.creditCards.map(function(c){return '<option value="cc:'+esc(c.id)+'">'+esc(c.name)+' (credit)</option>';}).join('');
+  pay.innerHTML=activeAccounts().map(function(a){return '<option value="'+esc(a.id)+'"'+(checking&&a.id===checking.id?' selected':'')+'>'+esc(a.name)+'</option>';}).join('')+activeCreditCards().map(function(c){return '<option value="cc:'+esc(c.id)+'">'+esc(c.name)+' (credit)</option>';}).join('');
   openModal('schedModal');
   setTimeout(function(){document.getElementById(preset.desc?'schedAmt':'schedDesc').focus();},200);
 }
@@ -5559,10 +5544,11 @@ window.onload = async function() {
     if (isCredit) {
       var sel = document.getElementById('expCCSelect');
       if (sel) {
-        if (!S.creditCards.length) {
-          sel.innerHTML = '<option value="">No cards added yet</option>';
+        var cards=activeCreditCards();
+        if (!cards.length) {
+          sel.innerHTML = '<option value="">No active cards</option>';
         } else {
-          sel.innerHTML = S.creditCards.map(function(c){
+          sel.innerHTML = cards.map(function(c){
             return '<option value="'+c.id+'">'+esc(c.name)+(c.lastFour?' (•••• '+c.lastFour+')':'')+'</option>';
           }).join('');
         }
@@ -5704,7 +5690,6 @@ window.onload = async function() {
   document.getElementById('importBtn').addEventListener('click', function(){document.getElementById('importFile').click();});
   document.getElementById('importFile').addEventListener('change', importData);
 
-  document.getElementById('resetMonthBtn').addEventListener('click', resetMonth);
   document.getElementById('clearBtn').addEventListener('click', clearAll);
 
   initAccessibility();
