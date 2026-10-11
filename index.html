@@ -769,9 +769,12 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       </div>
 
       <div class="truth-card" aria-label="Money snapshot">
-        <div class="truth-head">
-          <div class="truth-title">Your money, separated</div>
-          <div class="truth-sub">What is in your hands and accounts, what belongs to other people, and what remains after card debt.</div>
+        <div class="truth-head" style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+          <div>
+            <div class="truth-title">Your money, separated</div>
+            <div class="truth-sub">What is in your hands and accounts, what belongs to other people, and what remains after card debt.</div>
+          </div>
+          <button class="sh-btn" type="button" onclick="openBalanceSnapshotModal()" style="flex-shrink:0">Verify balances</button>
         </div>
         <div class="truth-grid">
           <div class="truth-item"><div class="truth-label">Money you control</div><div class="truth-value" id="truthGross">$0.00</div><div class="truth-note">Checking + savings + cash</div></div>
@@ -2146,6 +2149,38 @@ function renderMoneyTruth(){
   var set=function(id,value){var el=document.getElementById(id);if(el)el.textContent=(value<0?'-':'')+fmt(Math.abs(value));};
   set('truthGross',gross);set('truthCustody',custody);set('truthOwned',owned);set('truthCards',cards);set('truthAfterCards',after);set('truthReceivable',receivable);
   var afterEl=document.getElementById('truthAfterCards');if(afterEl)afterEl.className='truth-value '+(after>=0?'good':'debt');
+}
+function balanceSnapshotRow(kind,id,name,current,label){
+  return '<div class="set-row" style="gap:12px"><div style="min-width:0;flex:1"><div class="set-lbl">'+esc(name)+'</div><div class="set-sub">'+esc(label)+' · Ledger says '+fmt(current)+'</div></div><input class="env-input balance-snapshot-input" data-kind="'+kind+'" data-id="'+esc(id)+'" type="number" inputmode="decimal" step="0.01" value="'+Number(current).toFixed(2)+'" style="max-width:132px;text-align:right"></div>';
+}
+function openBalanceSnapshotModal(){
+  var host=document.getElementById('balanceSnapshotRows');if(!host)return;
+  var html='';
+  activeAccounts().forEach(function(a){html+=balanceSnapshotRow('account',a.id,a.name,accountBalance(a.id),'Current account balance');});
+  S.creditCards.forEach(function(c){html+=balanceSnapshotRow('card',c.id,c.name,Math.max(0,creditCardRegisterBalance(c.id)),'Current amount owed');});
+  (S.custodialAccounts||[]).forEach(function(a){html+=balanceSnapshotRow('custody',a.id,a.name,custodyAccountBalance(a.id),'Money currently held for this person');});
+  host.innerHTML=html||'<div class="activity-empty">Add an account or card first.</div>';
+  document.getElementById('balanceSnapshotDate').value=new Date().toISOString().slice(0,10);
+  openModal('balanceSnapshotModal');
+}
+function saveBalanceSnapshot(){
+  var date=document.getElementById('balanceSnapshotDate').value;if(!date){toast('Choose a verification date');return;}
+  var changed=0;
+  Array.prototype.forEach.call(document.querySelectorAll('.balance-snapshot-input'),function(input){
+    var verified=parseFloat(input.value);if(isNaN(verified)||verified<0)return;
+    var kind=input.dataset.kind,id=input.dataset.id,current=0,delta=0;
+    if(kind==='account'){
+      current=accountBalance(id);delta=money(verified-current);
+      if(Math.abs(delta)>.005){(S.reconciliationAdjustments||(S.reconciliationAdjustments=[])).push({id:makeLedgerId('reconcile_adjustment'),targetType:'account',targetId:id,amount:delta,date:date,note:'Verified current balance snapshot',cleared:true,reconciled:false,createdAt:new Date().toISOString()});changed++;}
+    }else if(kind==='card'){
+      current=Math.max(0,creditCardRegisterBalance(id));delta=money(verified-current);
+      if(Math.abs(delta)>.005){(S.reconciliationAdjustments||(S.reconciliationAdjustments=[])).push({id:makeLedgerId('reconcile_adjustment'),targetType:'card',targetId:id,amount:delta,date:date,note:'Verified current card balance snapshot',cleared:true,reconciled:false,createdAt:new Date().toISOString()});changed++;}
+    }else if(kind==='custody'){
+      current=custodyAccountBalance(id);delta=money(verified-current);
+      if(Math.abs(delta)>.005){(S.custodialBalanceAdjustments||(S.custodialBalanceAdjustments=[])).push({id:makeLedgerId('custody_balance_adjustment'),accountId:id,amount:delta,date:date,note:'Verified current held balance snapshot',createdAt:new Date().toISOString()});changed++;}
+    }
+  });
+  saveS();closeModal('balanceSnapshotModal');renderAll();go('today');toast(changed?('✓ '+changed+' balance'+(changed===1?'':'s')+' matched to reality'):'Balances already match');
 }
 function assignmentForMonth(env, monthKey) {
   if(!env)return 0;
@@ -5533,6 +5568,19 @@ window.onload = async function() {
     <button class="btn-p" id="saveCCBtn">Add Card</button>
     <button class="btn-s" id="cancelCCBtn">Cancel</button>
     <button class="btn-d" id="deleteCCBtn" style="display:none">Remove Card</button>
+  </div>
+</div>
+
+<!-- Verify Current Balances -->
+<div class="overlay" id="balanceSnapshotModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title">Verify current balances</div>
+    <div style="color:var(--text2);font-size:13px;line-height:1.55;margin:-4px 0 14px">Enter what your accounts, cards, and held-money balances say now. Ledger will create balance-only corrections. It will not invent income or spending.</div>
+    <div class="field"><label>Verified Date</label><input id="balanceSnapshotDate" type="date"></div>
+    <div id="balanceSnapshotRows" class="card" style="padding:0 14px;margin-bottom:12px"></div>
+    <button class="btn-p" onclick="saveBalanceSnapshot()">Match Ledger to these balances</button>
+    <button class="btn-s" onclick="closeModal('balanceSnapshotModal')">Cancel</button>
   </div>
 </div>
 
