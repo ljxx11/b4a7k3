@@ -3047,7 +3047,7 @@ function recordCCPayment(cardId) {
   document.getElementById('ccPayTitle').textContent='Pay '+card.name;
   document.getElementById('ccPaySummary').textContent=fmt(card.balance||0)+' owed · '+fmt(cardFundingDetails(card).ready)+' ready';
   document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(preferred&&a.id===preferred.id?' selected':'')+'>'+esc(a.name)+' · '+fmt(accountBalance(a.id))+'</option>';}).join('');
-  document.getElementById('ccPayAmount').value='';
+  document.getElementById('ccPayAmount').value=money(Math.max(0,creditCardRegisterBalance(card.id))).toFixed(2);
   document.getElementById('ccPayDate').value=new Date().toISOString().slice(0,10);
   openModal('ccPaymentModal');
 }
@@ -3061,10 +3061,19 @@ function saveCCPayment() {
   if(amt>(Number(card.balance)||0)+0.005){toast('Payment cannot exceed the card balance');return;}
   if(amt>accountBalance(accountId)+0.005&&!confirm(account.name+' does not currently have enough cash. Record the payment anyway?'))return;
   var ready=cardFundingDetails(card).ready;
-  if(amt>ready+0.005&&!confirm(fmt(amt-ready)+' of this payment is not ready in the payment envelope. Record it anyway?'))return;
-  card.balance=money(Math.max(0,(Number(card.balance)||0)-amt));
+  if(amt>ready+0.005&&!confirm(fmt(amt-ready)+' of this payment is not currently reserved. That portion will come from your unassigned money. Record it anyway?'))return;
+  var expectedReserve=money(Math.max(0,ready-amt));
   S.expenses.push({id:uid(),desc:'CC Payment — '+card.name,amount:amt,envId:card.paymentEnvId,date:date,payMethod:'debit',accountId:accountId,cleared:false,isCredit:false,isCCPayment:true,ccId:card.id});
-  saveS();closeModal('ccPaymentModal');renderEnvelopes();renderCCTab();renderExpenses();renderAccounts();updateRTA();toast('💳 Payment recorded');
+  card.balance=creditCardRegisterBalance(card.id);
+  var paymentEnv=ccPaymentEnv(card.id);
+  if(paymentEnv){
+    var actualReserve=money(Math.max(0,envAvailable(paymentEnv.id)));
+    var reserveDelta=money(expectedReserve-actualReserve);
+    if(Math.abs(reserveDelta)>.005){
+      (S.envelopeBalanceAdjustments||(S.envelopeBalanceAdjustments=[])).push({id:makeLedgerId('envelope_balance_adjustment'),envelopeId:paymentEnv.id,amount:reserveDelta,date:date,note:'Automatic card payment reserve alignment',createdAt:new Date().toISOString()});
+    }
+  }
+  saveS();closeModal('ccPaymentModal');renderAll();go('cards');toast('💳 Payment recorded · reserve updated automatically');
 }
 function cardCreditDestinationOptions(selectedId){
   var html='<option value=""'+(!selectedId?' selected':'')+'>Ready to Assign</option>';
@@ -3141,7 +3150,6 @@ function renderCCTab() {
         '</div>',
         '<div style="text-align:right;flex-shrink:0">',
           '<div class="cc-pay-amt" style="color:'+(payReady>=(card.balance||0)?'var(--green)':'var(--yellow)')+'">'+fmt(payReady)+'</div>',
-          '<button class="cc-pay-btn" id="ccReserveBtn_'+card.id+'" style="margin-bottom:6px">Set Verified Reserve</button>',
           '<button class="cc-pay-btn" id="ccRefundBtn_'+card.id+'" style="margin-bottom:6px">Record Refund</button>',
           '<button class="cc-pay-btn" id="ccPayBtn_'+card.id+'">Record Payment</button>',
         '</div>',
@@ -3152,11 +3160,9 @@ function renderCCTab() {
       var editBtn = div.querySelector('#ccEditBtn_'+cid);
       var payBtn = div.querySelector('#ccPayBtn_'+cid);
       var refundBtn = div.querySelector('#ccRefundBtn_'+cid);
-      var reserveBtn = div.querySelector('#ccReserveBtn_'+cid);
       if(editBtn) editBtn.addEventListener('click', function(){ openCCModal(cid); });
       if(payBtn) payBtn.addEventListener('click', function(){ recordCCPayment(cid); });
       if(refundBtn) refundBtn.addEventListener('click', function(){ openCardCreditModal(cid,null); });
-      if(reserveBtn) reserveBtn.addEventListener('click', function(){ openVerifiedCardReserve(cid); });
     })(card.id);
     el.appendChild(div);
   });
