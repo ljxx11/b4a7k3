@@ -42,16 +42,24 @@
   --shadow:0 10px 28px rgba(0,0,0,0.34);
 }
 [data-theme=light]{
-  --bg:#f4f6f8;
+  --bg:#f5f6f7;
   --surf:#ffffff;
-  --surf2:#eef1f4;
-  --surf3:#e2e6eb;
-  --border:rgba(31,36,43,0.07);
-  --text:#1d232a;
-  --text2:#63707d;
-  --text3:#7e8792;
-  --acc:#8fa5ba;
-  --acc2:#b7a8c4;
+  --surf2:#eef1f3;
+  --surf3:#e3e7ea;
+  --border:rgba(31,36,43,0.14);
+  --text:#182027;
+  --text2:#46515c;
+  --text3:#596570;
+  --acc:#476b88;
+  --acc2:#6c587d;
+  --green:#246b45;
+  --green-dim:#e6f2eb;
+  --red:#9b3742;
+  --red-dim:#f8e7e9;
+  --yellow:#71570d;
+  --yellow-dim:#f5eccd;
+  --blue:#315f86;
+  --blue-dim:#e6eef6;
   --shadow:0 4px 18px rgba(31,36,43,0.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -120,6 +128,21 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .card-hdr{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-title{font-size:12px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
 .card-body{padding:15px 16px}
+
+/* MONEY TRUTH */
+.truth-card{background:var(--surf);border:1px solid var(--border);border-radius:18px;margin-bottom:12px;box-shadow:0 10px 22px rgba(0,0,0,0.08);overflow:hidden}
+.truth-head{padding:13px 15px 10px;border-bottom:1px solid var(--border)}
+.truth-title{font-size:12px;font-weight:900;color:var(--text);letter-spacing:.2px}
+.truth-sub{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+.truth-grid{display:grid;grid-template-columns:1fr 1fr;padding:5px 15px 10px}
+.truth-item{padding:11px 4px;border-bottom:1px solid var(--border)}
+.truth-item:nth-last-child(-n+2){border-bottom:0}
+.truth-item:nth-child(odd){padding-right:12px;border-right:1px solid var(--border)}
+.truth-item:nth-child(even){padding-left:12px}
+.truth-label{font-size:9px;font-weight:900;letter-spacing:.65px;text-transform:uppercase;color:var(--text3)}
+.truth-value{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-top:3px}
+.truth-value.good{color:var(--green)}.truth-value.debt{color:var(--red)}
+.truth-note{font-size:9px;color:var(--text3);margin-top:2px}
 
 /* INCOME */
 .inc-item{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
@@ -679,7 +702,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     </div>
   </div>
   <div class="rta" style="margin-bottom:10px">
-    <div class="rta-lbl">Ready to Assign</div>
+    <div class="rta-lbl">Unassigned to budget</div>
     <div class="rta-row">
       <div class="rta-num" id="rtaNum">$0.00</div>
       <div class="rta-badge" id="rtaBadge">—</div>
@@ -743,6 +766,21 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="today-focus-title" id="todayFocusTitle">Reviewing your plan</div>
         <div class="today-focus-copy" id="todayNote">One moment.</div>
         <div class="signal-row" id="todaySignals"></div>
+      </div>
+
+      <div class="truth-card" aria-label="Money snapshot">
+        <div class="truth-head">
+          <div class="truth-title">Your money, separated</div>
+          <div class="truth-sub">What is in your hands and accounts, what belongs to other people, and what remains after card debt.</div>
+        </div>
+        <div class="truth-grid">
+          <div class="truth-item"><div class="truth-label">Money you control</div><div class="truth-value" id="truthGross">$0.00</div><div class="truth-note">Checking + savings + cash</div></div>
+          <div class="truth-item"><div class="truth-label">Held for others</div><div class="truth-value debt" id="truthCustody">$0.00</div><div class="truth-note">Not yours to spend</div></div>
+          <div class="truth-item"><div class="truth-label">Your liquid money</div><div class="truth-value good" id="truthOwned">$0.00</div><div class="truth-note">After custodial money</div></div>
+          <div class="truth-item"><div class="truth-label">Credit card debt</div><div class="truth-value debt" id="truthCards">$0.00</div><div class="truth-note">Current Ledger card balances</div></div>
+          <div class="truth-item"><div class="truth-label">After card debt</div><div class="truth-value" id="truthAfterCards">$0.00</div><div class="truth-note">Liquid money minus cards</div></div>
+          <div class="truth-item"><div class="truth-label">Owed to you</div><div class="truth-value" id="truthReceivable">$0.00</div><div class="truth-note">Not counted as spendable cash</div></div>
+        </div>
       </div>
 
       <div class="daily-plan-grid" aria-label="Today’s plan">
@@ -2101,6 +2139,14 @@ function totalInflows() {
 }
 function currentOnBudgetCash() { return money(bankBalance()+cashBalance()); }
 function budgetBalance() { return money(currentOnBudgetCash()-custodialBalanceTotal()); }
+function ownedLiquidMoney(){return money(currentOnBudgetCash()-custodialBalanceTotal());}
+function liquidAfterCardDebt(){return money(ownedLiquidMoney()-totalCCDebt());}
+function renderMoneyTruth(){
+  var gross=currentOnBudgetCash(),custody=custodialBalanceTotal(),owned=ownedLiquidMoney(),cards=totalCCDebt(),after=liquidAfterCardDebt(),receivable=owedToMeTotal();
+  var set=function(id,value){var el=document.getElementById(id);if(el)el.textContent=(value<0?'-':'')+fmt(Math.abs(value));};
+  set('truthGross',gross);set('truthCustody',custody);set('truthOwned',owned);set('truthCards',cards);set('truthAfterCards',after);set('truthReceivable',receivable);
+  var afterEl=document.getElementById('truthAfterCards');if(afterEl)afterEl.className='truth-value '+(after>=0?'good':'debt');
+}
 function assignmentForMonth(env, monthKey) {
   if(!env)return 0;
   var key=normalizeMonthKey(monthKey||currentMonthKey());
@@ -3693,6 +3739,7 @@ function renderToday() {
   var de=document.getElementById('todayDate'); if(de) de.textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
   var rta=readyToAssign();
+  renderMoneyTruth();
 
   var upcoming=S.scheduled.map(function(sch){var d=nextOccurrence(sch);return {s:sch,d:d,days:daysUntil(d)};}).filter(function(x){return x.days<=7;}).sort(function(a,b){return a.days-b.days;});
   var state=renderBudgetHealth(rta,upcoming);
@@ -3703,7 +3750,7 @@ function renderToday() {
   else if(state.overspent.length){focusTitle='Envelope overspent';focusCopy=state.overspent[0].name+' · '+fmt(Math.abs(envAvailable(state.overspent[0].id)))+' over.';}
   else if(state.shortNear.length){var x=state.shortNear[0];focusTitle='Upcoming bill underfunded';focusCopy=x.s.desc+' · '+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+' days')+'.';}
   else if(state.cardShort){focusTitle='Card payment short';focusCopy='Minimum payment is not fully funded.';}
-  else if(rta>0.005){focusTitle='Money is unassigned';focusCopy=fmt(rta)+' Ready to Assign.';}
+  else if(rta>0.005){focusTitle='Money is unassigned';focusCopy=fmt(rta)+' has not been assigned to the budget yet.';}
   else if(state.under.length){focusTitle='Target underfunded';focusCopy=state.under[0].env.name+' · '+fmt(state.under[0].needed)+' needed.';}
   if(title) title.textContent=focusTitle;
   if(note) note.textContent=focusCopy;
