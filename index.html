@@ -246,6 +246,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 .owed-note{font-size:11px;color:var(--text3);margin-top:2px}
 .owed-amt{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-right:8px}
 .owed-pay-btn{border:1px solid var(--border);background:var(--green-dim);color:var(--green);border-radius:9px;padding:7px 9px;font-size:10px;font-weight:900;white-space:nowrap}
+.owed-forgive-btn{border:1px solid var(--border);background:var(--surf3);color:var(--text2);border-radius:9px;padding:7px 9px;font-size:10px;font-weight:900;white-space:nowrap}
 
 /* GOALS */
 .goal-card{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:15px;margin-bottom:10px;box-shadow:0 10px 22px rgba(0,0,0,0.08)}
@@ -1238,7 +1239,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <div class="tog" id="splitExpTog"></div>
     </div>
     <div class="split-box" id="expSplitField">
-      <div class="split-help">Each line is part of this one transaction. Leave “Owed by” blank for your own spending. If someone owes you, enter their name and Ledger will create the IOU automatically.</div>
+      <div class="split-help">Each line is part of this one transaction. Leave “Owed by” blank for your own spending. If someone owes you, enter their name and Ledger will create the IOU automatically. You may still choose a category for fronted money; it will not count as your spending unless you later forgive that IOU.</div>
       <div id="expSplitRows"></div>
       <button class="split-add" type="button" id="addExpenseSplitBtn">＋ Add another part</button>
       <div class="split-summary" id="expSplitSummary"><span>Split total</span><span>$0.00 / $0.00</span></div>
@@ -1311,6 +1312,23 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="field"><label>Date</label><input id="iouRepaymentDate" type="date"></div>
     <button class="btn-p" id="saveIOURepaymentBtn">Record repayment</button>
     <button class="btn-s" id="cancelIOURepaymentBtn">Cancel</button>
+  </div>
+</div>
+
+<!-- Forgive IOU -->
+<div class="overlay" id="iouForgivenessModal">
+  <div class="sheet">
+    <div class="drag"></div>
+    <div class="sheet-title">Forgive money owed by <span id="iouForgivenessWho"></span></div>
+    <div style="color:var(--text2);font-size:13px;line-height:1.5;margin:-4px 0 14px">No money moves now. Ledger will reduce the receivable and reclassify the forgiven amount as your own spending while keeping account and card balances unchanged.</div>
+    <div class="card" style="margin-bottom:12px"><div class="card-body">
+      <div class="set-row"><div><div class="set-lbl">This IOU</div><div class="set-sub" id="iouForgivenessSource">Fronted expense</div></div><strong id="iouForgivenessOutstanding">$0.00</strong></div>
+    </div></div>
+    <div class="field"><label>Amount to forgive ($)</label><input id="iouForgivenessAmount" type="number" inputmode="decimal" step="0.01" placeholder="0.00"></div>
+    <div class="field"><label>Count it as my spending in</label><select id="iouForgivenessEnvelope"></select></div>
+    <div class="field-help" style="margin:-4px 2px 12px">The spending stays on the original IOU/purchase date. Ledger automatically funds the category by the same amount so forgiveness does not change your current available cash.</div>
+    <button class="btn-p" id="saveIOUForgivenessBtn">Forgive amount</button>
+    <button class="btn-s" id="cancelIOUForgivenessBtn">Cancel</button>
   </div>
 </div>
 
@@ -1487,6 +1505,7 @@ var reimbOn = false;
 var creditOn = false;
 var splitExpenseOn = false;
 var repayingIOUWho = null;
+var forgivingIOUId = null;
 var dialOpen = false;
 var ufCollapsed = false;
 var swTouchX = 0, swTouchY = 0, swTouchT = 0;
@@ -2279,11 +2298,13 @@ function expenseSplits(e){
   return [];
 }
 function splitIsFronted(line){return !!String(line&&line.owedBy||'').trim();}
+function splitIsSettledForOther(line){return !!(line&&line.settledForOther);}
+function splitIsPersonal(line){return !splitIsFronted(line)&&!splitIsSettledForOther(line);}
 function expenseFrontedAmount(e){return money(expenseSplits(e).reduce(function(t,line){return t+(splitIsFronted(line)?Number(line.amount)||0:0);},0));}
 function expensePersonalAmount(e){
   var splits=expenseSplits(e);
   if(!splits.length)return money(Number(e&&e.amount)||0);
-  return money(splits.reduce(function(t,line){return t+(!splitIsFronted(line)?Number(line.amount)||0:0);},0));
+  return money(splits.reduce(function(t,line){return t+(splitIsPersonal(line)?Number(line.amount)||0:0);},0));
 }
 function expenseSpendingAmount(e) {
   if (!e || e.isCCPayment) return 0;
@@ -2307,7 +2328,7 @@ function envSpentForMonth(envId, monthKey) {
     var splits=expenseSplits(e);
     if(splits.length){
       splits.forEach(function(line){
-        if(!splitIsFronted(line)&&line.envId===envId)total+=Number(line.amount)||0;
+        if(splitIsPersonal(line)&&line.envId===envId)total+=Number(line.amount)||0;
       });
       return;
     }
@@ -2328,7 +2349,7 @@ function fundedCreditActivity(paymentEnvId, monthKey) {
     if(splits.length){
       splits.forEach(function(line,lineIndex){
         var amount=money(line.amount||0);if(amount<=0)return;
-        if(splitIsFronted(line)){frontedReserve=money(frontedReserve+amount);return;}
+        if(splitIsFronted(line)||splitIsSettledForOther(line)){frontedReserve=money(frontedReserve+amount);return;}
         if(!line.envId)return;
         if(!expensesByEnvelope[line.envId])expensesByEnvelope[line.envId]=[];
         expensesByEnvelope[line.envId].push({expense:e,index:idx,lineIndex:lineIndex,amount:amount});
@@ -2432,7 +2453,7 @@ function moneyAgeDetails() {
   lots.forEach(function(lot){if(embeddedCustody<=0)return;var cut=Math.min(lot.remaining,embeddedCustody);lot.remaining=money(lot.remaining-cut);embeddedCustody=money(embeddedCustody-cut);});
 
   var outflows = S.expenses.filter(function(e){
-    if(!(Number(e.amount)>0) || !e.date) return false;
+    if(e.isIOUForgiveness || !(Number(e.amount)>0) || !e.date) return false;
     var d=new Date(e.date+'T12:00:00'); if(isNaN(d) || d>today) return false;
     var creditPurchase=(e.payMethod==='credit'||e.isCredit) && !e.isCCPayment;
     return !creditPurchase;
@@ -4212,7 +4233,7 @@ function openIncomeModal() {
 }
 
 function expenseSplitEnvelopeOptions(selectedId){
-  var opts='<option value="">No envelope — fronted money</option>';
+  var opts='<option value="">No category yet — fronted money</option>';
   sortedGroups().forEach(function(g){
     var envs=groupEnvelopes(g.id).filter(function(e){return !e.isCCPayment;});if(!envs.length)return;
     opts+='<optgroup label="'+esc(g.name)+'">'+envs.map(function(e){return '<option value="'+e.id+'"'+(selectedId===e.id?' selected':'')+'>'+esc(e.emoji||'')+' '+esc(e.name)+'</option>';}).join('')+'</optgroup>';
@@ -4228,8 +4249,6 @@ function addExpenseSplitRow(data){
   var owed=row.querySelector('.split-owed'),env=row.querySelector('.split-env'),amt=row.querySelector('.split-amt');
   row.querySelector('.split-remove').addEventListener('click',function(){row.remove();if(!host.children.length)addExpenseSplitRow({});updateExpenseSplitSummary();});
   [owed,env,amt].forEach(function(el){el.addEventListener('input',updateExpenseSplitSummary);el.addEventListener('change',updateExpenseSplitSummary);});
-  owed.addEventListener('input',function(){if(this.value.trim())env.value='';updateExpenseSplitSummary();});
-  env.addEventListener('change',function(){if(this.value)owed.value='';updateExpenseSplitSummary();});
   updateExpenseSplitSummary();
 }
 function collectExpenseSplits(){
@@ -4238,7 +4257,7 @@ function collectExpenseSplits(){
     var amount=money(parseFloat(row.querySelector('.split-amt').value)||0);
     var envId=row.querySelector('.split-env').value||null;
     var owedBy=row.querySelector('.split-owed').value.trim();
-    if(amount>0)lines.push({id:makeLedgerId('split'),amount:amount,envId:owedBy?null:envId,owedBy:owedBy||null});
+    if(amount>0)lines.push({id:makeLedgerId('split'),amount:amount,envId:envId,owedBy:owedBy||null});
   });
   return lines;
 }
@@ -4274,14 +4293,14 @@ function validateExpenseSplits(total){
   var lines=collectExpenseSplits();if(!lines.length){toast('Add at least one split');return null;}
   var sum=money(lines.reduce(function(t,line){return t+(Number(line.amount)||0);},0));
   if(Math.abs(sum-total)>.005){toast('Split parts must add up to '+fmt(total));return null;}
-  for(var i=0;i<lines.length;i++){if(!splitIsFronted(lines[i])&&!lines[i].envId){toast('Choose an envelope for each part that is yours');return null;}}
+  for(var i=0;i<lines.length;i++){if(splitIsPersonal(lines[i])&&!lines[i].envId){toast('Choose an envelope for each part that is yours');return null;}}
   return lines;
 }
 function createExpenseIOUs(exp){
   S.owedToMe=(S.owedToMe||[]).filter(function(i){return i.sourceExpenseId!==exp.id;});
   expenseSplits(exp).forEach(function(line){
     if(!splitIsFronted(line))return;
-    S.owedToMe.push({id:uid(),who:String(line.owedBy).trim(),amount:money(line.amount||0),note:(exp.desc||'Expense')+' · fronted',date:exp.date,sourceExpenseId:exp.id,sourceSplitId:line.id||null});
+    S.owedToMe.push({id:uid(),who:String(line.owedBy).trim(),amount:money(line.amount||0),note:(exp.desc||'Expense')+' · fronted',date:exp.date,sourceExpenseId:exp.id,sourceSplitId:line.id||null,sourceEnvId:line.envId||null});
   });
 }
 function openExpModal() {
@@ -4466,11 +4485,11 @@ function saveExp() {
 
   var splits=splitExpenseOn?validateExpenseSplits(amt):null;
   if(splitExpenseOn&&!splits)return;
-  var envId=splitExpenseOn?(splits.find(function(line){return !splitIsFronted(line)&&line.envId;})||{}).envId:document.getElementById('expCat').value;
+  var envId=splitExpenseOn?(splits.find(function(line){return splitIsPersonal(line)&&line.envId;})||{}).envId:document.getElementById('expCat').value;
   if(!splitExpenseOn&&!envId){toast('Pick an envelope');return;}
 
   var spendByEnv={};
-  if(splitExpenseOn)splits.forEach(function(line){if(!splitIsFronted(line)&&line.envId)spendByEnv[line.envId]=money((spendByEnv[line.envId]||0)+(Number(line.amount)||0));});
+  if(splitExpenseOn)splits.forEach(function(line){if(splitIsPersonal(line)&&line.envId)spendByEnv[line.envId]=money((spendByEnv[line.envId]||0)+(Number(line.amount)||0));});
   else spendByEnv[envId]=amt;
   var overs=[];
   Object.keys(spendByEnv).forEach(function(id){var available=envAvailable(id),needed=spendByEnv[id];if(needed>available+.005){var env=S.envelopes.find(function(e){return e.id===id;});overs.push((env?env.name:'Envelope')+' by '+fmt(needed-available));}});
@@ -5301,7 +5320,7 @@ function renderReports() {
     if(e.isCardCredit){var refundKey=e.refundEnvId||'__card_credit__';byEnv[refundKey]=money((byEnv[refundKey]||0)+expenseSpendingAmount(e));return;}
     var splits=expenseSplits(e);
     if(splits.length){
-      splits.forEach(function(line){if(splitIsFronted(line)||!line.envId)return;byEnv[line.envId]=money((byEnv[line.envId]||0)+(Number(line.amount)||0));});
+      splits.forEach(function(line){if(!splitIsPersonal(line)||!line.envId)return;byEnv[line.envId]=money((byEnv[line.envId]||0)+(Number(line.amount)||0));});
       return;
     }
     var envKey=e.envId;byEnv[envKey]=money((byEnv[envKey]||0)+expenseSpendingAmount(e));
