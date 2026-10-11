@@ -1903,6 +1903,7 @@ async function updateStorageStatus() {
 
 function saveS() {
   try{
+    syncCardBalanceCaches();
     captureFinancialSnapshot();
     var json=JSON.stringify(S);
     localStorage.setItem('piggybank_v4_preview',json);
@@ -2029,7 +2030,7 @@ function migrateAccounts(){
 }
 function migrateCreditCardRegisters(){
   S.creditCards.forEach(function(card){
-    if(card.openingBalance===undefined){var purchases=0,payments=0,credits=0;S.expenses.forEach(function(e){if(e.isCardCredit&&e.ccId===card.id)credits+=Number(e.amount)||0;else if(e.isCredit&&e.ccId===card.id)purchases+=Number(e.amount)||0;else if(e.isCCPayment&&e.envId===card.paymentEnvId)payments+=Number(e.amount)||0;});card.openingBalance=money((Number(card.balance)||0)-purchases+payments+credits);}
+    if(card.openingBalance===undefined){var purchases=0,payments=0,credits=0;S.expenses.forEach(function(e){if(e.isCardCredit&&e.ccId===card.id)credits+=Number(e.amount)||0;else if(e.isCredit&&e.ccId===card.id)purchases+=Number(e.amount)||0;else if(e.isCCPayment&&e.envId===card.paymentEnvId)payments+=Number(e.amount)||0;});card.openingBalance=money((cardBalance(card))-purchases+payments+credits);}
     if(card.reconciledAt===undefined)card.reconciledAt=null;
   });
 }
@@ -2156,6 +2157,8 @@ function accountBalance(accountId,clearedOnly,throughDate){
 }
 function creditCardRegisterEntries(cardId){var card=S.creditCards.find(function(c){return c.id===cardId;}),rows=[];if(!card)return rows;S.expenses.forEach(function(e){if(e.isCardCredit&&e.ccId===cardId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Card refund',date:e.date,amount:-(Number(e.amount)||0),cleared:!!e.cleared,reconciled:!!e.reconciled});else if(e.isCredit&&e.ccId===cardId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Purchase',date:e.date,amount:Number(e.amount)||0,cleared:!!e.cleared,reconciled:!!e.reconciled});else if(e.isCCPayment&&e.envId===card.paymentEnvId)rows.push({kind:'expense',record:e,id:e.id,name:e.desc||'Payment',date:e.date,amount:-(Number(e.amount)||0),cleared:!!e.cleared,reconciled:!!e.reconciled});});(S.reconciliationAdjustments||[]).forEach(function(a){if(a.targetType==='card'&&a.targetId===cardId)rows.push({kind:'reconcileAdjustment',record:a,id:a.id,name:a.note||'Verified balance adjustment',date:a.date,amount:Number(a.amount)||0,cleared:!!a.cleared,reconciled:!!a.reconciled});});return rows.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});}
 function creditCardRegisterBalance(cardId,clearedOnly,throughDate){var card=S.creditCards.find(function(c){return c.id===cardId;});if(!card)return 0;var total=Number(card.openingBalance)||0;creditCardRegisterEntries(cardId).forEach(function(x){if((!clearedOnly||x.cleared)&&(!throughDate||String(x.date)<=throughDate))total+=x.amount;});return money(total);}
+function cardBalance(cardOrId){var id=typeof cardOrId==='string'?cardOrId:(cardOrId&&cardOrId.id);return id?creditCardRegisterBalance(id):0;}
+function syncCardBalanceCaches(){(S.creditCards||[]).forEach(function(card){card.balance=cardBalance(card);});}
 function selectedRegisterEntries(){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterEntries(String(activeAccountId).slice(3)):accountRegisterEntries(activeAccountId);}
 function selectedRegisterBalance(clearedOnly,throughDate){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterBalance(String(activeAccountId).slice(3),clearedOnly,throughDate):accountBalance(activeAccountId,clearedOnly,throughDate);}
 function accountOptions(selectedId,includeCash){return activeAccounts().filter(function(a){return includeCash!==false||a.type!=='cash';}).map(function(a){return '<option value="'+a.id+'"'+(a.id===selectedId?' selected':'')+'>'+esc(a.name)+' · '+a.type+'</option>';}).join('');}
@@ -2521,7 +2524,7 @@ function monthlyIncome(monthKey) {
   // Opening balances are assets, not monthly income. Use paychecks/income added in the current month.
   var total = 0;
   S.income.forEach(function(i){
-    var opening = /^opening|cash on hand/i.test(String(i.name||''));
+    var opening = /^opening\b|cash on hand/i.test(String(i.name||''));
     if(!i.isReimb && !opening && monthKeyFromDate(i.date)===normalizeMonthKey(monthKey||currentMonthKey())) total += Number(i.amount)||0;
   });
   return money(total);
@@ -2705,8 +2708,15 @@ function toggleIncomeSection() {
 function envName(id) {
   var e = S.envelopes.find(function(e){return e.id===id;}); return e ? e.name : id;
 }
+function applyReimbursementAssignment(inc,sign){
+  if(!inc||!inc.isReimb||!inc.reimbEnvId)return;
+  var env=S.envelopes.find(function(e){return e.id===inc.reimbEnvId;});if(!env)return;
+  var key=normalizeMonthKey(monthKeyFromDate(inc.date));
+  setAssignmentForMonth(env,key,money(assignmentForMonth(env,key)+(Number(sign)||0)*(Number(inc.amount)||0)));
+}
 function delIncome(id) {
   var locked=S.income.find(function(i){return i.id===id;});if(locked&&locked.reconciled){toast('Reconciled transactions are locked');return;}
+  if(locked)applyReimbursementAssignment(locked,-1);
   S.income = S.income.filter(function(i){return i.id!==id;});
   saveS(); renderIncome(); renderEnvelopes(); renderSummary(); toast('Income removed');
 }
@@ -3163,7 +3173,7 @@ function recordCCPayment(cardId) {
   var accounts=(S.accounts||[]).filter(function(a){return a.type!=='credit';});
   var preferred=defaultAccount('checking')||accounts[0];
   document.getElementById('ccPayTitle').textContent='Pay '+card.name;
-  document.getElementById('ccPaySummary').textContent=fmt(card.balance||0)+' owed · '+fmt(cardFundingDetails(card).ready)+' ready';
+  document.getElementById('ccPaySummary').textContent=fmtcardBalance(card)+' owed · '+fmt(cardFundingDetails(card).ready)+' ready';
   document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(preferred&&a.id===preferred.id?' selected':'')+'>'+esc(a.name)+' · '+fmt(accountBalance(a.id))+'</option>';}).join('');
   document.getElementById('ccPayAmount').value=money(Math.max(0,creditCardRegisterBalance(card.id))).toFixed(2);
   document.getElementById('ccPayDate').value=new Date().toISOString().slice(0,10);
@@ -3176,7 +3186,7 @@ function saveCCPayment() {
   if(!account){toast('Choose the account paying the card');return;}
   if(!amt||amt<=0){toast('Enter a payment amount');return;}
   if(!date){toast('Choose a payment date');return;}
-  if(amt>(Number(card.balance)||0)+0.005){toast('Payment cannot exceed the card balance');return;}
+  if(amt>(cardBalance(card))+0.005){toast('Payment cannot exceed the card balance');return;}
   if(amt>accountBalance(accountId)+0.005&&!confirm(account.name+' does not currently have enough cash. Record the payment anyway?'))return;
   var ready=cardFundingDetails(card).ready;
   if(amt>ready+0.005&&!confirm(fmt(amt-ready)+' of this payment is not currently reserved. That portion will come from your unassigned money. Record it anyway?'))return;
@@ -3225,7 +3235,7 @@ function saveCardCredit(){
   if(old&&old.ccId===card.id&&monthKeyFromDate(old.date)===month)availableBefore=money(availableBefore+(Number(old.releasedAmount)||0));
   var releasedAmount=money(Math.min(amount,Math.max(0,availableBefore)));
   if(old){var oldCard=S.creditCards.find(function(c){return c.id===old.ccId;});if(oldCard)oldCard.balance=money((Number(oldCard.balance)||0)+(Number(old.amount)||0));S.expenses=S.expenses.filter(function(e){return e.id!==old.id;});}
-  card.balance=money((Number(card.balance)||0)-amount);
+  card.balance=money((cardBalance(card))-amount);
   S.expenses.push({id:old?old.id:uid(),desc:desc,amount:amount,date:date,time:old&&old.time?old.time:'12:00',datetime:date+'T'+(old&&old.time?old.time:'12:00'),isCardCredit:true,isCredit:true,payMethod:'credit',ccId:card.id,refundEnvId:refundEnvId,envId:refundEnvId,releasedAmount:releasedAmount,cleared:old?!!old.cleared:false,reconciled:false});
   saveS();closeModal('cardCreditModal');editingCardCreditId=null;renderEnvelopes();renderCCTab();renderExpenses();renderAccounts();renderReports();updateRTA();
   toast('↩ Card refund recorded · '+fmt(releasedAmount)+' released');
@@ -3267,7 +3277,7 @@ function renderCCTab() {
           '<div class="cc-track"><div class="cc-fill" style="width:'+payPct+'%"></div></div>',
         '</div>',
         '<div style="text-align:right;flex-shrink:0">',
-          '<div class="cc-pay-amt" style="color:'+(payReady>=(card.balance||0)?'var(--green)':'var(--yellow)')+'">'+fmt(payReady)+'</div>',
+          '<div class="cc-pay-amt" style="color:'+(payReady>=cardBalance(card)?'var(--green)':'var(--yellow)')+'">'+fmt(payReady)+'</div>',
           '<button class="cc-pay-btn" id="ccRefundBtn_'+card.id+'" style="margin-bottom:6px">Record Refund</button>',
           '<button class="cc-pay-btn" id="ccPayBtn_'+card.id+'">Record Payment</button>',
         '</div>',
@@ -3375,7 +3385,7 @@ function delExp(id) {
     if(refundCard)refundCard.balance=money((Number(refundCard.balance)||0)+(Number(exp.amount)||0));
   } else if (exp && exp.isCredit && exp.ccId) {
     var card=S.creditCards.find(function(c){return c.id===exp.ccId;});
-    if(card) card.balance=money(Math.max(0,(card.balance||0)-(exp.amount||0)));
+    if(card) card.balance=money(Math.max(0,cardBalance(card)-(exp.amount||0)));
   } else if (exp && exp.isCCPayment) {
     var card2=S.creditCards.find(function(c){return c.paymentEnvId===exp.envId;});
     if(card2) card2.balance=money((card2.balance||0)+(exp.amount||0));
@@ -3496,8 +3506,8 @@ function compassLesson(rta,week,month,age,emergency){
   if(rta>.005)return {title:'Personal funds ready',copy:'Custodial money remains separate.'};
   if(!week.hasData)return {title:'Upcoming not measured',copy:'No recurring bills are scheduled.'};
   if(week.short>.005)return {title:'Next 7 days underfunded',copy:fmt(week.short)+' is still needed.'};
-  var card=S.creditCards.find(function(c){return (Number(c.balance)||0)>0 && (Number(c.apr)||0)>0;});
-  if(card){var daily=(Number(card.balance)||0)*(Number(card.apr)||0)/100/365;return {title:'Card interest',copy:card.name+' costs about '+fmt(daily)+' per day.'};}
+  var card=S.creditCards.find(function(c){return (cardBalance(c))>0 && (Number(c.apr)||0)>0;});
+  if(card){var daily=(cardBalance(card))*(Number(card.apr)||0)/100/365;return {title:'Card interest',copy:card.name+' costs about '+fmt(daily)+' per day.'};}
   if(month.pct<100)return {title:'30-day coverage',copy:month.pct+'% of scheduled bills is funded.'};
   if(age.days<30)return {title:'Money age',copy:age.days+' of 30 buffer days reached.'};
   if(!emergency.found)return {title:'Emergency fund',copy:'No emergency-fund goal is recorded.'};
@@ -3742,7 +3752,7 @@ function delGoal(id) { S.goals = S.goals.filter(function(g){return g.id!==id;});
 // DEBT
 // ═══════════════════════════════════════════
 function cardRequiredPayment(card) {
-  var balance=Math.max(0,Number(card&&card.balance)||0);
+  var balance=Math.max(0,cardBalance(card));
   if(!balance)return 0;
   var env=ccPaymentEnv(card.id);
   var planned=Number(card.minimum)||Number(env&&env.target&&env.target.amount)||40;
@@ -3869,7 +3879,7 @@ function todayRiskState(rta,upcoming){
   var shortWeek=upcoming.filter(function(x){var e=S.envelopes.find(function(v){return v.id===x.s.envId;});return x.days<=7 && (!e || envAvailable(e.id)+0.005<x.s.amount);});
   var under=regularUnderfunded();
   var cardShort=false;
-  S.creditCards.forEach(function(c){if((c.balance||0)<=0)return;var pe=ccPaymentEnv(c.id),ready=pe?envAvailable(pe.id):0,minimum=Math.min(c.balance||0,c.minimum||40);if(ready+0.005<minimum)cardShort=true;});
+  S.creditCards.forEach(function(c){if(cardBalance(c)<=0)return;var pe=ccPaymentEnv(c.id),ready=pe?envAvailable(pe.id):0,minimum=Math.min(c.balance||0,c.minimum||40);if(ready+0.005<minimum)cardShort=true;});
   if(rta<-.005||overdue.length||overspent.length) return {level:'bad',label:'Action required',sub:rta<0?'Plan exceeds available money':overdue.length?'A bill is overdue':'An envelope is overspent',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
   if(shortNear.length||cardShort) return {level:'warn',label:'Caution',sub:shortNear.length?'A near-term bill is short':'Card minimum is not fully funded',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
   if(rta>.005||under.length||shortWeek.length) return {level:'good',label:'Good',sub:rta>0.005?'A planning task remains':shortWeek.length?'A bill needs funding':'Monthly targets remain',overspent:overspent,shortNear:shortNear,shortWeek:shortWeek,under:under,cardShort:cardShort};
@@ -3948,8 +3958,8 @@ function renderTodayPriorities(upcoming){
     var when=x.days<0?Math.abs(x.days)+' days overdue':x.days===0?'Due today':x.days===1?'Due tomorrow':'Due in '+x.days+' days';
     rows.push(priorityHtml(env?env.emoji:'↗',x.s.desc,when+(av+0.005<x.s.amount?' · envelope is short':' · funded'),fmt(x.s.amount)));
   });
-  var card=S.creditCards.find(function(c){return (c.balance||0)>0;});
-  if(card){var pe=ccPaymentEnv(card.id), ready=pe?envAvailable(pe.id):0, daily=card.apr?(card.balance||0)*(card.apr/100)/365:0, required=cardRequiredPayment(card);if(ready+0.005<required) rows.push(priorityHtml('◇','Card payment short',fmt(required-ready)+' still needed.',fmt(ready)+' ready'));else rows.push(priorityHtml('◇','Card payment ready',(daily>0?fmt(daily)+'/day interest · ':'')+fmt(card.balance||0)+' balance',fmt(ready)+' ready'));}
+  var card=S.creditCards.find(function(c){return cardBalance(c)>0;});
+  if(card){var pe=ccPaymentEnv(card.id), ready=pe?envAvailable(pe.id):0, daily=card.apr?cardBalance(card)*(card.apr/100)/365:0, required=cardRequiredPayment(card);if(ready+0.005<required) rows.push(priorityHtml('◇','Card payment short',fmt(required-ready)+' still needed.',fmt(ready)+' ready'));else rows.push(priorityHtml('◇','Card payment ready',(daily>0?fmt(daily)+'/day interest · ':'')+fmtcardBalance(card)+' balance',fmt(ready)+' ready'));}
   var under=regularUnderfunded();
   under.slice(0,Math.max(0,4-rows.length)).forEach(function(x){rows.push(priorityHtml(x.env.emoji||'○',x.env.name,'Underfunded.',fmt(x.needed)));});
   if(!rows.length){
@@ -4378,18 +4388,19 @@ function saveIncome() {
   if (!date) { toast('Pick a date'); return; }
 
   if (editingIncomeId) {
-    // Edit existing
+    // Reverse the old reimbursement routing before applying the edited record.
     var inc = S.income.find(function(i){return i.id===editingIncomeId;});
-    if (inc) { inc.name=name; inc.amount=amt; inc.date=date; inc.accountId=accountId; inc.isCash=cashIncOn; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; inc.cleared=false; }
+    if (inc) {
+      applyReimbursementAssignment(inc,-1);
+      inc.name=name; inc.amount=amt; inc.date=date; inc.accountId=accountId; inc.isCash=cashIncOn; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; inc.cleared=false;
+      applyReimbursementAssignment(inc,1);
+    }
     editingIncomeId = null;
     toast('✓ Updated!');
   } else {
-    // New income
-    if (isReimb && reimbEnvId) {
-      var env = S.envelopes.find(function(e){return e.id===reimbEnvId;});
-      if (env) { var key=normalizeMonthKey(monthKeyFromDate(date));setAssignmentForMonth(env,key,assignmentForMonth(env,key)+amt); }
-    }
-    S.income.push({id:uid(), name:name, amount:amt, date:date, accountId:accountId, isCash:cashIncOn, isReimb:isReimb, reimbEnvId:reimbEnvId,cleared:false});
+    var newIncome={id:uid(), name:name, amount:amt, date:date, accountId:accountId, isCash:cashIncOn, isReimb:isReimb, reimbEnvId:reimbEnvId,cleared:false};
+    applyReimbursementAssignment(newIncome,1);
+    S.income.push(newIncome);
     toast('💰 Income added!');
   }
   saveS(); closeModal('incomeModal'); renderIncome(); renderEnvelopes(); updateRTA();
@@ -4453,7 +4464,7 @@ function saveExp() {
   var newExp={id:uid(),desc:desc,amount:amt,envId:envId||null,date:date,time:time,datetime:datetime,payMethod:payMethod,accountId:accountId,isCredit:isCredit,ccId:ccId||null,cleared:false};
   if(splitExpenseOn){newExp.splits=splits;newExp.frontedAmount=expenseFrontedAmount(newExp);}
   S.expenses.push(newExp);
-  if(isCredit&&ccId){var card=S.creditCards.find(function(c){return c.id===ccId;});if(card)card.balance=money((card.balance||0)+amt);}
+  if(isCredit&&ccId){var card=S.creditCards.find(function(c){return c.id===ccId;});if(card)card.balance=money(cardBalance(card)+amt);}
   createExpenseIOUs(newExp);
   applyBackdatedExpenseEffect(newExp,'add');
   saveS();closeModal('expModal');renderAll();
@@ -4824,9 +4835,9 @@ function resetMonth() {
     if(String(e.date||'').slice(0,7)!==month)return;
     var card=e.ccId?S.creditCards.find(function(c){return c.id===e.ccId;}):e.isCCPayment?S.creditCards.find(function(c){return c.paymentEnvId===e.envId;}):null;
     if(!card)return;
-    if(e.isCardCredit)card.balance=money((Number(card.balance)||0)+(Number(e.amount)||0));
-    else if(e.isCCPayment)card.balance=money((Number(card.balance)||0)+(Number(e.amount)||0));
-    else if(e.isCredit)card.balance=money((Number(card.balance)||0)-(Number(e.amount)||0));
+    if(e.isCardCredit)card.balance=money((cardBalance(card))+(Number(e.amount)||0));
+    else if(e.isCCPayment)card.balance=money((cardBalance(card))+(Number(e.amount)||0));
+    else if(e.isCredit)card.balance=money((cardBalance(card))-(Number(e.amount)||0));
   });
   S.expenses = S.expenses.filter(function(e){return e.date.slice(0,7)!==month;});
   saveS(); renderAll(); toast('Month reset');
@@ -4902,7 +4913,7 @@ function ledgerInvariantIssues(){
   var issues=[];
   LEDGER_COLLECTIONS.forEach(function(name){var seen={};(S[name]||[]).forEach(function(item){if(!item||!item.id)return;if(seen[item.id])issues.push('Duplicate '+name+' record');seen[item.id]=true;});});
   S.envelopes.forEach(function(env){Object.keys(env.assignments||{}).forEach(function(key){if(!/^\d{4}-\d{2}$/.test(key)||!isFinite(Number(env.assignments[key])))issues.push('Invalid monthly assignment');});});
-  S.creditCards.forEach(function(card){if(!ccPaymentEnv(card.id))issues.push('Card payment envelope missing');else if(Math.abs((Number(card.balance)||0)-creditCardRegisterBalance(card.id))>0.01)issues.push('Card register balance mismatch');});
+  S.creditCards.forEach(function(card){if(!ccPaymentEnv(card.id))issues.push('Card payment envelope missing');else if(Math.abs((cardBalance(card))-creditCardRegisterBalance(card.id))>0.01)issues.push('Card register balance mismatch');});
   S.expenses.forEach(function(exp){
     if(!exp.isCredit&&exp.accountId&&!S.accounts.some(function(a){return a.id===exp.accountId;}))issues.push('Expense account missing');
     if(exp.isCardCredit){
@@ -5157,8 +5168,8 @@ function logScheduled(id, nextDate) {
   if (!s) return;
   var env=S.envelopes.find(function(e){return e.id===s.envId;}),card=s.ccId?S.creditCards.find(function(c){return c.id===s.ccId;}):null;
   var isPayment=!!(s.isCCPayment||(env&&env.isCCPayment)),amount=money(Number(s.amount)||0),date=new Date(nextDate).toISOString().slice(0,10);
-  if(isPayment){card=card||S.creditCards.find(function(c){return env&&c.paymentEnvId===env.id;});if(!card){toast('Choose a valid card payment envelope');return;}if(amount>(Number(card.balance)||0)+0.005){toast('Scheduled payment exceeds the current card balance');return;}card.balance=money(Math.max(0,(Number(card.balance)||0)-amount));}
-  else if(s.isCredit&&card)card.balance=money((Number(card.balance)||0)+amount);
+  if(isPayment){card=card||S.creditCards.find(function(c){return env&&c.paymentEnvId===env.id;});if(!card){toast('Choose a valid card payment envelope');return;}if(amount>(cardBalance(card))+0.005){toast('Scheduled payment exceeds the current card balance');return;}card.balance=money(Math.max(0,(cardBalance(card))-amount));}
+  else if(s.isCredit&&card)card.balance=money((cardBalance(card))+amount);
   var avail=env?envAvailable(env.id):0;
   S.expenses.push({id:uid(),desc:s.desc,amount:amount,envId:s.envId,date:date,time:'12:00',datetime:date+'T12:00',payMethod:s.isCredit?'credit':((S.accounts.find(function(a){return a.id===s.accountId;})||{}).type==='cash'?'cash':'debit'),accountId:s.isCredit?null:(s.accountId||(defaultAccount('checking')||{}).id),isCredit:!!s.isCredit,ccId:card&&card.id||null,isCCPayment:isPayment,cleared:false,fundedAmount:s.isCredit?money(Math.min(amount,Math.max(0,avail))):0});
   // Advance nextDate
