@@ -1891,7 +1891,7 @@ async function exportSyncPackage() {
       appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,device:ledgerDevice,revision:ledgerRevision,
       stateHash:ledgerLastHash,currentState:items[0],changes:items[1],operations:items[2]
     };
-    downloadJson(pack,'Ledger-sync-diagnostic-' + new Date().toISOString().slice(0,10) + '.json');
+    downloadJson(pack,'Ledger-sync-diagnostic-' + localDateKey() + '.json');
     toast('Sync diagnostic created');
   }catch(e){console.error(e);toast('Could not create the diagnostic');}
 }
@@ -2039,6 +2039,16 @@ async function loadS() {
   }
 }
 
+function localDateKey(value) {
+  var d=value instanceof Date?new Date(value.getTime()):(value?new Date(value):new Date());
+  if(isNaN(d))d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function parseLocalDateKey(value) {
+  if(value instanceof Date)return new Date(value.getTime());
+  var m=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m?new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),12,0,0,0):new Date(value);
+}
 function currentMonthKey() {
   var d = new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
@@ -2108,7 +2118,7 @@ function personalCashBalance(){
 function applyMonthRollover(newKey) {
   S.currentMonth = normalizeMonthKey(newKey);
   S.selectedMonth = S.currentMonth;
-  S.rolloverDate = new Date().toISOString().slice(0,10);
+  S.rolloverDate = localDateKey();
 }
 function checkMonthRollover() {
   var key = currentMonthKey();
@@ -2190,8 +2200,8 @@ function migrateCustodialFunds() {
   var createdDate=(related[0]&&related[0].date)||(S.income[0]&&S.income[0].date)||'2026-01-01';
   S.custodialAccounts.push({id:accountId,name:accountName,emoji:'🛡️',note:'Money entrusted to me',createdAt:createdDate+'T12:00:00.000Z'});
   var embedded=money(Math.max(0,heldBalance-relatedTotal));
-  if(embedded>0)S.custodialTransactions.push({id:'custody_opening_'+held.id,accountId:accountId,direction:'in',amount:embedded,desc:'Beginning custodial balance',date:(S.income[0]&&S.income[0].date)||new Date().toISOString().slice(0,10),location:'bank',affectsCash:false,embeddedInOpening:true});
-  related.forEach(function(i){S.custodialTransactions.push({id:'custody_from_'+i.id,accountId:accountId,direction:'in',amount:money(i.amount),desc:i.name||'Custodial money received',date:i.date||new Date().toISOString().slice(0,10),location:i.isCash?'cash':'bank',affectsCash:true,sourceIncomeId:i.id});});
+  if(embedded>0)S.custodialTransactions.push({id:'custody_opening_'+held.id,accountId:accountId,direction:'in',amount:embedded,desc:'Beginning custodial balance',date:(S.income[0]&&S.income[0].date)||localDateKey(),location:'bank',affectsCash:false,embeddedInOpening:true});
+  related.forEach(function(i){S.custodialTransactions.push({id:'custody_from_'+i.id,accountId:accountId,direction:'in',amount:money(i.amount),desc:i.name||'Custodial money received',date:i.date||localDateKey(),location:i.isCash?'cash':'bank',affectsCash:true,sourceIncomeId:i.id});});
   if(related.length){var ids=related.map(function(i){return i.id;});S.income=S.income.filter(function(i){return ids.indexOf(i.id)<0;});}
   var gid=held.groupId;
   S.envelopes=S.envelopes.filter(function(e){return e.id!==held.id;});
@@ -2290,7 +2300,7 @@ function openBalanceSnapshotModal(){
   activeCreditCards().forEach(function(c){html+=balanceSnapshotRow('card',c.id,c.name,Math.max(0,cardBalance(c)),'Effective amount owed including pending');});
   (S.custodialAccounts||[]).forEach(function(a){html+=balanceSnapshotRow('custody',a.id,a.name,custodyAccountBalance(a.id),'Money currently held for this person');});
   host.innerHTML=html||'<div class="activity-empty">Add an account or card first.</div>';
-  document.getElementById('balanceSnapshotDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('balanceSnapshotDate').value=localDateKey();
   openModal('balanceSnapshotModal');
 }
 function saveBalanceSnapshot(){
@@ -2579,7 +2589,7 @@ function advanceRecurringDate(date,freq,anchorDay){
 }
 function scheduledOccurrencesForMonth(sched,monthKey){
   if(!sched||!sched.nextDate)return 0;
-  var key=normalizeMonthKey(monthKey),p=key.split('-'),start=new Date(Number(p[0]),Number(p[1])-1,1,12),end=new Date(Number(p[0]),Number(p[1]),1,12),d=new Date(sched.nextDate+'T12:00:00'),guard=0,count=0;
+  var key=normalizeMonthKey(monthKey),p=key.split('-'),start=new Date(Number(p[0]),Number(p[1])-1,1,12),end=new Date(Number(p[0]),Number(p[1]),1,12),d=parseLocalDateKey(sched.nextDate),guard=0,count=0;
   if(isNaN(d))return 0;
   var anchorDay=d.getDate();
   while(d<start&&guard++<1200)advanceRecurringDate(d,sched.freq,anchorDay);
@@ -2588,8 +2598,8 @@ function scheduledOccurrencesForMonth(sched,monthKey){
 }
 function firstScheduledDateForMonth(envId,monthKey){
   var key=normalizeMonthKey(monthKey),p=key.split('-'),start=new Date(Number(p[0]),Number(p[1])-1,1,12),end=new Date(Number(p[0]),Number(p[1]),1,12),first=null;
-  S.scheduled.forEach(function(s){if(s.envId!==envId||!s.nextDate)return;var d=new Date(s.nextDate+'T12:00:00'),anchor=d.getDate(),guard=0;while(d<start&&guard++<1200)advanceRecurringDate(d,s.freq,anchor);if(d>=start&&d<end&&(!first||d<first))first=new Date(d);});
-  return first?first.toISOString().slice(0,10):null;
+  S.scheduled.forEach(function(s){if(s.envId!==envId||!s.nextDate)return;var d=parseLocalDateKey(s.nextDate),anchor=d.getDate(),guard=0;while(d<start&&guard++<1200)advanceRecurringDate(d,s.freq,anchor);if(d>=start&&d<end&&(!first||d<first))first=new Date(d);});
+  return first?localDateKey(first):null;
 }
 function scheduledAmountForMonth(envId,monthKey){var total=0;S.scheduled.forEach(function(s){if(s.envId===envId)total+=Number(s.amount||0)*scheduledOccurrencesForMonth(s,monthKey);});return money(total);}
 function requiredFundingForMonth(env,monthKey){return money(Math.max(targetAmountForMonth(env,monthKey),scheduledAmountForMonth(env.id,monthKey)));}
@@ -2952,7 +2962,7 @@ function openVerifiedEnvelopeBalance(envId){
   var env=S.envelopes.find(function(e){return e.id===envId;});if(!env)return;
   verifyingEnvelopeId=envId;
   document.getElementById('envVerifiedName').textContent=env.name;
-  document.getElementById('envVerifiedDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('envVerifiedDate').value=localDateKey();
   document.getElementById('envVerifiedBalance').value='';
   updateVerifiedEnvelopeDifference();
   openModal('envVerifiedModal');
@@ -3189,7 +3199,11 @@ function openCCModal(id) {
   document.getElementById('ccModalTitle').textContent = card ? 'Edit Credit Card' : 'Add Credit Card';
   document.getElementById('ccName').value = card ? card.name : '';
   document.getElementById('ccLastFour').value = card ? (card.lastFour||'') : '';
-  document.getElementById('ccBalance').value = card ? cardBalance(card) : '';
+  var balInput=document.getElementById('ccBalance'),balLabel=document.getElementById('ccBalanceLabel'),balHelp=document.getElementById('ccBalanceHelp');
+  balInput.value = card ? cardBalance(card) : '';
+  balInput.readOnly=!!card;
+  if(balLabel)balLabel.textContent=card?'Current Ledger Balance ($)':'Starting Balance Owed ($)';
+  if(balHelp)balHelp.textContent=card?'Calculated from the card register. Use Verify balances to correct it.':'For a new card, enter the balance Ledger should start from.';
   document.getElementById('ccApr').value = card && card.apr ? card.apr : '';
   document.getElementById('deleteCCBtn').style.display = card ? 'block' : 'none';
   openModal('ccModal');
@@ -3202,7 +3216,7 @@ function saveCC() {
   if (!name) { toast('Enter a card name'); return; }
   if (editingCCId) {
     var card = S.creditCards.find(function(c){return c.id===editingCCId;});
-    if (card) { var current=cardBalance(card);card.openingBalance=money((Number(card.openingBalance)||0)+(balance-current));card.name=name; card.lastFour=lastFour; card.apr=apr; }
+    if (card) { card.name=name; card.lastFour=lastFour; card.apr=apr; }
   } else {
     // Create card + auto-create a CC Payment envelope in a "Credit Cards" group
     var ccGroupId = ensureCCGroup();
@@ -3247,37 +3261,7 @@ function ensureCCGroup() {
   return gid;
 }
 var payingCCId = null;
-var verifyingCardReserveId=null;
-function openVerifiedCardReserve(cardId){
-  var card=S.creditCards.find(function(c){return c.id===cardId;}),env=card?ccPaymentEnv(card.id):null;
-  if(!card||!env){toast('Payment envelope not found');return;}
-  verifyingCardReserveId=cardId;
-  document.getElementById('ccReserveCardName').textContent=card.name;
-  document.getElementById('ccReserveDate').value=new Date().toISOString().slice(0,10);
-  document.getElementById('ccReserveAmount').value='';
-  updateVerifiedCardReserve();
-  openModal('ccReserveModal');
-}
-function updateVerifiedCardReserve(){
-  var card=S.creditCards.find(function(c){return c.id===verifyingCardReserveId;}),env=card?ccPaymentEnv(card.id):null;
-  if(!card||!env)return;
-  var owed=Math.max(0,creditCardRegisterBalance(card.id)),current=Math.max(0,envAvailable(env.id));
-  var verified=parseFloat(document.getElementById('ccReserveAmount').value),delta=isNaN(verified)?0:money(verified-current);
-  document.getElementById('ccReserveOwed').textContent=fmt(owed);
-  document.getElementById('ccReserveCurrent').textContent=fmt(current);
-  document.getElementById('ccReserveDifference').textContent=(delta<0?'-':'+')+fmt(Math.abs(delta));
-  document.getElementById('ccReserveDifference').style.color=Math.abs(delta)<.005?'var(--green)':delta<0?'var(--red)':'var(--green)';
-}
-function saveVerifiedCardReserve(){
-  var card=S.creditCards.find(function(c){return c.id===verifyingCardReserveId;}),env=card?ccPaymentEnv(card.id):null;
-  var date=document.getElementById('ccReserveDate').value,verified=parseFloat(document.getElementById('ccReserveAmount').value);
-  if(!card||!env||!date||isNaN(verified)||verified<0){toast('Enter a valid verified reserve');return;}
-  var current=Math.max(0,envAvailable(env.id)),delta=money(verified-current);
-  if(Math.abs(delta)<.005){closeModal('ccReserveModal');toast('Payment reserve already matches');return;}
-  if(!confirm('Set '+card.name+' payment reserve to '+fmt(verified)+' on '+date+'?\n\nLedger will create a '+(delta<0?'-':'+')+fmt(Math.abs(delta))+' envelope-only adjustment.'))return;
-  (S.envelopeBalanceAdjustments||(S.envelopeBalanceAdjustments=[])).push({id:makeLedgerId('envelope_balance_adjustment'),envelopeId:env.id,amount:delta,date:date,note:'Verified payment reserve adjustment',createdAt:new Date().toISOString()});
-  saveS();closeModal('ccReserveModal');renderAll();go('cards');toast(card.name+' payment reserve verified');verifyingCardReserveId=null;
-}
+var pendingCCPaymentOn = true;
 function cardFundingDetails(card) {
   var paymentEnv=ccPaymentEnv(card.id), ready=paymentEnv?Math.max(0,envAvailable(paymentEnv.id)):0;
   var month=currentMonthKey(), purchases=0;
@@ -3295,10 +3279,12 @@ function recordCCPayment(cardId) {
   var accounts=(S.accounts||[]).filter(function(a){return a.type!=='credit';});
   var preferred=defaultAccount('checking')||accounts[0];
   document.getElementById('ccPayTitle').textContent='Pay '+card.name;
-  document.getElementById('ccPaySummary').textContent=fmt(cardBalance(card))+' owed · '+fmt(cardFundingDetails(card).ready)+' ready';
+  var posted=Math.max(0,creditCardPostedBalance(card.id)),effective=Math.max(0,cardBalance(card)),pending=money(effective-posted);
+  document.getElementById('ccPaySummary').textContent='Posted '+fmt(posted)+(Math.abs(pending)>.005?' · '+(pending>0?'+':'-')+fmt(Math.abs(pending))+' pending':'')+' · '+fmt(cardFundingDetails(card).ready)+' reserved';
   document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(preferred&&a.id===preferred.id?' selected':'')+'>'+esc(a.name)+' · '+fmt(accountBalance(a.id))+'</option>';}).join('');
-  document.getElementById('ccPayAmount').value=money(Math.max(0,creditCardRegisterBalance(card.id))).toFixed(2);
-  document.getElementById('ccPayDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('ccPayAmount').value=money(posted).toFixed(2);
+  document.getElementById('ccPayDate').value=localDateKey();
+  pendingCCPaymentOn=true;var pendingTog=document.getElementById('pendingCCPaymentTog');if(pendingTog)pendingTog.className='tog on';
   openModal('ccPaymentModal');
 }
 function saveCCPayment() {
@@ -3308,12 +3294,14 @@ function saveCCPayment() {
   if(!account){toast('Choose the account paying the card');return;}
   if(!amt||amt<=0){toast('Enter a payment amount');return;}
   if(!date){toast('Choose a payment date');return;}
-  if(amt>(cardBalance(card))+0.005){toast('Payment cannot exceed the card balance');return;}
+  var effective=Math.max(0,cardBalance(card)),posted=Math.max(0,creditCardPostedBalance(card.id));
+  if(amt>effective+0.005){toast('Payment cannot exceed the effective card balance');return;}
+  if(amt>posted+0.005&&!confirm(fmt(amt-posted)+' of this payment is against charges that are still pending. Your card issuer may not let you pay that portion yet. Record it anyway?'))return;
   if(amt>accountBalance(accountId)+0.005&&!confirm(account.name+' does not currently have enough cash. Record the payment anyway?'))return;
   var ready=cardFundingDetails(card).ready;
   if(amt>ready+0.005&&!confirm(fmt(amt-ready)+' of this payment is not currently reserved. That portion will come from your unassigned money. Record it anyway?'))return;
   var expectedReserve=money(Math.max(0,ready-amt));
-  S.expenses.push({id:uid(),desc:'CC Payment — '+card.name,amount:amt,envId:card.paymentEnvId,date:date,payMethod:'debit',accountId:accountId,cleared:false,isCredit:false,isCCPayment:true,ccId:card.id});
+  S.expenses.push({id:uid(),desc:'CC Payment — '+card.name,amount:amt,envId:card.paymentEnvId,date:date,payMethod:'debit',accountId:accountId,pending:!!pendingCCPaymentOn,cleared:false,isCredit:false,isCCPayment:true,ccId:card.id});
   var paymentEnv=ccPaymentEnv(card.id);
   if(paymentEnv){
     var actualReserve=money(Math.max(0,envAvailable(paymentEnv.id)));
@@ -3344,7 +3332,7 @@ function openCardCreditModal(cardId,creditId){
   document.getElementById('cardCreditCard').innerHTML=refundCards.map(function(c){return '<option value="'+c.id+'"'+(c.id===selectedCardId?' selected':'')+'>'+esc(c.name)+(c.lastFour?' · '+esc(c.lastFour):'')+'</option>';}).join('');
   document.getElementById('cardCreditDesc').value=credit?credit.desc:'';
   document.getElementById('cardCreditAmount').value=credit?credit.amount:'';
-  document.getElementById('cardCreditDate').value=credit?credit.date:new Date().toISOString().slice(0,10);
+  document.getElementById('cardCreditDate').value=credit?credit.date:localDateKey();
   document.getElementById('cardCreditDestination').innerHTML=cardCreditDestinationOptions(credit?credit.refundEnvId:null);
   document.getElementById('deleteCardCreditBtn').style.display=credit?'block':'none';
   openModal('cardCreditModal');
@@ -3532,9 +3520,10 @@ function openEditExpModal(id) {
   var pm=document.getElementById('payMethod');if(pm)pm.value=exp.payMethod||'debit';
   var cardSel=document.getElementById('expCCSelect');
   if(cardSel){
-    cardSel.innerHTML=S.creditCards.length?S.creditCards.map(function(c){
+    var editCards=activeCreditCards();
+    cardSel.innerHTML=editCards.length?editCards.map(function(c){
       return '<option value="'+c.id+'">'+esc(c.name)+(c.lastFour?' (•••• '+c.lastFour+')':'')+'</option>';
-    }).join(''):'<option value="">No cards added yet</option>';
+    }).join(''):'<option value="">No active cards</option>';
     if(exp.ccId)cardSel.value=exp.ccId;
   }
   var expAccount=document.getElementById('expAccount');if(expAccount)expAccount.innerHTML=accountOptions(exp.accountId,true);
@@ -3829,7 +3818,7 @@ function saveIOUForgiveness(){
   var env=S.envelopes.find(function(e){return e.id===envId&&!e.archived&&!e.isCCPayment;});if(!env){toast('Choose a spending category');return;}
   var linked=applyLinkedIOUForgiveness(item,amount,envId);
   if(!linked){
-    var date=item.date||new Date().toISOString().slice(0,10),month=normalizeMonthKey(monthKeyFromDate(date));
+    var date=item.date||localDateKey(),month=normalizeMonthKey(monthKeyFromDate(date));
     setAssignmentForMonth(env,month,money(assignmentForMonth(env,month)+amount));
     S.expenses.push({id:uid(),desc:'Forgiven IOU — '+(item.who||'Other'),amount:amount,envId:envId,date:date,time:'12:00',datetime:date+'T12:00',payMethod:'adjustment',accountId:null,isCredit:false,isIOUForgiveness:true,forgivenIOUId:item.id,forgivenWho:item.who||'',cleared:true});
   }
@@ -3845,7 +3834,7 @@ function openIOURepayment(who){
   document.getElementById('iouRepaymentAmount').value=outstanding.toFixed(2);
   var preferred=defaultAccount('checking')||activeAccounts()[0],sel=document.getElementById('iouRepaymentAccount');
   sel.innerHTML=accountOptions(preferred&&preferred.id,true);
-  document.getElementById('iouRepaymentDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('iouRepaymentDate').value=localDateKey();
   openModal('iouRepaymentModal');
 }
 function saveIOURepayment(){
@@ -3910,7 +3899,7 @@ function openCustodyCashModal(accountId){
   document.getElementById('custodyCashTotal').textContent=fmt(custodyAccountBalance(accountId));
   document.getElementById('custodyCashPhysical').textContent=fmt(cashBalance());
   document.getElementById('custodyCashAmount').value=custodialCashHeldFor(accountId).toFixed(2);
-  document.getElementById('custodyCashDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('custodyCashDate').value=localDateKey();
   openModal('custodyCashModal');
 }
 function saveCustodyCashPortion(){
@@ -3923,7 +3912,7 @@ function saveCustodyCashPortion(){
   saveS();closeModal('custodyCashModal');editingCustodyCashAccountId=null;renderAll();go('custody');toast(a.name+' cash portion set to '+fmt(amount));
 }
 var verifyingCustodyAccountId=null;
-function openVerifiedCustodyBalance(accountId){var a=(S.custodialAccounts||[]).find(function(x){return x.id===accountId;});if(!a){toast('Choose a custodial fund');return;}verifyingCustodyAccountId=accountId;document.getElementById('custodyVerifiedName').textContent=a.name;document.getElementById('custodyVerifiedDate').value=new Date().toISOString().slice(0,10);document.getElementById('custodyVerifiedBalance').value='';updateVerifiedCustodyDifference();openModal('custodyVerifiedModal');}
+function openVerifiedCustodyBalance(accountId){var a=(S.custodialAccounts||[]).find(function(x){return x.id===accountId;});if(!a){toast('Choose a custodial fund');return;}verifyingCustodyAccountId=accountId;document.getElementById('custodyVerifiedName').textContent=a.name;document.getElementById('custodyVerifiedDate').value=localDateKey();document.getElementById('custodyVerifiedBalance').value='';updateVerifiedCustodyDifference();openModal('custodyVerifiedModal');}
 function updateVerifiedCustodyDifference(){var current=custodyAccountBalance(verifyingCustodyAccountId),verified=parseFloat(document.getElementById('custodyVerifiedBalance').value),delta=isNaN(verified)?0:money(verified-current);document.getElementById('custodyVerifiedCurrent').textContent=(current<0?'-':'')+fmt(Math.abs(current));document.getElementById('custodyVerifiedDifference').textContent=(delta<0?'-':'+')+fmt(Math.abs(delta));document.getElementById('custodyVerifiedDifference').style.color=Math.abs(delta)<.005?'var(--green)':delta<0?'var(--red)':'var(--green)';}
 function saveVerifiedCustodyBalance(){var a=(S.custodialAccounts||[]).find(function(x){return x.id===verifyingCustodyAccountId;}),date=document.getElementById('custodyVerifiedDate').value,verified=parseFloat(document.getElementById('custodyVerifiedBalance').value);if(!a||!date||isNaN(verified)||verified<0){toast('Enter a valid verified held balance');return;}var current=custodyAccountBalance(a.id),delta=money(verified-current);if(Math.abs(delta)<.005){closeModal('custodyVerifiedModal');toast(a.name+' already matches');return;}if(!confirm('Set '+a.name+' held balance to '+fmt(verified)+' on '+date+'?\n\nLedger will create a '+(delta<0?'-':'+')+fmt(Math.abs(delta))+' balance-only adjustment. Bank and cash account totals will not move.'))return;(S.custodialBalanceAdjustments||(S.custodialBalanceAdjustments=[])).push({id:makeLedgerId('custody_balance_adjustment'),accountId:a.id,amount:delta,date:date,note:'Verified held balance adjustment',createdAt:new Date().toISOString()});if((Number(a.cashHeld)||0)>verified)a.cashHeld=money(verified);saveS();closeModal('custodyVerifiedModal');renderAll();go('custody');toast(a.name+' set to verified held balance');verifyingCustodyAccountId=null;}
 
@@ -3935,7 +3924,7 @@ function openCustodyAccountModal(id){
 }
 function saveCustodyAccount(){var name=document.getElementById('custodyAccountName').value.trim(),emoji=document.getElementById('custodyAccountEmoji').value.trim()||'🛡️',note=document.getElementById('custodyAccountNote').value.trim();if(!name){toast('Enter a name');return;}if(editingCustodyAccountId){var a=S.custodialAccounts.find(function(x){return x.id===editingCustodyAccountId;});if(a){a.name=name;a.emoji=emoji;a.note=note;}}else S.custodialAccounts.push({id:makeLedgerId('custody'),name:name,emoji:emoji,note:note,cashHeld:0,cashHeldVerifiedDate:null,createdAt:new Date().toISOString()});saveS();closeModal('custodyAccountModal');editingCustodyAccountId=null;renderCustody();toast('Custodial fund saved');}
 function deleteCustodyAccount(){if(!editingCustodyAccountId)return;var bal=custodyAccountBalance(editingCustodyAccountId);if(Math.abs(bal)>0.005){toast('Bring the custodial balance to $0 before deleting it');return;}if(!confirm('Delete this custodial fund and its history?'))return;S.custodialTransactions=S.custodialTransactions.filter(function(t){return t.accountId!==editingCustodyAccountId;});S.custodialBalanceAdjustments=(S.custodialBalanceAdjustments||[]).filter(function(t){return t.accountId!==editingCustodyAccountId;});S.custodialAccounts=S.custodialAccounts.filter(function(a){return a.id!==editingCustodyAccountId;});editingCustodyAccountId=null;saveS();closeModal('custodyAccountModal');renderCustody();}
-function openCustodyTxnModal(accountId,direction){var sel=document.getElementById('custodyTxnAccount');sel.innerHTML=(S.custodialAccounts||[]).map(function(a){return '<option value="'+a.id+'">'+esc(a.emoji||'🛡️')+' '+esc(a.name)+'</option>';}).join('');if(accountId)sel.value=accountId;document.getElementById('custodyTxnDirection').value=direction||'in';document.getElementById('custodyTxnAmount').value='';document.getElementById('custodyTxnDesc').value=direction==='out'?'':'Money received';document.getElementById('custodyTxnDate').value=new Date().toISOString().slice(0,10);document.getElementById('custodyTxnLocation').value='bank';openModal('custodyTxnModal');}
+function openCustodyTxnModal(accountId,direction){var sel=document.getElementById('custodyTxnAccount');sel.innerHTML=(S.custodialAccounts||[]).map(function(a){return '<option value="'+a.id+'">'+esc(a.emoji||'🛡️')+' '+esc(a.name)+'</option>';}).join('');if(accountId)sel.value=accountId;document.getElementById('custodyTxnDirection').value=direction||'in';document.getElementById('custodyTxnAmount').value='';document.getElementById('custodyTxnDesc').value=direction==='out'?'':'Money received';document.getElementById('custodyTxnDate').value=localDateKey();document.getElementById('custodyTxnLocation').value='bank';openModal('custodyTxnModal');}
 function saveCustodyTransaction(){
   var accountId=document.getElementById('custodyTxnAccount').value,direction=document.getElementById('custodyTxnDirection').value,amount=money(parseFloat(document.getElementById('custodyTxnAmount').value)||0),desc=document.getElementById('custodyTxnDesc').value.trim(),date=document.getElementById('custodyTxnDate').value,location=document.getElementById('custodyTxnLocation').value;
   var a=(S.custodialAccounts||[]).find(function(x){return x.id===accountId;});
@@ -3957,7 +3946,7 @@ function saveCustodyTransaction(){
   saveS();closeModal('custodyTxnModal');renderAll();toast(direction==='out'?'Custodial use recorded':'Custodial money recorded');
 }
 function deleteCustodyTransaction(id){var t=S.custodialTransactions.find(function(x){return x.id===id;});if(!t)return;if(t.embeddedInOpening){toast('The migrated beginning balance is protected');return;}if(t.direction!=='out'&&custodyAccountBalance(t.accountId)-(Number(t.amount)||0)<-0.005){toast('Remove later custodial uses before deleting this deposit');return;}if(!confirm('Delete this custodial entry?'))return;var a=(S.custodialAccounts||[]).find(function(x){return x.id===t.accountId;});if(a&&Math.abs(Number(t.cashHeldEffect)||0)>.005)a.cashHeld=money(Math.max(0,(Number(a.cashHeld)||0)-(Number(t.cashHeldEffect)||0)));S.custodialTransactions=S.custodialTransactions.filter(function(x){return x.id!==id;});saveS();renderAll();}
-function openTransferModal(){document.getElementById('transferAmount').value='';document.getElementById('transferDesc').value='';document.getElementById('transferDate').value=new Date().toISOString().slice(0,10);openModal('transferModal');}
+function openTransferModal(){document.getElementById('transferAmount').value='';document.getElementById('transferDesc').value='';document.getElementById('transferDate').value=localDateKey();openModal('transferModal');}
 function saveTransfer(){var direction=document.getElementById('transferDirection').value,amount=money(parseFloat(document.getElementById('transferAmount').value)||0),desc=document.getElementById('transferDesc').value.trim(),date=document.getElementById('transferDate').value;if(amount<=0||!date){toast('Enter a valid move');return;}if(direction==='cash-bank'&&amount>cashBalance()+0.005){toast('That is more cash than Ledger shows');return;}if(direction==='bank-cash'&&amount>bankBalance()+0.005){toast('That is more bank money than Ledger shows');return;}S.transfers.push({id:makeLedgerId('transfer'),direction:direction,amount:amount,desc:desc||(direction==='bank-cash'?'Cash withdrawal':'Cash deposit'),date:date});saveS();closeModal('transferModal');renderAll();toast('Bank / cash move recorded');}
 function deleteTransfer(id){if(!confirm('Delete this Bank ↔ Cash move?'))return;S.transfers=S.transfers.filter(function(t){return t.id!==id;});saveS();renderAll();}
 function renderTransfers(){var el=document.getElementById('transferList');if(!el)return;var items=(S.transfers||[]).slice().sort(function(a,b){return String(a.date||'')<String(b.date||'')?1:-1;});if(!items.length){el.innerHTML='<div class="activity-empty">No Bank ↔ Cash moves recorded.</div>';return;}el.innerHTML=items.slice(0,8).map(function(t){var label=t.direction==='bank-cash'?'Bank → Cash':'Cash → Bank';return '<div class="transfer-row"><div><strong>'+esc(t.desc||label)+'</strong><br><span>'+esc(t.date||'')+' · '+label+'</span></div><div style="display:flex;align-items:center;gap:8px"><strong>'+fmt(t.amount||0)+'</strong><button class="custody-row-delete" onclick="deleteTransfer(\''+t.id+'\')">×</button></div></div>';}).join('');}
@@ -4272,10 +4261,10 @@ function openRefundForSelectedCard(){if(String(activeAccountId||'').indexOf('cc:
 function toggleTransactionCleared(kind,id){var list=kind==='income'?S.income:kind==='expense'?S.expenses:kind==='legacyTransfer'?S.transfers:kind==='custody'?S.custodialTransactions:kind==='reconcileAdjustment'?S.reconciliationAdjustments:S.accountTransfers,record=list.find(function(x){return x.id===id;});if(!record)return;if(record.reconciled){toast('Reconciled transactions are locked');return;}if(record.pending){record.pending=false;record.cleared=false;toast('Marked posted');}else if(!record.cleared){record.cleared=true;toast('Marked cleared');}else{record.cleared=false;toast('Marked posted');}saveS();renderAccounts();}
 function openAccountModal(){document.getElementById('accountName').value='';document.getElementById('accountType').value='savings';openModal('accountModal');}
 function saveAccount(){var name=document.getElementById('accountName').value.trim(),type=document.getElementById('accountType').value;if(!name){toast('Enter an account name');return;}var account={id:makeLedgerId('account'),name:name,type:type,closed:false,createdAt:new Date().toISOString()};S.accounts.push(account);activeAccountId=account.id;saveS();closeModal('accountModal');renderAccounts();toast(name+' added');}
-function openAccountTransferModal(){var accounts=activeAccounts();if(accounts.length<2){toast('Add another account first');return;}var from=accounts.some(function(a){return a.id===activeAccountId;})?activeAccountId:accounts[0].id;document.getElementById('accountTransferFrom').innerHTML=accountOptions(from,true);document.getElementById('accountTransferTo').innerHTML=accountOptions(accounts.find(function(a){return a.id!==from;}).id,true);document.getElementById('accountTransferAmount').value='';document.getElementById('accountTransferDate').value=new Date().toISOString().slice(0,10);document.getElementById('accountTransferNote').value='';openModal('accountTransferModal');}
+function openAccountTransferModal(){var accounts=activeAccounts();if(accounts.length<2){toast('Add another account first');return;}var from=accounts.some(function(a){return a.id===activeAccountId;})?activeAccountId:accounts[0].id;document.getElementById('accountTransferFrom').innerHTML=accountOptions(from,true);document.getElementById('accountTransferTo').innerHTML=accountOptions(accounts.find(function(a){return a.id!==from;}).id,true);document.getElementById('accountTransferAmount').value='';document.getElementById('accountTransferDate').value=localDateKey();document.getElementById('accountTransferNote').value='';openModal('accountTransferModal');}
 function saveAccountTransfer(){var from=document.getElementById('accountTransferFrom').value,to=document.getElementById('accountTransferTo').value,amount=money(parseFloat(document.getElementById('accountTransferAmount').value)||0),date=document.getElementById('accountTransferDate').value,note=document.getElementById('accountTransferNote').value.trim();if(!from||!to||from===to){toast('Choose two different accounts');return;}if(amount<=0||!date){toast('Enter a valid amount and date');return;}if(amount>accountBalance(from)+.005){toast('That is more than '+accountName(from)+' contains');return;}S.accountTransfers.push({id:makeLedgerId('account_transfer'),fromAccountId:from,toAccountId:to,amount:amount,date:date,note:note||'Account transfer',cleared:false});saveS();closeModal('accountTransferModal');renderAccounts();toast('Transfer recorded');}
 function selectedRegisterRecord(){return String(activeAccountId||'').indexOf('cc:')===0?S.creditCards.find(function(c){return c.id===activeAccountId.slice(3);}):S.accounts.find(function(a){return a.id===activeAccountId;});}
-function openReconcileModal(){var account=selectedRegisterRecord();if(!account){toast('Choose an account');return;}document.getElementById('reconcileAccountName').textContent=account.name;document.getElementById('reconcileDate').value=new Date().toISOString().slice(0,10);document.getElementById('reconcileBalance').value='';updateReconcileDifference();openModal('reconcileModal');}
+function openReconcileModal(){var account=selectedRegisterRecord();if(!account){toast('Choose an account');return;}document.getElementById('reconcileAccountName').textContent=account.name;document.getElementById('reconcileDate').value=localDateKey();document.getElementById('reconcileBalance').value='';updateReconcileDifference();openModal('reconcileModal');}
 function updateReconcileDifference(){var date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value),cleared=selectedRegisterBalance(true,date),book=selectedRegisterPostedBalance(date),difference=isNaN(statement)?0:money(statement-cleared);document.getElementById('reconcileCleared').textContent=(cleared<0?'-':'')+fmt(Math.abs(cleared));document.getElementById('reconcileBook').textContent=(book<0?'-':'')+fmt(Math.abs(book));document.getElementById('reconcileDifference').textContent=(difference<0?'-':'')+fmt(Math.abs(difference));document.getElementById('reconcileDifference').style.color=Math.abs(difference)<.005?'var(--green)':'var(--red)';document.getElementById('reconcileHint').textContent=isNaN(statement)?'Enter the verified balance':Math.abs(difference)<.005?'Cleared balance matches':'Finish normally after clearing transactions, or use Set Verified Balance for a clean restart';}
 function finishReconcile(){var account=selectedRegisterRecord(),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the verified date and balance');return;}var cleared=selectedRegisterBalance(true,date),difference=money(statement-cleared);if(Math.abs(difference)>=.005){toast('Cleared difference must be $0.00, or use Set Verified Balance');return;}selectedRegisterEntries().forEach(function(x){if(x.cleared&&String(x.date)<=date)x.record.reconciled=true;});account.reconciledAt=date;account.reconciledBalance=money(statement);saveS();closeModal('reconcileModal');renderAccounts();toast(account.name+' reconciled');}
 function setVerifiedBalance(){var account=selectedRegisterRecord(),date=document.getElementById('reconcileDate').value,statement=parseFloat(document.getElementById('reconcileBalance').value);if(!account||!date||isNaN(statement)){toast('Enter the verified date and balance');return;}var book=selectedRegisterPostedBalance(date),delta=money(statement-book);var isCard=String(activeAccountId||'').indexOf('cc:')===0;var label=account.name;if(!confirm('Set '+label+' to '+(statement<0?'-':'')+fmt(Math.abs(statement))+' on '+date+'?\n\nLedger will create a '+(delta<0?'-':'')+fmt(Math.abs(delta))+' reconciliation adjustment. It will change the account balance and Ready to Assign where applicable, but it will not appear as income or spending.'))return;(S.reconciliationAdjustments||(S.reconciliationAdjustments=[])).push({id:makeLedgerId('reconcile_adjustment'),targetType:isCard?'card':'account',targetId:isCard?String(activeAccountId).slice(3):activeAccountId,amount:delta,date:date,note:'Verified balance adjustment',cleared:true,reconciled:true,createdAt:new Date().toISOString()});selectedRegisterEntries().forEach(function(x){if(!x.pending&&String(x.date)<=date){x.record.cleared=true;x.record.reconciled=true;}});account.reconciledAt=date;account.reconciledBalance=money(statement);if(isCard)account.balance=money(statement);saveS();closeModal('reconcileModal');renderAll();go('accounts');toast(label+' set to verified balance');}
@@ -4392,7 +4381,7 @@ function openIncomeModal() {
   document.getElementById('reimbCatField').style.display = 'none';
   document.getElementById('incName').value = '';
   document.getElementById('incAmt').value = '';
-  document.getElementById('incDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('incDate').value = localDateKey();
   var incDefault=defaultAccount('checking');document.getElementById('incAccount').innerHTML=accountOptions(incDefault&&incDefault.id,true);
   // Populate reimb cat
   var sel = document.getElementById('reimbCat');
@@ -4498,7 +4487,7 @@ function openExpModal() {
   var expAccountField=document.getElementById('expAccountField');if(expAccountField)expAccountField.style.display='block';
   document.getElementById('expDesc').value = '';
   document.getElementById('expAmt').value = '';
-  document.getElementById('expDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('expDate').value = localDateKey();
   document.getElementById('expTime').value = new Date().toTimeString().slice(0,5);
   var sel = document.getElementById('expCat');
   var opts = '';
@@ -4566,7 +4555,7 @@ function openOwedModal(type) {
   document.getElementById('owedWho').value = '';
   document.getElementById('owedAmt').value = '';
   document.getElementById('owedNote').value = '';
-  document.getElementById('owedDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('owedDate').value = localDateKey();
   openModal('owedModal');
 }
 
@@ -4877,7 +4866,7 @@ async function buildTransferPackage(){
 }
 
 async function exportTransferPackage(){
-  try{var pack=await buildTransferPackage();downloadJson(pack,'Ledger-Device-Transfer-'+new Date().toISOString().slice(0,10)+'.json');toast('Verified transfer file created');}
+  try{var pack=await buildTransferPackage();downloadJson(pack,'Ledger-Device-Transfer-'+localDateKey()+'.json');toast('Verified transfer file created');}
   catch(e){console.error(e);toast('Could not create the transfer file');}
 }
 
@@ -4957,7 +4946,7 @@ async function uploadDrivePackage(fileId,pack){
   var response=await driveFetch(url,{method:fileId?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary},body:multipartBody(metadata,pack,boundary)});return response.json();
 }
 async function buildCloudPackage(){
-  S.lastBackupDate=new Date().toISOString().slice(0,10);localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));ledgerLastHash='';await persistLedgerState({quietActivity:true});
+  S.lastBackupDate=localDateKey();localStorage.setItem('piggybank_v4_preview',JSON.stringify(S));ledgerLastHash='';await persistLedgerState({quietActivity:true});
   var data=cloneLedger(S);return {format:'ledger-cloud',formatVersion:1,appVersion:LEDGER_APP_VERSION,schemaVersion:LEDGER_SCHEMA_VERSION,updatedAt:new Date().toISOString(),sourceDevice:cloneLedger(ledgerDevice),revision:ledgerRevision,stateHash:ledgerStateHash(data),checksum:ledgerStateHash(data),data:data};
 }
 async function markCloudSynced(fileId,hash,state){ledgerCloud.fileId=fileId;ledgerCloud.lastSyncedHash=hash;ledgerCloud.lastSyncedState=cloneLedger(state||S);ledgerCloud.lastSyncedAt=new Date().toISOString();ledgerCloud.enabled=true;ledgerCloud.connected=!!gdriveToken;ledgerLastSyncedRevision=ledgerRevision;await saveCloudMetadata();updateCloudStatus();renderBackupBanner();}
@@ -5053,8 +5042,8 @@ function saveToGoogleDrive(){syncWithGoogleDrive();}
 
 function exportData() {
   var pack=buildBackupPackage();
-  downloadJson(pack,'Ledger-backup-' + new Date().toISOString().slice(0,10) + '.json');
-  S.lastBackupDate=new Date().toISOString().slice(0,10); saveS();
+  downloadJson(pack,'Ledger-backup-' + localDateKey() + '.json');
+  S.lastBackupDate=localDateKey(); saveS();
   toast('Verified backup saved to this device'); renderBackupBanner();
 }
 
@@ -5133,15 +5122,44 @@ function ledgerInvariantIssues(){
   var issues=[];
   LEDGER_COLLECTIONS.forEach(function(name){var seen={};(S[name]||[]).forEach(function(item){if(!item||!item.id)return;if(seen[item.id])issues.push('Duplicate '+name+' record');seen[item.id]=true;});});
   S.envelopes.forEach(function(env){Object.keys(env.assignments||{}).forEach(function(key){if(!/^\d{4}-\d{2}$/.test(key)||!isFinite(Number(env.assignments[key])))issues.push('Invalid monthly assignment');});});
-  S.creditCards.forEach(function(card){if(!ccPaymentEnv(card.id))issues.push('Card payment envelope missing');else if(Math.abs((Number(card.balance)||0)-cardBalance(card))>0.01)issues.push('Card balance cache mismatch');});
+  S.creditCards.forEach(function(card){
+    if(!ccPaymentEnv(card.id))issues.push('Card payment envelope missing');
+    else if(Math.abs((Number(card.balance)||0)-cardBalance(card))>0.01)issues.push('Card balance cache mismatch');
+    if(card.archived&&Math.abs(cardBalance(card))>.01)issues.push('Archived card has a nonzero balance');
+  });
   S.expenses.forEach(function(exp){
+    if(exp.pending&&(exp.cleared||exp.reconciled))issues.push('Pending expense is also cleared or reconciled');
     if(!exp.isCredit&&exp.accountId&&!S.accounts.some(function(a){return a.id===exp.accountId;}))issues.push('Expense account missing');
     if(exp.isCardCredit){
       if(!S.creditCards.some(function(c){return c.id===exp.ccId;}))issues.push('Card refund card missing');
       if(exp.refundEnvId&&!S.envelopes.some(function(e){return e.id===exp.refundEnvId&&!e.isCCPayment;}))issues.push('Card refund destination missing');
       if((Number(exp.releasedAmount)||0)<0||(Number(exp.releasedAmount)||0)>(Number(exp.amount)||0)+.005)issues.push('Invalid card refund release');
     }
+    var splits=expenseSplits(exp);
+    if(splits.length){
+      var splitTotal=money(splits.reduce(function(t,line){return t+(Number(line.amount)||0);},0));
+      if(Math.abs(splitTotal-(Number(exp.amount)||0))>.01)issues.push('Split expense does not add up');
+      splits.forEach(function(line){
+        if(splitIsFronted(line)){
+          var linked=(S.owedToMe||[]).find(function(i){return i.sourceExpenseId===exp.id&&i.sourceSplitId===line.id;});
+          if(!linked||Math.abs((Number(linked.amount)||0)-(Number(line.amount)||0))>.01)issues.push('Fronted split and IOU are out of sync');
+        }
+      });
+    }
   });
+  (S.owedToMe||[]).forEach(function(item){
+    if(item.sourceExpenseId&&item.sourceSplitId){
+      var exp=S.expenses.find(function(e){return e.id===item.sourceExpenseId;}),line=exp&&expenseSplits(exp).find(function(x){return x.id===item.sourceSplitId;});
+      if(!exp||!line||!splitIsFronted(line))issues.push('Linked IOU source is missing');
+    }
+  });
+  (S.custodialAccounts||[]).forEach(function(a){
+    var total=Math.max(0,custodyAccountBalance(a.id)),cash=custodialCashHeldFor(a.id);
+    if(cash>total+.01)issues.push('Custodial cash portion exceeds held total');
+  });
+  if(custodialCashHeldTotal()>cashBalance()+.01)issues.push('Custodial cash exceeds physical Cash');
+  if(custodialBankHeldTotal()>bankBalance()+.01)issues.push('Custodial bank-held money exceeds bank balances');
+  if(custodialBalanceTotal()>currentOnBudgetCash()+.01)issues.push('Custodial money exceeds money controlled');
   return issues;
 }
 
@@ -5305,7 +5323,7 @@ var editingSchedId = null;
 
 function nextOccurrence(sched) {
   var now = new Date(); now.setHours(0,0,0,0);
-  var next = new Date(sched.nextDate + 'T12:00:00'); next.setHours(0,0,0,0);
+  var next = parseLocalDateKey(sched.nextDate); next.setHours(0,0,0,0);
   var anchorDay=next.getDate();
   // If next is in the past, advance it
   while (next < now) advanceRecurringDate(next,sched.freq,anchorDay);
@@ -5314,7 +5332,7 @@ function nextOccurrence(sched) {
 
 function daysUntil(date) {
   var today = new Date(); today.setHours(0,0,0,0);
-  var d = new Date(date); d.setHours(0,0,0,0);
+  var d = parseLocalDateKey(date); d.setHours(0,0,0,0);
   return Math.round((d - today) / 86400000);
 }
 
@@ -5387,7 +5405,7 @@ function logScheduled(id, nextDate) {
   var s = S.scheduled.find(function(x){return x.id===id;});
   if (!s) return;
   var env=S.envelopes.find(function(e){return e.id===s.envId;}),card=s.ccId?S.creditCards.find(function(c){return c.id===s.ccId;}):null;
-  var isPayment=!!(s.isCCPayment||(env&&env.isCCPayment)),amount=money(Number(s.amount)||0),date=new Date(nextDate).toISOString().slice(0,10);
+  var isPayment=!!(s.isCCPayment||(env&&env.isCCPayment)),amount=money(Number(s.amount)||0),date=localDateKey(nextDate);
   if(isPayment){card=card||S.creditCards.find(function(c){return env&&c.paymentEnvId===env.id;});if(!card){toast('Choose a valid card payment envelope');return;}if(amount>cardBalance(card)+0.005){toast('Scheduled payment exceeds the current card balance');return;}}
   var avail=env?envAvailable(env.id):0;
   S.expenses.push({id:uid(),desc:s.desc,amount:amount,envId:s.envId,date:date,time:'12:00',datetime:date+'T12:00',payMethod:s.isCredit?'credit':((S.accounts.find(function(a){return a.id===s.accountId;})||{}).type==='cash'?'cash':'debit'),accountId:s.isCredit?null:(s.accountId||(defaultAccount('checking')||{}).id),isCredit:!!s.isCredit,ccId:card&&card.id||null,isCCPayment:isPayment,cleared:false,fundedAmount:s.isCredit?money(Math.min(amount,Math.max(0,avail))):0});
@@ -5396,7 +5414,7 @@ function logScheduled(id, nextDate) {
   if (s.freq==='monthly') next.setMonth(next.getMonth()+1);
   else if (s.freq==='weekly') next.setDate(next.getDate()+7);
   else if (s.freq==='biweekly') next.setDate(next.getDate()+14);
-  s.nextDate = next.toISOString().slice(0,10);
+  s.nextDate = localDateKey(next);
   saveS(); renderScheduled(); renderExpenses(); renderEnvelopes();
   toast('✓ Logged and rescheduled!');
 }
@@ -5411,7 +5429,7 @@ function openSchedModal(preset) {
   document.getElementById('schedDesc').value=preset.desc||'';
   document.getElementById('schedAmt').value=preset.amount||'';
   document.getElementById('schedFreq').value=preset.freq||'monthly';
-  document.getElementById('schedNextDate').value=preset.nextDate||new Date().toISOString().slice(0,10);
+  document.getElementById('schedNextDate').value=preset.nextDate||localDateKey();
   var sel=document.getElementById('schedEnv'),opts='';
   sortedGroups().forEach(function(g){opts+='<optgroup label="'+esc(g.name)+'">';groupEnvelopes(g.id).forEach(function(e){opts+='<option value="'+e.id+'">'+e.emoji+' '+e.name+'</option>';});opts+='</optgroup>';});
   sel.innerHTML=opts;
@@ -5453,7 +5471,7 @@ function currentFinancialPosition(){
 function captureFinancialSnapshot(){
   if(!S||!Array.isArray(S.accounts))return;
   if(!Array.isArray(S.financialSnapshots))S.financialSnapshots=[];
-  var date=new Date().toISOString().slice(0,10),position=currentFinancialPosition();
+  var date=localDateKey(),position=currentFinancialPosition();
   var snapshot={id:'financial_'+date,date:date,assets:position.assets,cards:position.cards,loans:position.loans,debt:position.debt,netWorth:position.netWorth};
   var existing=S.financialSnapshots.findIndex(function(x){return x.date===date;});if(existing>=0)S.financialSnapshots[existing]=snapshot;else S.financialSnapshots.push(snapshot);
   S.financialSnapshots=S.financialSnapshots.sort(function(a,b){return String(a.date).localeCompare(String(b.date));}).slice(-730);
@@ -5861,6 +5879,7 @@ window.onload = async function() {
   document.getElementById('deleteCCBtn').addEventListener('click', deleteCC);
   document.getElementById('ccModal').addEventListener('click', function(e){modalBg(e,'ccModal');});
   document.getElementById('saveCCPaymentBtn').addEventListener('click', saveCCPayment);
+  document.getElementById('pendingCCPaymentTog').addEventListener('click',function(){pendingCCPaymentOn=!pendingCCPaymentOn;this.className='tog'+(pendingCCPaymentOn?' on':'');});
   document.getElementById('cancelCCPaymentBtn').addEventListener('click', function(){closeModal('ccPaymentModal');});
   document.getElementById('ccPaymentModal').addEventListener('click', function(e){modalBg(e,'ccPaymentModal');});
   document.getElementById('saveCardCreditBtn').addEventListener('click', saveCardCredit);
@@ -6008,7 +6027,7 @@ window.onload = async function() {
     <div class="sheet-title" id="ccModalTitle">Add Credit Card</div>
     <div class="field"><label>Card Name</label><input id="ccName" placeholder="e.g. Chase Sapphire"></div>
     <div class="field"><label>Last 4 Digits (optional)</label><input id="ccLastFour" type="number" inputmode="numeric" placeholder="1234" maxlength="4"></div>
-    <div class="field"><label>Current Balance Owed ($)</label><input id="ccBalance" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label id="ccBalanceLabel">Starting Balance Owed ($)</label><input id="ccBalance" type="number" inputmode="decimal" placeholder="0.00"><div class="field-help" id="ccBalanceHelp">For a new card, enter the balance Ledger should start from.</div></div>
     <div class="field"><label>Purchase APR (%) — optional</label><input id="ccApr" type="number" inputmode="decimal" placeholder="27.24"></div>
     <button class="btn-p" id="saveCCBtn">Add Card</button>
     <button class="btn-s" id="cancelCCBtn">Cancel</button>
@@ -6029,23 +6048,6 @@ window.onload = async function() {
   </div>
 </div>
 
-<!-- Verified Credit Card Payment Reserve -->
-<div class="overlay" id="ccReserveModal">
-  <div class="sheet">
-    <div class="drag"></div>
-    <div class="sheet-title">Set Verified Payment Reserve — <span id="ccReserveCardName"></span></div>
-    <div class="field"><label>Verified Date</label><input id="ccReserveDate" type="date"></div>
-    <div class="field"><label>Amount Reserved for Payment ($)</label><input id="ccReserveAmount" type="number" inputmode="decimal" placeholder="0.00" oninput="updateVerifiedCardReserve()"></div>
-    <div class="card" style="margin-bottom:10px"><div class="card-body">
-      <div class="set-row"><div><div class="set-lbl">Card Balance Owed</div><div class="set-sub">Verified posted balance</div></div><strong id="ccReserveOwed">$0.00</strong></div>
-      <div class="set-row"><div><div class="set-lbl">Current Payment Reserve</div><div class="set-sub">What Ledger currently has set aside</div></div><strong id="ccReserveCurrent">$0.00</strong></div>
-      <div class="set-row"><div><div class="set-lbl">Adjustment to Create</div><div class="set-sub">Payment-envelope only; no fake income or spending</div></div><strong id="ccReserveDifference">$0.00</strong></div>
-    </div></div>
-    <button class="btn-p" onclick="saveVerifiedCardReserve()">Set Verified Reserve</button>
-    <button class="btn-s" onclick="closeModal('ccReserveModal')">Cancel</button>
-  </div>
-</div>
-
 <!-- Credit Card Payment Modal -->
 <div class="overlay" id="ccPaymentModal">
   <div class="sheet">
@@ -6055,6 +6057,10 @@ window.onload = async function() {
     <div class="field"><label>Pay From</label><select id="ccPayAccount"></select></div>
     <div class="field"><label>Amount ($)</label><input id="ccPayAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
     <div class="field"><label>Payment Date</label><input id="ccPayDate" type="date"></div>
+    <div class="tog-row">
+      <div><div class="tog-lbl">Pending</div><div class="tog-sub">Use this when you just submitted the payment and it has not posted yet.</div></div>
+      <div class="tog on" id="pendingCCPaymentTog"></div>
+    </div>
     <button class="btn-p" id="saveCCPaymentBtn">Record Payment</button>
     <button class="btn-s" id="cancelCCPaymentBtn">Cancel</button>
   </div>
@@ -6065,7 +6071,7 @@ window.onload = async function() {
   <div class="sheet">
     <div class="drag"></div>
     <div class="sheet-title" id="cardCreditTitle">Record Card Refund</div>
-    <div style="color:var(--muted);font-size:13px;margin:-4px 0 18px">Lowers card debt without adding money to Checking or Cash.</div>
+    <div style="color:var(--muted);font-size:13px;margin:-4px 0 18px">Lowers card debt without adding money to Checking or Cash. Record refunds after they post so Ledger does not release reserved money early.</div>
     <div class="field"><label>Credit Card</label><select id="cardCreditCard"></select></div>
     <div class="field"><label>Description</label><input id="cardCreditDesc" placeholder="e.g. Dermatology refund"></div>
     <div class="field"><label>Refund Amount ($)</label><input id="cardCreditAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
