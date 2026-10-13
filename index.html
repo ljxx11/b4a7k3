@@ -2244,6 +2244,15 @@ function accountPostedBalance(accountId,throughDate){return accountBalance(accou
 function creditCardPostedBalance(cardId,throughDate){return creditCardRegisterBalance(cardId,false,throughDate,true);}
 function accountPendingEffect(accountId){return money(accountBalance(accountId)-accountPostedBalance(accountId));}
 function creditCardPendingEffect(cardId){return money(cardBalance(cardId)-creditCardPostedBalance(cardId));}
+function pendingCardPurchases(cardId){
+  return money(creditCardRegisterEntries(cardId).reduce(function(t,x){return t+(x.pending&&x.amount>0?x.amount:0);},0));
+}
+function pendingCardPayments(cardId){
+  return money(creditCardRegisterEntries(cardId).reduce(function(t,x){return t+(x.pending&&x.amount<0?Math.abs(x.amount):0);},0));
+}
+function postedCardAmountStillUnpaid(cardId){
+  return money(Math.max(0,creditCardPostedBalance(cardId)-pendingCardPayments(cardId)));
+}
 function syncCardBalanceCaches(){(S.creditCards||[]).forEach(function(card){card.balance=cardBalance(card);});}
 function selectedRegisterEntries(){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterEntries(String(activeAccountId).slice(3)):accountRegisterEntries(activeAccountId);}
 function selectedRegisterBalance(clearedOnly,throughDate){return String(activeAccountId||'').indexOf('cc:')===0?creditCardRegisterBalance(String(activeAccountId).slice(3),clearedOnly,throughDate):accountBalance(activeAccountId,clearedOnly,throughDate);}
@@ -3206,6 +3215,7 @@ function openCCModal(id) {
   if(balHelp)balHelp.textContent=card?'Calculated from the card register. Use Verify balances to correct it.':'For a new card, enter the balance Ledger should start from.';
   document.getElementById('ccApr').value = card && card.apr ? card.apr : '';
   document.getElementById('deleteCCBtn').style.display = card ? 'block' : 'none';
+  var saveBtn=document.getElementById('saveCCBtn');if(saveBtn)saveBtn.textContent=card?'Save Changes':'Add Card';
   openModal('ccModal');
 }
 function saveCC() {
@@ -3276,13 +3286,14 @@ function cardFundingDetails(card) {
 function recordCCPayment(cardId) {
   var card=S.creditCards.find(function(c){return c.id===cardId;}); if(!card)return;
   payingCCId=cardId;
-  var accounts=(S.accounts||[]).filter(function(a){return a.type!=='credit';});
+  var accounts=activeAccounts();
   var preferred=defaultAccount('checking')||accounts[0];
   document.getElementById('ccPayTitle').textContent='Pay '+card.name;
-  var posted=Math.max(0,creditCardPostedBalance(card.id)),effective=Math.max(0,cardBalance(card)),pending=money(effective-posted);
-  document.getElementById('ccPaySummary').textContent='Posted '+fmt(posted)+(Math.abs(pending)>.005?' · '+(pending>0?'+':'-')+fmt(Math.abs(pending))+' pending':'')+' · '+fmt(cardFundingDetails(card).ready)+' reserved';
+  var posted=Math.max(0,creditCardPostedBalance(card.id)),effective=Math.max(0,cardBalance(card)),pendingPurchases=pendingCardPurchases(card.id),pendingPayments=pendingCardPayments(card.id),payable=postedCardAmountStillUnpaid(card.id);
+  document.getElementById('ccPaySummary').textContent='Posted '+fmt(posted)+(pendingPurchases>.005?' · +'+fmt(pendingPurchases)+' pending charges':'')+(pendingPayments>.005?' · -'+fmt(pendingPayments)+' pending payments':'')+' · '+fmt(cardFundingDetails(card).ready)+' reserved';
+  document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id+'"')+'>'+esc(a.name)+'</option>';}).join('');
   document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(preferred&&a.id===preferred.id?' selected':'')+'>'+esc(a.name)+' · '+fmt(accountBalance(a.id))+'</option>';}).join('');
-  document.getElementById('ccPayAmount').value=money(posted).toFixed(2);
+  document.getElementById('ccPayAmount').value=money(payable).toFixed(2);
   document.getElementById('ccPayDate').value=localDateKey();
   pendingCCPaymentOn=true;var pendingTog=document.getElementById('pendingCCPaymentTog');if(pendingTog)pendingTog.className='tog on';
   openModal('ccPaymentModal');
@@ -3294,9 +3305,9 @@ function saveCCPayment() {
   if(!account){toast('Choose the account paying the card');return;}
   if(!amt||amt<=0){toast('Enter a payment amount');return;}
   if(!date){toast('Choose a payment date');return;}
-  var effective=Math.max(0,cardBalance(card)),posted=Math.max(0,creditCardPostedBalance(card.id));
-  if(amt>effective+0.005){toast('Payment cannot exceed the effective card balance');return;}
-  if(amt>posted+0.005&&!confirm(fmt(amt-posted)+' of this payment is against charges that are still pending. Your card issuer may not let you pay that portion yet. Record it anyway?'))return;
+  var effective=Math.max(0,cardBalance(card)),posted=Math.max(0,creditCardPostedBalance(card.id)),pendingPayments=pendingCardPayments(card.id),payable=postedCardAmountStillUnpaid(card.id);
+  if(amt>Math.max(effective,posted)+0.005){toast('Payment is larger than Ledger can justify from the card balance');return;}
+  if(amt>payable+0.005&&!confirm(fmt(amt-payable)+' is beyond the posted balance that is not already covered by pending payments. Your issuer may not accept that portion yet. Record it anyway?'))return;
   if(amt>accountBalance(accountId)+0.005&&!confirm(account.name+' does not currently have enough cash. Record the payment anyway?'))return;
   var ready=cardFundingDetails(card).ready;
   if(amt>ready+0.005&&!confirm(fmt(amt-ready)+' of this payment is not currently reserved. That portion will come from your unassigned money. Record it anyway?'))return;
@@ -4250,7 +4261,7 @@ function renderAccounts(){
   var accounts=activeAccounts(),cards=activeCreditCards(),grid=document.getElementById('accountGrid'),register=document.getElementById('accountRegister');if(!grid||!register)return;
   var valid=accounts.map(function(a){return a.id;}).concat(cards.map(function(c){return 'cc:'+c.id;}));if(!activeAccountId||valid.indexOf(activeAccountId)<0)activeAccountId=valid[0]||null;
   var assetHtml=accounts.map(function(a){var bal=accountBalance(a.id),posted=accountPostedBalance(a.id),pending=accountPendingEffect(a.id),icon=a.type==='savings'?'◈':a.type==='cash'?'●':'▣';var sub=Math.abs(pending)>.005?'<div class="account-balance-sub">Posted '+(posted<0?'-':'')+fmt(Math.abs(posted))+' · '+(pending<0?'-':'+')+fmt(Math.abs(pending))+' pending</div>':'';if(a.type==='cash'){var otherCash=custodialCashHeldTotal(),mine=money(bal-otherCash);sub+='<div class="account-balance-sub">Yours '+(mine<0?'-':'')+fmt(Math.abs(mine))+' · held for others '+fmt(otherCash)+'</div>';}return '<button class="account-card'+(a.id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+a.id+'\')"><div class="account-name">'+icon+' '+esc(a.name)+'</div><div class="account-type">'+a.type+(Math.abs(pending)>.005?' · incl pending':'')+'</div><div class="account-balance" style="color:'+(bal<0?'var(--red)':'var(--text)')+'">'+(bal<0?'-':'')+fmt(Math.abs(bal))+'</div>'+sub+'</button>';}).join('');
-  var cardHtml=cards.map(function(c){var id='cc:'+c.id,bal=cardBalance(c),posted=creditCardPostedBalance(c.id),pending=creditCardPendingEffect(c.id);var sub=Math.abs(pending)>.005?'<div class="account-balance-sub">Posted '+fmt(Math.abs(posted))+' · '+(pending<0?'-':'+')+fmt(Math.abs(pending))+' pending</div>':'';return '<button class="account-card'+(id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+id+'\')"><div class="account-name">◇ '+esc(c.name)+'</div><div class="account-type">Credit card'+(c.lastFour?' · '+esc(c.lastFour):'')+(Math.abs(pending)>.005?' · incl pending':'')+'</div><div class="account-balance" style="color:'+(bal>0?'var(--red)':'var(--green)')+'">'+fmt(Math.abs(bal))+(bal<0?' credit':' owed')+'</div>'+sub+'</button>';}).join('');
+  var cardHtml=cards.map(function(c){var id='cc:'+c.id,bal=cardBalance(c),posted=creditCardPostedBalance(c.id),pending=creditCardPendingEffect(c.id),purchases=pendingCardPurchases(c.id),payments=pendingCardPayments(c.id);var sub='';if(Math.abs(pending)>.005||purchases>.005||payments>.005){sub='<div class="account-balance-sub">Posted '+fmt(Math.abs(posted))+(purchases>.005?' · +'+fmt(purchases)+' pending charges':'')+(payments>.005?' · -'+fmt(payments)+' pending payments':'')+'</div>';}return '<button class="account-card'+(id===activeAccountId?' on':'')+'" onclick="selectAccount(\''+id+'\')"><div class="account-name">◇ '+esc(c.name)+'</div><div class="account-type">Credit card'+(c.lastFour?' · '+esc(c.lastFour):'')+(Math.abs(pending)>.005?' · incl pending':'')+'</div><div class="account-balance" style="color:'+(bal>0?'var(--red)':'var(--green)')+'">'+fmt(Math.abs(bal))+(bal<0?' credit':' owed')+'</div>'+sub+'</button>';}).join('');
   grid.innerHTML=assetHtml+cardHtml;
   var isCard=String(activeAccountId||'').indexOf('cc:')===0,record=isCard?cards.find(function(c){return c.id===activeAccountId.slice(3);}):accounts.find(function(a){return a.id===activeAccountId;});if(!record){register.innerHTML='<div class="empty"><p>No account selected.</p></div>';return;}
   document.getElementById('registerTitle').textContent=record.name+' Register';document.getElementById('registerStatus').textContent=record.reconciledAt?'Reconciled through '+record.reconciledAt:'Not reconciled yet';var refundBtn=document.getElementById('cardRefundAccountBtn');if(refundBtn)refundBtn.style.display=isCard?'inline-flex':'none';
