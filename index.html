@@ -3291,7 +3291,6 @@ function recordCCPayment(cardId) {
   document.getElementById('ccPayTitle').textContent='Pay '+card.name;
   var posted=Math.max(0,creditCardPostedBalance(card.id)),effective=Math.max(0,cardBalance(card)),pendingPurchases=pendingCardPurchases(card.id),pendingPayments=pendingCardPayments(card.id),payable=postedCardAmountStillUnpaid(card.id);
   document.getElementById('ccPaySummary').textContent='Posted '+fmt(posted)+(pendingPurchases>.005?' · +'+fmt(pendingPurchases)+' pending charges':'')+(pendingPayments>.005?' · -'+fmt(pendingPayments)+' pending payments':'')+' · '+fmt(cardFundingDetails(card).ready)+' reserved';
-  document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id+'"')+'>'+esc(a.name)+'</option>';}).join('');
   document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(preferred&&a.id===preferred.id?' selected':'')+'>'+esc(a.name)+' · '+fmt(accountBalance(a.id))+'</option>';}).join('');
   document.getElementById('ccPayAmount').value=money(payable).toFixed(2);
   document.getElementById('ccPayDate').value=localDateKey();
