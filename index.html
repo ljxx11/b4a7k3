@@ -907,6 +907,10 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   <!-- EXPENSES -->
   <div class="view" id="view-expenses">
     <div class="field" style="margin-bottom:10px">
+      <label for="expSearch">Search transactions</label>
+      <input id="expSearch" type="search" placeholder="Merchant, amount, date, category, account..." autocomplete="off" oninput="renderExpenses()" style="width:100%;background:var(--surf);border:1px solid var(--rsm);border-radius:var(--rsm);padding:11px 13px;color:var(--text);font:700 14px 'Nunito',sans-serif;outline:none">
+    </div>
+    <div class="field" style="margin-bottom:10px">
       <select id="expFilter" style="width:100%;background:var(--surf);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 13px;color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;font-weight:700;outline:none;-webkit-appearance:none">
         <option value="">All Envelopes</option>
       </select>
@@ -3446,7 +3450,27 @@ function renderExpenses() {
     filterSel.value = currentFilter; // restore selection
   }
   var filterEnvId = filterSel ? filterSel.value : '';
-  var allExp = filterEnvId ? S.expenses.filter(function(e){return e.isCardCredit?e.refundEnvId===filterEnvId:e.envId===filterEnvId;}) : S.expenses;
+  // Include transactions with any split line assigned to the selected envelope.
+  var allExp = filterEnvId ? S.expenses.filter(function(e){
+    return (e.isCardCredit?e.refundEnvId===filterEnvId:e.envId===filterEnvId) ||
+      expenseSplits(e).some(function(line){return line.envId===filterEnvId;});
+  }) : S.expenses;
+  var searchInput = document.getElementById('expSearch');
+  var searchTerms = String(searchInput ? searchInput.value : '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if(searchTerms.length) {
+    allExp = allExp.filter(function(e){
+      var pieces=[e.desc||'',e.date||'',e.time||'',e.amount==null?'':Number(e.amount).toFixed(2),
+        e.amount==null?'':String(Number(e.amount)),e.pending?'pending':'posted',
+        e.cleared?'cleared':'uncleared',e.payMethod||'',accountName(e.accountId)||''];
+      var cc=S.creditCards.find(function(c){return c.id===e.ccId;});
+      if(cc)pieces.push(cc.name||'');
+      var ids=[e.envId,e.refundEnvId];
+      expenseSplits(e).forEach(function(line){ids.push(line.envId);pieces.push(line.amount==null?'':Number(line.amount).toFixed(2),line.owedBy||'');});
+      ids.forEach(function(id){var env=S.envelopes.find(function(v){return v.id===id;});if(env)pieces.push(env.name||'');});
+      var haystack=pieces.join(' ').toLowerCase();
+      return searchTerms.every(function(term){return haystack.indexOf(term)!==-1;});
+    });
+  }
   var total = 0; allExp.forEach(function(e){total+=expenseSpendingAmount(e);});
   var cnt = allExp.length;
   document.getElementById('expTot').textContent = fmtS(total);
@@ -3454,9 +3478,11 @@ function renderExpenses() {
   document.getElementById('expAvg').textContent = cnt ? fmtS(total/cnt) : '$0';
   var el = document.getElementById('expList');
   if (!cnt) {
-    el.innerHTML = filterEnvId
+    el.innerHTML = searchTerms.length
+      ? '<div class="empty"><div class="ei">🔎</div><p>No matching transactions. Try fewer words or clear the envelope filter.</p></div>'
+      : (filterEnvId
       ? '<div class="empty"><div class="ei">📝</div><p>No expenses in this envelope.</p></div>'
-      : '<div class="empty"><div class="ei">📝</div><p>No expenses yet.</p></div>';
+      : '<div class="empty"><div class="ei">📝</div><p>No expenses yet.</p></div>');
     return;
   }
   el.innerHTML = '';
