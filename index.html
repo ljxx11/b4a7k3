@@ -907,6 +907,10 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   <!-- EXPENSES -->
   <div class="view" id="view-expenses">
     <div class="field" style="margin-bottom:10px">
+      <label for="expSearch">Search transactions</label>
+      <input id="expSearch" type="search" placeholder="Merchant, amount, date, category..." autocomplete="off" oninput="renderExpenses()" aria-label="Search transaction history">
+    </div>
+    <div class="field" style="margin-bottom:10px">
       <select id="expFilter" style="width:100%;background:var(--surf);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 13px;color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;font-weight:700;outline:none;-webkit-appearance:none">
         <option value="">All Envelopes</option>
       </select>
@@ -3445,8 +3449,23 @@ function renderExpenses() {
     filterSel.innerHTML = opts;
     filterSel.value = currentFilter; // restore selection
   }
-  var filterEnvId = filterSel ? filterSel.value : '';
-  var allExp = filterEnvId ? S.expenses.filter(function(e){return e.isCardCredit?e.refundEnvId===filterEnvId:e.envId===filterEnvId;}) : S.expenses;
+  var filterEnvId=filterSel?filterSel.value:'';
+  var searchText=String(document.getElementById('expSearch').value||'').trim().toLowerCase();
+  var searchTerms=searchText?searchText.split(/\s+/):[];
+  var allExp=S.expenses.filter(function(e){
+    var splits=expenseSplits(e);
+    if(filterEnvId&&e.envId!==filterEnvId&&e.refundEnvId!==filterEnvId&&!splits.some(function(line){return line.envId===filterEnvId;}))return false;
+    if(!searchTerms.length)return true;
+    var names=[e.envId,e.refundEnvId].concat(splits.map(function(line){return line.envId;})).filter(Boolean).map(function(id){
+      var env=S.envelopes.find(function(x){return x.id===id;});return env?env.name:'';
+    }).join(' ');
+    var card=(S.creditCards||[]).find(function(c){return c.id===e.ccId;});
+    var n=Number(e.amount)||0;
+    var words=[e.desc||'',e.note||'',e.memo||'',e.date||'',n.toFixed(2),'$'+n.toFixed(2),names,e.accountId?accountName(e.accountId):'',card?card.name:'',e.pending?'pending':'posted'];
+    splits.forEach(function(line){words.push(Number(line.amount||0).toFixed(2));});
+    var haystack=words.join(' ').toLowerCase();
+    return searchTerms.every(function(term){return haystack.indexOf(term)!==-1;});
+  });
   var total = 0; allExp.forEach(function(e){total+=expenseSpendingAmount(e);});
   var cnt = allExp.length;
   document.getElementById('expTot').textContent = fmtS(total);
