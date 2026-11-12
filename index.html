@@ -2335,7 +2335,7 @@ function assignmentForMonth(env, monthKey) {
   if(!env)return 0;
   var key=normalizeMonthKey(monthKey||currentMonthKey());
   if(env.assignments && Object.prototype.hasOwnProperty.call(env.assignments,key))return money(env.assignments[key]||0);
-  return key===normalizeMonthKey(S.currentMonth) ? money(env.assigned||0) : 0;
+  return 0; // Missing monthly assignment is zero; do not reuse the legacy current-month cache.
 }
 function setAssignmentForMonth(env, monthKey, value) {
   if(!env.assignments)env.assignments={};
