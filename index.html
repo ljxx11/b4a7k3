@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#101317">
@@ -707,6 +707,22 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 .custody-empty strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}
 @media(max-width:520px){.custody-hero-top{display:block}.custody-total{font-size:38px}.custody-note{max-width:58vw}}
 
+/* PREFLIGHT: reversible visual comfort options */
+:root[data-readable="comfortable"] :is(.rta-lbl,.sh-title,.card-title,.truth-label,.truth-note,.env-avail-lbl,.env-num-lbl,.stat-lbl,.account-type,.account-balance-sub,.atlas-health-cell-label,.today-kicker,.daily-plan-label,.tsb-label,.guide-copy,.guide-title,.set-sub,.set-lbl,.exp-meta,.exp-date,.env-assigned,.rta-meta,.inc-sub,.register-meta,.health-sub,.transfer-row,.split-help,.split-fronted-note,.report-meta,.month-pill,.tab,.tab-more){font-size:13px !important;line-height:1.5;letter-spacing:normal}
+:root[data-readable="comfortable"] :is(.exp-desc,.env-name,.inc-name,.register-name,.account-name,.sum-name,.today-focus-copy,.atlas-health-copy,.truth-sub,.priority-note,.dash-link,.more-item,.set-row,.guide-copy,.exp-amt,.register-amount,.env-act-btn,.sh-btn,.tab,.tab-more,.stat-val){font-size:15px !important;line-height:1.5}
+:root[data-readable="comfortable"] :is(.truth-title,.card-title,.dash-title,.sh-title,.today-focus-title,.settings-section-title,.env-num-val,.account-balance,.env-avail,.truth-value){font-size:18px !important;line-height:1.4}
+:root[data-readable="comfortable"] :is(.truth-value,.env-avail,.account-balance,.rta-num){font-size:24px !important;line-height:1.2}
+:root[data-readable="comfortable"] :is(.exp-item,.register-row,.inc-item,.sum-row){padding-top:14px;padding-bottom:14px}
+:root[data-readable="comfortable"] .exp-desc{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+:root[data-readable="comfortable"] :is(input,select,textarea){min-height:44px}
+:root[data-contrast="high"]{--border:rgba(255,255,255,.30);--text:#fff;--text2:#f2f4f6;--text3:#dce2e9;--acc:#bddbff;--green:#a8efbe;--red:#ffb4b4;--yellow:#ffe3a2;--surf:#111821;--surf2:#1b2733;--surf3:#263442}
+:root[data-contrast="high"][data-theme="light"]{--border:rgba(16,28,41,.33);--bg:#fff;--surf:#fff;--surf2:#ebf1f7;--surf3:#dce6ee;--text:#0a1520;--text2:#243442;--text3:#34495a;--acc:#1e527d;--green:#126035;--red:#962632;--yellow:#654a00}
+:root[data-contrast="high"][data-theme="dark"] :is(.sh-btn,.env-set-btn,.btn-p,.afford-btn){color:#111821 !important}
+:root[data-simple-icons="true"] :is(.env-icon,.exp-ico,.sum-icon){display:none !important}
+:root[data-simple-icons="true"] :is(.env-hdr,.exp-item,.sum-row){gap:8px}
+:root :is(button,input,select,textarea,a,[role="switch"]):focus-visible{outline:3px solid var(--acc) !important;outline-offset:3px}
+.budget-safety-note{font-size:13px;line-height:1.55;color:var(--text2);border-left:3px solid var(--acc);padding:8px 11px;margin-bottom:12px;background:var(--surf2);border-radius:4px 9px 9px 4px}
+@media(max-width:520px){:root[data-readable="comfortable"] .rta-meta{flex-wrap:wrap;gap:4px 10px}:root[data-readable="comfortable"] .tabs{padding:0 5px;margin:0 -16px}:root[data-readable="comfortable"] .tab{font-size:12px !important;padding:11px 3px}:root[data-readable="comfortable"] .tab-more{font-size:12px !important;padding:11px 5px}}
 </style>
 </head>
 <body>
@@ -830,7 +846,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-head"><div class="dash-title">Can I afford this?</div><div class="dash-link">Envelope check</div></div>
+        <div class="dash-card-head"><div class="dash-title">Envelope coverage check</div><div class="dash-link">Not an affordability guarantee</div></div>
         <div class="afford-body">
           <div class="afford-grid">
             <input class="afford-input" id="affordAmount" type="number" inputmode="decimal" placeholder="$ Amount">
@@ -861,6 +877,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
   <!-- BUDGET -->
   <div class="view" id="view-budget">
     <div class="warn" id="warnBanner"><span>⚠️ Your plan uses more money than you currently control.</span></div>
+    <div class="budget-safety-note">Unassigned cash is not a safe-to-spend amount. Check upcoming bills, card charges, debt payments, and moving commitments before using it.</div>
     <div class="week-banner" id="weekBanner">📅 Weekly mode — showing per-paycheck amounts</div>
     <div class="backup-reminder" id="backupReminder" style="display:none">
       <span id="backupReminderText">💾 Back up your data</span>
@@ -873,7 +890,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="next-month-banner" id="nextMonthBanner">✨ Future month · assignments stay in this month</div>
     <div class="target-summary-bar" id="targetSummaryBar" style="display:none">
       <div class="tsb-left">
-        <div class="tsb-label">Monthly Targets Total</div>
+        <div class="tsb-label">Monthly targets vs income received so far</div>
         <div class="tsb-track"><div class="tsb-fill" id="tsbFill" style="width:0%"></div></div>
       </div>
       <div class="tsb-right">
@@ -1048,6 +1065,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
       <div class="stat"><div class="stat-val" id="debtMinStat">$0</div><div class="stat-lbl">Required/Month</div></div>
     </div>
     <div class="debt-breakdown" id="debtBreakdown"></div>
+    <div class="budget-safety-note">If a loan is part of an existing credit-card balance, don't add its principal as a second debt. The card payment plan and loan installments require separate verification.</div>
     <div class="loan-overview" id="loanOverview"><div class="loan-overview-title">Loan payoff outlook</div><div class="loan-overview-copy">Payoff dates and extra-payment effects appear here.</div></div>
     <div class="sh" id="otherDebtHeading"><div class="sh-title">Loans & Other Debt</div></div>
     <div id="debtList"><div class="empty"><div class="ei">🏦</div><p>No loans or other debts tracked.</p></div></div>
@@ -1118,6 +1136,9 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="set-row"><div><div class="set-lbl">Weekly Paycheck Mode</div><div class="set-sub">Shows per-paycheck envelope targets</div></div><div class="tog" id="weekTog" role="switch" aria-label="Weekly paycheck mode"></div></div>
         <div class="set-row"><div><div class="set-lbl">Dark Mode</div><div class="set-sub">Dark or light appearance</div></div><div class="tog" id="darkTog" role="switch" aria-label="Dark mode"></div></div>
         <div class="set-row"><div><div class="set-lbl">Seasonal Accent</div><div class="set-sub" id="seasonStatus">Automatic seasonal color</div></div><div class="tog" id="seasonTog" role="switch" aria-label="Seasonal accent"></div></div>
+        <div class="set-row"><div><div class="set-lbl">Comfortable Reading</div><div class="set-sub">Larger labels, descriptions, and amounts</div></div><div class="tog" id="readingTog" role="switch" aria-label="Comfortable reading"></div></div>
+        <div class="set-row"><div><div class="set-lbl">High Contrast</div><div class="set-sub">Clearer text and stronger borders</div></div><div class="tog" id="contrastTog" role="switch" aria-label="High contrast"></div></div>
+        <div class="set-row"><div><div class="set-lbl">Fewer Category Icons</div><div class="set-sub">Hide decorative icons from envelopes and transactions</div></div><div class="tog" id="simpleIconsTog" role="switch" aria-label="Fewer category icons"></div></div>
       </div></div></div>
     </details>
 
@@ -1506,6 +1527,9 @@ var S = {
   weeklyMode: false,
   darkMode: true,
   seasonalAccent: true,
+  comfortableReading: true,
+  highContrast: false,
+  minimalCategoryIcons: false,
   lastBackupDate: null,
   cashBalance: 0,
   incomeCollapsed: false,
@@ -1564,7 +1588,7 @@ var pendingCloudPackage = null;
 var previousModalFocus = null;
 
 var LEDGER_COLLECTIONS = ['income','expenses','accounts','accountTransfers','reconciliationAdjustments','envelopeBalanceAdjustments','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','custodialBalanceAdjustments','transfers'];
-var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','selectedMonth','budgetStartMonth','rolloverDate','custodialMigrationVersion'];
+var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','comfortableReading','highContrast','minimalCategoryIcons','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','selectedMonth','budgetStartMonth','rolloverDate','custodialMigrationVersion'];
 
 function openLedgerDB() {
   return new Promise(function(resolve, reject){
@@ -1999,6 +2023,9 @@ async function loadS() {
   if(S.incomeCollapsed===undefined) S.incomeCollapsed=false;
   if(S.darkMode===undefined) S.darkMode=true;
   if(S.seasonalAccent===undefined) S.seasonalAccent=true;
+  if(S.comfortableReading===undefined) S.comfortableReading=true;
+  if(S.highContrast===undefined) S.highContrast=false;
+  if(S.minimalCategoryIcons===undefined) S.minimalCategoryIcons=false;
   if(S.envelopes.length && !S.groups.length) migrateToGroups();
   if(!S.groups.length) seedGroups();
   migrateCustodialFunds();
@@ -2756,7 +2783,7 @@ function updateRTA() {
   } else {
     rtaNum.className = 'rta-num';
     rtaBadge.className = 'rta-badge';
-    rtaBadge.textContent = 'Ready';
+    rtaBadge.textContent = 'Unassigned';
     rtaFill.className = 'rta-fill';
     warn.className = 'warn';
   }
@@ -4105,11 +4132,8 @@ function renderHistory() {
 // ═══════════════════════════════════════════
 function moneyClass(n) { return n < -0.005 ? 'bad' : n < 0.005 ? 'warnc' : 'good'; }
 function monthExpensesForEnv(envId) {
-  var now = new Date();
-  return S.expenses.reduce(function(t,e){
-    var d = new Date((e.date||'')+'T12:00:00');
-    return t + (e.envId===envId && d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear() ? (e.amount||0) : 0);
-  },0);
+  // Use the same split-aware spending calculation as Budget and Reports.
+  return envSpentForMonth(envId,currentMonthKey());
 }
 function findEnvByWords(words) {
   var list = activeEnvelopes().filter(function(e){ return !e.isCCPayment; });
@@ -4262,10 +4286,10 @@ function checkAffordability(){
   var env=S.envelopes.find(function(e){return e.id===id;});
   if(!amount||amount<=0||!env){out.className='afford-result bad';out.textContent='Amount and envelope required.';return;}
   var avail=envAvailable(env.id), after=avail-amount;
-  if(after>=0){out.className='afford-result good';out.textContent='Yes · '+fmt(after)+' remains in '+env.name+'.';return;}
-  var shortage=Math.abs(after), donors=activeEnvelopes().filter(function(e){return e.id!==env.id&&!e.isCCPayment&&envAvailable(e.id)>shortage;}).sort(function(a,b){return envAvailable(b.id)-envAvailable(a.id);});
-  if(donors.length){out.className='afford-result warn';out.textContent=fmt(shortage)+' short · available from '+donors.slice(0,2).map(function(e){return e.name;}).join(' or ')+'.';}
-  else {out.className='afford-result bad';out.textContent='No · '+env.name+' is '+fmt(shortage)+' short.';}
+  if(after>=0){out.className='afford-result warn';out.textContent='Envelope covers this purchase; '+fmt(after)+' would remain. This does not verify upcoming bills, debt payments, or moving needs.';return;}
+  var shortage=Math.abs(after);
+  out.className='afford-result bad';
+  out.textContent=env.name+' is '+fmt(shortage)+' short. Review your plan before moving money from another envelope.';
 }
 
 // ═══════════════════════════════════════════
@@ -4819,12 +4843,18 @@ function seasonName(season) { return season.charAt(0).toUpperCase()+season.slice
 
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', S.darkMode ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-season', S.seasonalAccent===false ? 'neutral' : currentSeason());
+  document.documentElement.setAttribute('data-season', (S.seasonalAccent===false || S.highContrast) ? 'neutral' : currentSeason());
+  document.documentElement.setAttribute('data-readable',S.comfortableReading===false?'standard':'comfortable');
+  document.documentElement.setAttribute('data-contrast',S.highContrast?'high':'standard');
+  document.documentElement.setAttribute('data-simple-icons',S.minimalCategoryIcons?'true':'false');
   document.getElementById('themeBtn').textContent = S.darkMode ? '🌙' : '☀️';
   var dt=document.getElementById('darkTog'); if(dt){dt.className='tog'+(S.darkMode?' on':'');dt.setAttribute('aria-checked',S.darkMode?'true':'false');}
   var st=document.getElementById('seasonTog'); if(st){st.className='tog'+(S.seasonalAccent!==false?' on':'');st.setAttribute('aria-checked',S.seasonalAccent!==false?'true':'false');}
   var ss=document.getElementById('seasonStatus');
-  if(ss) ss.textContent=S.seasonalAccent===false ? 'Standard accent' : seasonName(currentSeason())+' accent · automatic';
+  if(ss) ss.textContent=S.highContrast?'High contrast overrides seasonal color':S.seasonalAccent===false?'Standard accent':seasonName(currentSeason())+' accent · automatic';
+  [['readingTog',S.comfortableReading!==false],['contrastTog',!!S.highContrast],['simpleIconsTog',!!S.minimalCategoryIcons]].forEach(function(row){
+    var el=document.getElementById(row[0]);if(el){el.className='tog'+(row[1]?' on':'');el.setAttribute('aria-checked',row[1]?'true':'false');}
+  });
 }
 
 function toggleWeekMode() {
@@ -4845,6 +4875,9 @@ function toggleSeasonalAccent() {
   saveS(); applyTheme();
   toast(S.seasonalAccent ? seasonName(currentSeason())+' accent on' : 'Seasonal accent off');
 }
+function toggleReadingComfort(){S.comfortableReading=S.comfortableReading===false;saveS();applyTheme();}
+function toggleHighContrast(){S.highContrast=!S.highContrast;saveS();applyTheme();}
+function toggleMinimalCategoryIcons(){S.minimalCategoryIcons=!S.minimalCategoryIcons;saveS();applyTheme();}
 
 
 function buildBackupPackage() {
@@ -5303,10 +5336,10 @@ function renderTargetSummary() {
       status.textContent = 'Add income to compare';
       status.style.color = 'var(--text3)';
     } else if (over) {
-      status.textContent = '⚠️ ' + fmt(Math.abs(remaining)) + ' over income';
+      status.textContent = fmt(Math.abs(remaining)) + ' above received income to date (not a full-month forecast)';
       status.style.color = 'var(--red)';
     } else {
-      status.textContent = fmt(remaining) + ' unbudgeted';
+      status.textContent = fmt(remaining) + ' below income received to date';
       status.style.color = 'var(--green)';
     }
   }
@@ -5928,6 +5961,9 @@ window.onload = async function() {
   document.getElementById('weekTog').addEventListener('click', toggleWeekMode);
   document.getElementById('darkTog').addEventListener('click', toggleDark);
   document.getElementById('seasonTog').addEventListener('click', toggleSeasonalAccent);
+  document.getElementById('readingTog').addEventListener('click',toggleReadingComfort);
+  document.getElementById('contrastTog').addEventListener('click',toggleHighContrast);
+  document.getElementById('simpleIconsTog').addEventListener('click',toggleMinimalCategoryIcons);
   document.getElementById('healthCheckBtn').addEventListener('click', function(){runLedgerHealthCheck(true);});
   document.getElementById('techDetailsBtn').addEventListener('click', toggleTechnicalDetails);
   document.getElementById('syncPackageBtn').addEventListener('click', exportSyncPackage);
