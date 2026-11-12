@@ -3473,8 +3473,8 @@ function renderExpenses() {
   document.getElementById('expAvg').textContent = cnt ? fmtS(total/cnt) : '$0';
   var el = document.getElementById('expList');
   if (!cnt) {
-    el.innerHTML = filterEnvId
-      ? '<div class="empty"><div class="ei">📝</div><p>No expenses in this envelope.</p></div>'
+    el.innerHTML = (filterEnvId||searchTerms.length)
+      ? '<div class="empty"><div class="ei">🔎</div><p>No matching transactions. Try another search.</p></div>'
       : '<div class="empty"><div class="ei">📝</div><p>No expenses yet.</p></div>';
     return;
   }
