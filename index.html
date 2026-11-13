@@ -3042,7 +3042,7 @@ function renderEnvCard(env) {
       '<div class="env-nums">' +
         '<div class="env-num"><div class="env-num-val">'+fmt(assigned)+'</div><div class="env-num-lbl">Assigned</div></div>' +
         carryHtml +
-        '<div class="env-num"><div class="env-num-val'+(avail<0?' style=\"color:var(--red)\"':'')+'>'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div><div class="env-num-lbl">Available</div></div>' +
+        '<div class="env-num"><div class="env-num-val"'+(avail<0?' style="color:var(--red)"':'')+'>'+(avail<0?'-':'')+fmt(Math.abs(avail))+'</div><div class="env-num-lbl">Available</div></div>' +
       '</div>' +
       '<div class="env-assign-row">' +
         '<input class="env-input" id="assignInput_'+eid+'" type="number" inputmode="decimal" placeholder="Assign for '+monthLabel(key)+'..." value="'+assigned.toFixed(2)+'" oninput="window._lastAssignVal=this.value" onchange="window._lastAssignVal=this.value">' +
