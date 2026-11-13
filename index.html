@@ -723,6 +723,27 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
 :root :is(button,input,select,textarea,a,[role="switch"]):focus-visible{outline:3px solid var(--acc) !important;outline-offset:3px}
 .budget-safety-note{font-size:13px;line-height:1.55;color:var(--text2);border-left:3px solid var(--acc);padding:8px 11px;margin-bottom:12px;background:var(--surf2);border-radius:4px 9px 9px 4px}
 @media(max-width:520px){:root[data-readable="comfortable"] .rta-meta{flex-wrap:wrap;gap:4px 10px}:root[data-readable="comfortable"] .tabs{padding:0 5px;margin:0 -16px}:root[data-readable="comfortable"] .tab{font-size:12px !important;padding:11px 3px}:root[data-readable="comfortable"] .tab-more{font-size:12px !important;padding:11px 5px}}
+
+/* BALANCED CONTRAST: between the original softer palette and high contrast */
+:root[data-contrast="balanced"]{
+  --border:rgba(255,255,255,.19);--text:#f8fafc;--text2:#e1e6ed;--text3:#c2cbd6;--acc:#bed2e6;
+}
+:root[data-contrast="balanced"][data-theme="light"]{
+  --border:rgba(22,42,60,.21);--text:#101a24;--text2:#354654;--text3:#465b6c;--acc:#345c7d;
+}
+/* Make amounts legible. Keep Playfair Display for the app logo and editorial headings. */
+:is(.rta-num,.truth-value,.inc-amt,.env-avail,.stat-val,.net-val,.owed-sec-total,.owed-amt,.debt-bal,.cc-balance,.compare-amt,.metric-value,.account-balance,.account-balance-sub,.exp-amt,.register-amount,.goal-saved,.goal-name,.goal-amounts,.rpt-total,.rpt-meta,.daily-plan-value,.env-num-val,.credit-amount,.tsb-numbers,.debt-field-val,.truth-value){
+  font-family:'Nunito',system-ui,sans-serif !important;
+  font-weight:800;
+  font-variant-numeric:tabular-nums lining-nums;
+  letter-spacing:-.015em;
+}
+:root[data-readable="comfortable"] :is(.rta-num,.truth-value,.env-avail,.account-balance,.net-val,.cc-balance,.debt-bal){
+  font-size:24px !important;
+  line-height:1.3;
+}
+:root[data-readable="comfortable"] .rta-num{font-size:32px !important}
+.contrast-select{background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-height:44px;min-width:132px;color:var(--text);font:800 14px 'Nunito',sans-serif}
 </style>
 </head>
 <body>
@@ -1137,7 +1158,12 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
         <div class="set-row"><div><div class="set-lbl">Dark Mode</div><div class="set-sub">Dark or light appearance</div></div><div class="tog" id="darkTog" role="switch" aria-label="Dark mode"></div></div>
         <div class="set-row"><div><div class="set-lbl">Seasonal Accent</div><div class="set-sub" id="seasonStatus">Automatic seasonal color</div></div><div class="tog" id="seasonTog" role="switch" aria-label="Seasonal accent"></div></div>
         <div class="set-row"><div><div class="set-lbl">Comfortable Reading</div><div class="set-sub">Larger labels, descriptions, and amounts</div></div><div class="tog" id="readingTog" role="switch" aria-label="Comfortable reading"></div></div>
-        <div class="set-row"><div><div class="set-lbl">High Contrast</div><div class="set-sub">Clearer text and stronger borders</div></div><div class="tog" id="contrastTog" role="switch" aria-label="High contrast"></div></div>
+        <div class="set-row"><div><div class="set-lbl">Contrast</div><div class="set-sub">Choose a softer, balanced, or stronger reading contrast</div></div>
+          <select id="contrastSelect" class="contrast-select" aria-label="Contrast level">
+            <option value="soft">Soft</option>
+            <option value="balanced">Balanced</option>
+            <option value="high">High</option>
+          </select></div>
         <div class="set-row"><div><div class="set-lbl">Fewer Category Icons</div><div class="set-sub">Hide decorative icons from envelopes and transactions</div></div><div class="tog" id="simpleIconsTog" role="switch" aria-label="Fewer category icons"></div></div>
       </div></div></div>
     </details>
@@ -1529,6 +1555,7 @@ var S = {
   seasonalAccent: true,
   comfortableReading: true,
   highContrast: false,
+  contrastLevel: 'balanced',
   minimalCategoryIcons: false,
   lastBackupDate: null,
   cashBalance: 0,
@@ -1588,7 +1615,7 @@ var pendingCloudPackage = null;
 var previousModalFocus = null;
 
 var LEDGER_COLLECTIONS = ['income','expenses','accounts','accountTransfers','reconciliationAdjustments','envelopeBalanceAdjustments','groups','envelopes','creditCards','scheduled','owedToMe','iOwe','goals','debts','custodialAccounts','custodialTransactions','custodialBalanceAdjustments','transfers'];
-var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','comfortableReading','highContrast','minimalCategoryIcons','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','selectedMonth','budgetStartMonth','rolloverDate','custodialMigrationVersion'];
+var LEDGER_SETTING_KEYS = ['weeklyMode','darkMode','seasonalAccent','comfortableReading','highContrast','contrastLevel','minimalCategoryIcons','lastBackupDate','cashBalance','incomeCollapsed','currentMonth','selectedMonth','budgetStartMonth','rolloverDate','custodialMigrationVersion'];
 
 function openLedgerDB() {
   return new Promise(function(resolve, reject){
@@ -2025,6 +2052,8 @@ async function loadS() {
   if(S.seasonalAccent===undefined) S.seasonalAccent=true;
   if(S.comfortableReading===undefined) S.comfortableReading=true;
   if(S.highContrast===undefined) S.highContrast=false;
+  if(!['soft','balanced','high'].includes(S.contrastLevel)) S.contrastLevel=S.highContrast?'high':'balanced';
+  S.highContrast=S.contrastLevel==='high'; // previous-backup compatibility
   if(S.minimalCategoryIcons===undefined) S.minimalCategoryIcons=false;
   if(S.envelopes.length && !S.groups.length) migrateToGroups();
   if(!S.groups.length) seedGroups();
@@ -4843,16 +4872,18 @@ function seasonName(season) { return season.charAt(0).toUpperCase()+season.slice
 
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', S.darkMode ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-season', (S.seasonalAccent===false || S.highContrast) ? 'neutral' : currentSeason());
+  var contrast=['soft','balanced','high'].includes(S.contrastLevel)?S.contrastLevel:(S.highContrast?'high':'balanced');
+  document.documentElement.setAttribute('data-season', (S.seasonalAccent===false || contrast!=='soft') ? 'neutral' : currentSeason());
   document.documentElement.setAttribute('data-readable',S.comfortableReading===false?'standard':'comfortable');
-  document.documentElement.setAttribute('data-contrast',S.highContrast?'high':'standard');
+  document.documentElement.setAttribute('data-contrast',contrast);
   document.documentElement.setAttribute('data-simple-icons',S.minimalCategoryIcons?'true':'false');
   document.getElementById('themeBtn').textContent = S.darkMode ? '🌙' : '☀️';
   var dt=document.getElementById('darkTog'); if(dt){dt.className='tog'+(S.darkMode?' on':'');dt.setAttribute('aria-checked',S.darkMode?'true':'false');}
   var st=document.getElementById('seasonTog'); if(st){st.className='tog'+(S.seasonalAccent!==false?' on':'');st.setAttribute('aria-checked',S.seasonalAccent!==false?'true':'false');}
   var ss=document.getElementById('seasonStatus');
-  if(ss) ss.textContent=S.highContrast?'High contrast overrides seasonal color':S.seasonalAccent===false?'Standard accent':seasonName(currentSeason())+' accent · automatic';
-  [['readingTog',S.comfortableReading!==false],['contrastTog',!!S.highContrast],['simpleIconsTog',!!S.minimalCategoryIcons]].forEach(function(row){
+  if(ss) ss.textContent=contrast!=='soft'?'Reading contrast overrides seasonal color':S.seasonalAccent===false?'Standard accent':seasonName(currentSeason())+' accent · automatic';
+  var contrastSel=document.getElementById('contrastSelect');if(contrastSel)contrastSel.value=contrast;
+  [['readingTog',S.comfortableReading!==false],['simpleIconsTog',!!S.minimalCategoryIcons]].forEach(function(row){
     var el=document.getElementById(row[0]);if(el){el.className='tog'+(row[1]?' on':'');el.setAttribute('aria-checked',row[1]?'true':'false');}
   });
 }
@@ -4876,7 +4907,11 @@ function toggleSeasonalAccent() {
   toast(S.seasonalAccent ? seasonName(currentSeason())+' accent on' : 'Seasonal accent off');
 }
 function toggleReadingComfort(){S.comfortableReading=S.comfortableReading===false;saveS();applyTheme();}
-function toggleHighContrast(){S.highContrast=!S.highContrast;saveS();applyTheme();}
+function setContrastLevel(value){
+  if(!['soft','balanced','high'].includes(value))return;
+  S.contrastLevel=value;S.highContrast=value==='high';
+  saveS();applyTheme();
+}
 function toggleMinimalCategoryIcons(){S.minimalCategoryIcons=!S.minimalCategoryIcons;saveS();applyTheme();}
 
 
@@ -5962,7 +5997,7 @@ window.onload = async function() {
   document.getElementById('darkTog').addEventListener('click', toggleDark);
   document.getElementById('seasonTog').addEventListener('click', toggleSeasonalAccent);
   document.getElementById('readingTog').addEventListener('click',toggleReadingComfort);
-  document.getElementById('contrastTog').addEventListener('click',toggleHighContrast);
+  document.getElementById('contrastSelect').addEventListener('change',function(){setContrastLevel(this.value);});
   document.getElementById('simpleIconsTog').addEventListener('click',toggleMinimalCategoryIcons);
   document.getElementById('healthCheckBtn').addEventListener('click', function(){runLedgerHealthCheck(true);});
   document.getElementById('techDetailsBtn').addEventListener('click', toggleTechnicalDetails);
