@@ -3555,7 +3555,7 @@ function deleteFinancingTransfer(id){
   if(!t||t.reconciled){toast('Reconciled loan deposit cannot be removed');return;}
   var env=S.envelopes.find(function(e){return e.id===t.reserveEnvId;});
   var key=monthKeyFromDate(t.date);
-  if(!env||Math.abs(assignmentForMonth(env,key)-t.amount)>.005||S.expenses.some(function(x){return x.envId===env.id||expenseSplits(x).some(function(l){return l.envId===env.id;});})||Object.keys(env.assignments||{}).some(function(k){return k!==key&&Math.abs(Number(env.assignments[k])||0)>.005)){
+  if(!env||Math.abs(assignmentForMonth(env,key)-t.amount)>.005||S.expenses.some(function(x){return x.envId===env.id||expenseSplits(x).some(function(l){return l.envId===env.id;});})||Object.keys(env.assignments||{}).some(function(k){return k!==key&&Math.abs(Number(env.assignments[k])||0)>.005;})){
     toast('Loan reserve has been modified. Restore its original assignment before removing this record.');return;
   }
   if(!confirm('Remove this linked loan deposit and its unused reserve? This will reverse BOTH the bank deposit and the credit-card debt entry.'))return;
