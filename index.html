@@ -173,7 +173,7 @@ button{cursor:pointer;border:none;background:none;font-family:'Nunito',sans-seri
 
 /* ENVELOPE CARDS */
 .env{background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--env-accent,var(--border));border-radius:18px;margin-bottom:10px;overflow:hidden;box-shadow:0 10px 22px rgba(0,0,0,0.08)}
-.env-hdr{display:flex;align-items:center;gap:11px;padding:12px 14px;min-height:64px;height:auto;cursor:pointer;-webkit-user-select:none;user-select:none}
+.env-hdr{display:flex;align-items:center;gap:11px;padding:12px 14px;min-height:86px;height:86px;box-sizing:border-box;cursor:pointer;-webkit-user-select:none;user-select:none}
 .env-icon{width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06)}
 .env-info{flex:1;min-width:0}
 .env-name{font-weight:700;font-size:14px;color:var(--text)}
@@ -1267,6 +1267,10 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="field"><label>Date</label><input id="incDate" type="date"></div>
     <div class="field"><label>Deposit Account</label><select id="incAccount"></select></div>
     <div class="tog-row">
+      <div><div class="tog-lbl">Pending deposit</div><div class="tog-sub">Already in your available bank balance, but not yet posted by the bank</div></div>
+      <div class="tog" id="pendingIncomeTog" role="switch" aria-checked="false" tabindex="0"></div>
+    </div>
+    <div class="tog-row">
       <div><div class="tog-lbl">💵 Cash Income</div><div class="tog-sub">This money is cash, not deposited to bank</div></div>
       <div class="tog" id="cashIncTog"></div>
     </div>
@@ -1600,6 +1604,7 @@ var currentView = 'today';
 var dragSrc = null;
 var dragType = null; // 'group' or 'env'
 var cashIncOn = false;
+var pendingIncomeOn = false;
 var reimbOn = false;
 var creditOn = false;
 var splitExpenseOn = false;
@@ -2875,7 +2880,7 @@ function renderIncome() {
   el.innerHTML = '';
   sorted.forEach(function(i) {
     var label = i.isReimb ? '🔁 Reimbursement' : '💰 Income';
-    var sub = i.date + ' · ' + accountName(i.accountId) + (i.isReimb && i.reimbEnvId ? ' → ' + envName(i.reimbEnvId) : '');
+    var sub = i.date + ' · ' + accountName(i.accountId) + (i.isReimb && i.reimbEnvId ? ' → ' + envName(i.reimbEnvId) : '') + (i.pending?' · Pending':i.cleared?' · Cleared':' · Posted');
     var div = document.createElement('div');
     div.className = 'inc-item';
     div.innerHTML =
@@ -2924,6 +2929,9 @@ function openEditIncomeModal(id) {
   if(inc.isIOURepayment){editingIncomeId=null;toast('IOU repayments are linked to settlement history and are read-only');return;}
   cashIncOn = inc.isCash || false;
   document.getElementById('cashIncTog').className = 'tog' + (cashIncOn?' on':'');
+  pendingIncomeOn = !!inc.pending;
+  document.getElementById('pendingIncomeTog').className = 'tog' + (pendingIncomeOn?' on':'');
+  document.getElementById('pendingIncomeTog').setAttribute('aria-checked',pendingIncomeOn?'true':'false');
   reimbOn = inc.isReimb || false;
   document.getElementById('reimbTog').className = 'tog' + (reimbOn?' on':'');
   document.getElementById('reimbCatField').style.display = reimbOn ? 'block' : 'none';
@@ -4582,6 +4590,9 @@ function openIncomeModal() {
   document.getElementById('deleteIncBtn').style.display = 'none';
   cashIncOn = false;
   document.getElementById('cashIncTog').className = 'tog';
+  pendingIncomeOn = false;
+  document.getElementById('pendingIncomeTog').className = 'tog';
+  document.getElementById('pendingIncomeTog').setAttribute('aria-checked','false');
   reimbOn = false;
   document.getElementById('reimbTog').className = 'tog';
   document.getElementById('reimbCatField').style.display = 'none';
@@ -4819,18 +4830,20 @@ function saveIncome() {
     var inc = S.income.find(function(i){return i.id===editingIncomeId;});
     if (inc) {
       applyReimbursementAssignment(inc,-1);
-      inc.name=name; inc.amount=amt; inc.date=date; inc.accountId=accountId; inc.isCash=cashIncOn; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; inc.cleared=false;
+      var changedPendingStatus=!!inc.pending!==!!pendingIncomeOn;
+      inc.name=name; inc.amount=amt; inc.date=date; inc.accountId=accountId; inc.isCash=cashIncOn; inc.isReimb=isReimb; inc.reimbEnvId=reimbEnvId; inc.pending=!!pendingIncomeOn;
+      if(changedPendingStatus)inc.cleared=false;
       applyReimbursementAssignment(inc,1);
     }
     editingIncomeId = null;
     toast('✓ Updated!');
   } else {
-    var newIncome={id:uid(), name:name, amount:amt, date:date, accountId:accountId, isCash:cashIncOn, isReimb:isReimb, reimbEnvId:reimbEnvId,cleared:false};
+    var newIncome={id:uid(), name:name, amount:amt, date:date, accountId:accountId, isCash:cashIncOn, isReimb:isReimb, reimbEnvId:reimbEnvId, pending:!!pendingIncomeOn, cleared:false};
     applyReimbursementAssignment(newIncome,1);
     S.income.push(newIncome);
     toast('💰 Income added!');
   }
-  saveS(); closeModal('incomeModal'); renderIncome(); renderEnvelopes(); updateRTA();
+  saveS(); closeModal('incomeModal'); renderAll();
   // Reset modal to "add" state
   document.getElementById('incomeModalTitle').textContent = 'Add Income';
   document.getElementById('saveIncBtn').textContent = 'Add Income';
@@ -5968,6 +5981,14 @@ window.onload = async function() {
     this.className = 'tog' + (cashIncOn?' on':'');
     var target=defaultAccount(cashIncOn?'cash':'checking'),select=document.getElementById('incAccount');if(target&&select)select.value=target.id;
 
+  });
+  document.getElementById('pendingIncomeTog').addEventListener('click', function(){
+    pendingIncomeOn=!pendingIncomeOn;
+    this.className='tog'+(pendingIncomeOn?' on':'');
+    this.setAttribute('aria-checked',pendingIncomeOn?'true':'false');
+  });
+  document.getElementById('pendingIncomeTog').addEventListener('keydown', function(e){
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();this.click();}
   });
   document.getElementById('reimbTog').addEventListener('click', function(){
     reimbOn = !reimbOn;
