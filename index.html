@@ -3381,9 +3381,10 @@ function recordCCPayment(cardId) {
   var preferred=defaultAccount('checking')||accounts[0];
   document.getElementById('ccPayTitle').textContent='Pay '+card.name;
   var posted=Math.max(0,creditCardPostedBalance(card.id)),effective=Math.max(0,cardBalance(card)),pendingPurchases=pendingCardPurchases(card.id),pendingPayments=pendingCardPayments(card.id),payable=postedCardAmountStillUnpaid(card.id);
-  document.getElementById('ccPaySummary').textContent='Posted '+fmt(posted)+(pendingPurchases>.005?' · +'+fmt(pendingPurchases)+' pending charges':'')+(pendingPayments>.005?' · -'+fmt(pendingPayments)+' pending payments':'')+' · '+fmt(cardFundingDetails(card).ready)+' reserved';
+  var hasCardLoan=(S.financingTransfers||[]).some(function(t){return t.cardId===card.id;});
+  document.getElementById('ccPaySummary').textContent='Posted '+fmt(posted)+(pendingPurchases>.005?' · +'+fmt(pendingPurchases)+' pending charges':'')+(pendingPayments>.005?' · -'+fmt(pendingPayments)+' pending payments':'')+' · '+fmt(cardFundingDetails(card).ready)+' reserved'+(hasCardLoan?' · Enter only the amount confirmed by Chase as payable (for example, Interest Saving Balance). Do not assume the full loan is due.':'');
   document.getElementById('ccPayAccount').innerHTML=accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(preferred&&a.id===preferred.id?' selected':'')+'>'+esc(a.name)+' · '+fmt(accountBalance(a.id))+'</option>';}).join('');
-  document.getElementById('ccPayAmount').value=money(payable).toFixed(2);
+  document.getElementById('ccPayAmount').value=hasCardLoan?'':money(payable).toFixed(2);
   document.getElementById('ccPayDate').value=localDateKey();
   pendingCCPaymentOn=true;var pendingTog=document.getElementById('pendingCCPaymentTog');if(pendingTog)pendingTog.className='tog on';
   openModal('ccPaymentModal');
@@ -3467,6 +3468,7 @@ function renderCCTab() {
   el.innerHTML = '';
   cards.forEach(function(card) {
     var details=cardFundingDetails(card), payReady=details.ready;
+    var cardHasLoan=(S.financingTransfers||[]).some(function(t){return t.cardId===card.id;});
     var payPct = details.balance>0 ? Math.min(payReady/details.balance*100,100) : 100;
     var div = document.createElement('div');
     div.className = 'cc-card';
@@ -3483,8 +3485,9 @@ function renderCCTab() {
       '</div>',
       '<div style="display:flex;justify-content:space-between;gap:12px;margin:10px 0;font-size:12px;color:var(--muted)">',
         '<span>This month: <b style="color:var(--green)">'+fmt(details.funded)+' funded</b> · <b style="color:'+(details.unfunded>0?'var(--red)':'var(--muted)')+'">'+fmt(details.unfunded)+' unfunded</b></span>',
-        '<span style="text-align:right"><b style="color:'+(details.gap>0?'var(--yellow)':'var(--green)')+'">'+(details.gap>0?fmt(details.gap)+' payment gap':'Fully backed')+'</b></span>',
+        '<span style="text-align:right"><b style="color:'+(details.gap>0?'var(--yellow)':'var(--green)')+'">'+(cardHasLoan?'Loan included · monthly due from Chase':details.gap>0?fmt(details.gap)+' not reserved':'Fully backed')+'</b></span>',
       '</div>',
+      (cardHasLoan?'<div class="budget-safety-note">The full card balance includes a term loan. The minimum due and Interest Saving Balance are set by Chase, not this reserve total.</div>':''), 
       '<div class="cc-payment-row">',
         '<div>',
           '<div class="cc-pay-label">Payment envelope ready</div>',
