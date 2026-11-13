@@ -3897,8 +3897,8 @@ function renderReviewLanes(){
   if(future)future.textContent=week.hasData?week.pct+'% funded in 7 days':month.hasData?month.pct+'% funded in 30 days':month.reminders?'Reminders only':week.schedulesExist?'No confirmed bills due':'No schedules';
   if(futureSub)futureSub.textContent=month.hasData?'Known bills; reminder-only excluded':week.schedulesExist?'Schedules exist; none due in 30 days':'Upcoming commitments not recorded';
   var ledger=document.getElementById('reviewLedgerValue'),ledgerSub=document.getElementById('reviewLedgerSub');
-  if(ledger)ledger.textContent=ledgerDb?'Protected':'Compatibility mode';
-  if(ledgerSub)ledgerSub.textContent=ledgerCloud.lastSyncedAt?'Drive synced '+friendlyTime(ledgerCloud.lastSyncedAt):'Recovery points available on this device';
+  if(ledger)ledger.textContent=ledgerDb?(ledgerCloud.enabled&&ledgerCloud.lastSyncedAt?'Local + Drive':'Local recovery'):'Limited protection';
+  if(ledgerSub)ledgerSub.textContent=ledgerCloud.enabled&&ledgerCloud.lastSyncedAt?'Drive last synced '+friendlyTime(ledgerCloud.lastSyncedAt):(ledgerDb?'Local save points; Drive sync not verified':'Save an external backup before major changes');
 }
 
 // ═══════════════════════════════════════════
