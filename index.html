@@ -2501,43 +2501,46 @@ function envSpentForMonth(envId, monthKey) {
 function envSpent(envId) { return envSpentForMonth(envId, currentMonthKey()); }
 function fundedCreditActivity(paymentEnvId, monthKey) {
   var card = S.creditCards.find(function(c){return c.paymentEnvId===paymentEnvId;});
-  if (!card) return 0;
-  var key = normalizeMonthKey(monthKey||currentMonthKey());
-  var expensesByEnvelope = {};
-  var frontedReserve=0;
-  S.expenses.forEach(function(e,idx){
-    if(e.isCCPayment || e.isCardCredit || monthKeyFromDate(e.date)!==key || !(Number(e.amount)>0) || !(e.isCredit||e.payMethod==='credit') || e.ccId!==card.id)return;
-    var splits=expenseSplits(e);
-    if(splits.length){
-      splits.forEach(function(line,lineIndex){
-        var amount=money(line.amount||0);if(amount<=0)return;
-        if(splitIsFronted(line)||splitIsSettledForOther(line)){frontedReserve=money(frontedReserve+amount);return;}
-        if(!line.envId)return;
-        if(!expensesByEnvelope[line.envId])expensesByEnvelope[line.envId]=[];
-        expensesByEnvelope[line.envId].push({expense:e,index:idx,lineIndex:lineIndex,amount:amount});
+  if(!card)return 0;
+  var key=normalizeMonthKey(monthKey||currentMonthKey());
+  var byEnv={},frontedReserve=0;
+  // Cash/debit purchases are already paid. They have first claim on the money
+  // in an envelope, even if a card purchase happened earlier in the month.
+  // Other cards' purchases also compete for the same remaining envelope funds.
+  S.expenses.forEach(function(e,index){
+    if(e.isCCPayment||e.isCardCredit||monthKeyFromDate(e.date)!==key||!(Number(e.amount)>0))return;
+    var onCredit=!!(e.isCredit||e.payMethod==='credit'),splits=expenseSplits(e);
+    var lines=splits.length?splits:[{envId:e.envId,amount:Number(e.amount)||0}];
+    lines.forEach(function(line,lineIndex){
+      var amount=money(Number(line.amount)||0);if(amount<=0)return;
+      if(splits.length&&(splitIsFronted(line)||splitIsSettledForOther(line))){
+        if(onCredit&&e.ccId===card.id)frontedReserve=money(frontedReserve+amount);
+        return;
+      }
+      if(!line.envId)return;
+      if(!byEnv[line.envId])byEnv[line.envId]={cash:0,credits:[]};
+      if(!onCredit){byEnv[line.envId].cash=money(byEnv[line.envId].cash+amount);}
+      else byEnv[line.envId].credits.push({
+        cardId:e.ccId,amount:amount,
+        when:String(e.datetime||((e.date||'')+'T'+(e.time||'00:00'))),
+        index:index,lineIndex:lineIndex
       });
-      return;
-    }
-    if(!e.envId)return;
-    if(!expensesByEnvelope[e.envId])expensesByEnvelope[e.envId]=[];
-    expensesByEnvelope[e.envId].push({expense:e,index:idx,lineIndex:0,amount:money(e.amount||0)});
+    });
   });
   var total=frontedReserve;
-  Object.keys(expensesByEnvelope).forEach(function(envId){
+  Object.keys(byEnv).forEach(function(envId){
     var env=S.envelopes.find(function(e){return e.id===envId;});
-    if(!env || env.isCCPayment)return;
-    var remaining=money(Math.max(0,assignmentForMonth(env,key)+carryIntoMonth(env.id,key)));
-    expensesByEnvelope[envId].sort(function(a,b){
-      var ad=String(a.expense.datetime||((a.expense.date||'')+'T'+(a.expense.time||'00:00')));
-      var bd=String(b.expense.datetime||((b.expense.date||'')+'T'+(b.expense.time||'00:00')));
-      if(ad!==bd)return ad<bd?-1:1;
+    if(!env||env.isCCPayment)return;
+    var data=byEnv[envId];
+    var remaining=money(Math.max(0,assignmentForMonth(env,key)+carryIntoMonth(env.id,key)-data.cash));
+    data.credits.sort(function(a,b){
+      if(a.when!==b.when)return a.when<b.when?-1:1;
       if(a.index!==b.index)return a.index-b.index;
       return a.lineIndex-b.lineIndex;
     }).forEach(function(item){
-      var amount=money(item.amount||0);
-      var funded=money(Math.min(amount,Math.max(0,remaining)));
+      var funded=money(Math.min(item.amount,Math.max(0,remaining)));
       remaining=money(Math.max(0,remaining-funded));
-      total=money(total+funded);
+      if(item.cardId===card.id)total=money(total+funded);
     });
   });
   return money(total);
