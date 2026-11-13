@@ -932,7 +932,7 @@ button,.tab,.tab-more,.more-item,.tog,summary{touch-action:manipulation}
     <div class="sh" id="incomeHeader" onclick="toggleIncomeSection()" style="cursor:pointer">
       <div style="display:flex;align-items:center;gap:8px">
         <span id="incomeChevron" style="font-size:11px;color:var(--text3)">▼</span>
-        <div class="sh-title">Income</div>
+        <div class="sh-title">Money-in records (all dates)</div>
         <span id="incomeTotalChip" style="font-size:11px;font-weight:800;color:var(--green);background:var(--green-dim);padding:2px 8px;border-radius:10px"></span>
       </div>
       <button class="sh-btn" id="addIncBtn" onclick="event.stopPropagation();openIncomeModal()">+ Add</button>
@@ -5518,6 +5518,8 @@ function renderTargetSummary() {
   if (targets === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   var income = monthlyIncome(selectedMonthKey());
+  var hasPendingIncome=S.income.some(function(i){return !!i.pending&&!i.isReimb&&monthKeyFromDate(i.date)===selectedMonthKey();});
+  var comparisonNote=hasPendingIncome?' (includes pending deposits)':'';
   var pct = income > 0 ? Math.min(targets / income * 100, 120) : 0;
   var over = targets > income && income > 0;
   var remaining = income - targets;
@@ -5534,10 +5536,10 @@ function renderTargetSummary() {
       status.textContent = 'Add income to compare';
       status.style.color = 'var(--text3)';
     } else if (over) {
-      status.textContent = fmt(Math.abs(remaining)) + ' above received income to date (not a full-month forecast)';
+      status.textContent = fmt(Math.abs(remaining)) + ' above recorded income so far'+comparisonNote+' (not a full-month forecast)';
       status.style.color = 'var(--red)';
     } else {
-      status.textContent = fmt(remaining) + ' below income received to date';
+      status.textContent = fmt(remaining) + ' below recorded income so far'+comparisonNote;
       status.style.color = 'var(--green)';
     }
   }
