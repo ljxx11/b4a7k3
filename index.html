@@ -2316,7 +2316,12 @@ function accountBalance(accountId,clearedOnly,throughDate,postedOnly){
   S.income.forEach(function(i){if(i.accountId===accountId&&included(i))total+=Number(i.amount)||0;});
   S.expenses.forEach(function(e){if(!e.isCredit&&e.accountId===accountId&&included(e))total-=Number(e.amount)||0;});
   (S.accountTransfers||[]).forEach(function(t){if(!included(t))return;if(t.fromAccountId===accountId)total-=Number(t.amount)||0;if(t.toAccountId===accountId)total+=Number(t.amount)||0;});
-  (S.financingTransfers||[]).forEach(function(t){if(included(t)&&t.toAccountId===accountId)total+=Number(t.amount)||0;});
+  (S.financingTransfers||[]).forEach(function(t){
+    if(t.toAccountId!==accountId)return;
+    if(clearedOnly&&!t.bankCleared)return;
+    if(throughDate&&String(t.date||'')>throughDate)return;
+    total+=Number(t.amount)||0;
+  });
   (S.reconciliationAdjustments||[]).forEach(function(a){if(a.targetType==='account'&&a.targetId===accountId&&included(a))total+=Number(a.amount)||0;});
   var checking=defaultAccount('checking'),cash=defaultAccount('cash');
   (S.custodialTransactions||[]).forEach(function(t){var target=t.location==='cash'?cash:checking;if(target&&target.id===accountId&&included(t))total+=custodialSignedAmount(t);});
