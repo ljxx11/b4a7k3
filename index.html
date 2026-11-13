@@ -3845,7 +3845,7 @@ function renderFinancialCompass(){
     else if(rta>.005){headline.textContent='Money is unassigned';copy.textContent=fmt(rta)+' Ready to Assign.';}
     else if(!week.schedulesExist){headline.textContent='Upcoming not measured';copy.textContent='No recurring bills recorded.';}
     else if(week.short>.005){headline.textContent='Next 7 days underfunded';copy.textContent=fmt(week.short)+' still needed.';}
-    else if(month.pct<100){headline.textContent='Current month is stable';copy.textContent=month.pct+'% of the next 30 days funded.';}
+    else if(month.hasData&&month.short>.005){headline.textContent='Upcoming bills need funding';copy.textContent=fmt(month.short)+' short for confirmed bills in the next 30 days.';}
     else if(age.days<30){headline.textContent='Building your buffer';copy.textContent=age.days+' days of money age.';}
     else {headline.textContent='Plan on track';copy.textContent='Assignments and commitments are covered.';}
   }
@@ -3869,8 +3869,8 @@ function renderFinancialCompass(){
   if(path){
     var steps=[];
     steps.push({done:Math.abs(rta)<.005&&!overspent,name:'Plan integrity',note:Math.abs(rta)<.005&&!overspent?'Fully assigned · no overspending':rta>.005?'Assignments remain open':'Overassigned or overspent'});
-    steps.push({done:week.hasData&&week.short<.005,name:'7-day coverage',note:week.hasData?(week.short<.005?'Scheduled bills funded':fmt(week.short)+' still needed'):'Not measured'});
-    steps.push({done:month.hasData&&month.pct>=100,name:'30-day coverage',note:month.hasData?month.pct+'% funded':'Not measured'});
+    steps.push({done:week.schedulesExist&&(!week.hasData||week.short<.005),name:'7-day coverage',note:week.hasData?(week.short<.005?'Confirmed bills funded':fmt(week.short)+' still needed'):(week.schedulesExist?'No confirmed bills due this week':'Not measured')});
+    steps.push({done:month.schedulesExist&&(!month.hasData||month.pct>=100),name:'30-day coverage',note:month.hasData?month.pct+'% of confirmed bills funded'+(month.reminders?' · reminders excluded':''):(month.schedulesExist?'No confirmed bills due':'Not measured')});
     steps.push({done:age.days>=30,name:'Money age',note:age.amount>0?age.days+' days':'Not enough history'});
     steps.push({done:emergency.found&&emergency.target>0&&emergency.pct>=100,name:'Emergency fund',note:!emergency.found?'No goal recorded':emergency.target>0?emergency.pct+'% complete · '+fmt(Math.max(0,emergency.target-emergency.saved))+' remaining':'No target amount'});
     var firstOpen=steps.findIndex(function(x){return !x.done;});
@@ -3894,7 +3894,7 @@ function renderReviewLanes(){
   if(spending)spending.textContent=fmt(totalSpent());
   if(spendingSub)spendingSub.textContent='Recorded this month; includes credit purchases';
   var future=document.getElementById('reviewFutureValue'),futureSub=document.getElementById('reviewFutureSub');
-  if(future)future.textContent=week.hasData?week.pct+'% funded in 7 days':month.hasData?month.pct+'% funded in 30 days':week.schedulesExist?'No bills due in 30 days':'No schedules';
+  if(future)future.textContent=week.hasData?week.pct+'% funded in 7 days':month.hasData?month.pct+'% funded in 30 days':month.reminders?'Reminders only':week.schedulesExist?'No confirmed bills due':'No schedules';
   if(futureSub)futureSub.textContent=month.hasData?'Known bills; reminder-only excluded':week.schedulesExist?'Schedules exist; none due in 30 days':'Upcoming commitments not recorded';
   var ledger=document.getElementById('reviewLedgerValue'),ledgerSub=document.getElementById('reviewLedgerSub');
   if(ledger)ledger.textContent=ledgerDb?'Protected':'Compatibility mode';
